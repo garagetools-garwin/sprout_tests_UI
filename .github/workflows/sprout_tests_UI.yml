@@ -48,7 +48,7 @@ jobs:
       # Запуск тестов
       - name: Run tests
         run: |
-          pytest --reruns 2 --reruns-delay 3 -m "not custom_schedule" --alluredir=allure-results
+          pytest --reruns 2 --reruns-delay 3 --alluredir=allure-results
           
       # Проверка наличия json-файлов в allure-results (чтобы не запушить сломаный отчет)
       - name: Check if Allure results exist
