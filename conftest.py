@@ -26,7 +26,7 @@ def pytest_runtest_makereport(item, call):
 
 """Основная фикстура для управления браузером, авторизацией и трассировкой (кастомная фикстура, расширяющая стандартную page)."""
 @pytest.fixture(scope="function")
-def page_fixtur(browser: Browser, request, base_url) -> Page:
+def page_fixture(browser: Browser, request, base_url) -> Page:
 
     # Путь к корню проекта и папке auth_states
     project_root = os.path.dirname(os.path.abspath(__file__))  # Путь к корню проекта
