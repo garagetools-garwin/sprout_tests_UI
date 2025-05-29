@@ -58,6 +58,8 @@ jobs:
         if: always()
         id: check_allure
         run: |
+          echo "Содержимое allure-results:"
+          ls -l allure-results || echo "Папки нет"
           if [ -d allure-results ] && [ "$(ls -A allure-results/*.json 2>/dev/null)" ]; then
             echo "allure_results_exist=true" >> $GITHUB_OUTPUT
           else
