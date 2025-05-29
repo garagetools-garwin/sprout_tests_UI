@@ -65,6 +65,10 @@ jobs:
           else
             echo "allure_results_exist=false" >> $GITHUB_OUTPUT
           fi
+          
+      - name: Debug allure_results_exist
+        if: always()
+        run: echo "allure_results_exist=${{ steps.check_allure.outputs.allure_results_exist }}"
 
       # Загрузка артефактов
       - name: Upload Allure Results
