@@ -17,6 +17,9 @@ jobs:
   tests:
     timeout-minutes: 60
 
+    # Уникальный ключ для группы задач предназначен для того, чтобы повторный запуск Джобы вставал в ожидание, не конфликтуая с первым
+    concurrency: sprout_tests_UI_concurrency
+
     # запуск на виртуальной машине
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && (github.event.schedule == '0 5 * * *' || github.event.schedule == '0 14 * * *'))
     runs-on: ubuntu-22.04
@@ -52,6 +55,7 @@ jobs:
           
       # Проверка наличия json-файлов в allure-results (чтобы не запушить сломаный отчет)
       - name: Check if Allure results exist
+        if: always()
         id: check_allure
         run: |
           if [ -d allure-results ] && [ "$(ls -A allure-results/*.json 2>/dev/null)" ]; then
