@@ -3,10 +3,10 @@ name: sprout_tests_UI
 # Определение события, запускающего workflow
 on: 
   workflow_dispatch:
-  push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
+  # push:
+  #   branches: [ main, master ]
+  # pull_request:
+  #   branches: [ main, master ]
   schedule:
     - cron: '0 5 * * *'    
     - cron: '0 14 * * *'
@@ -71,7 +71,7 @@ jobs:
       # Загрузка артефактов
       - name: Upload Allure Results
         uses: actions/upload-artifact@v4
-        if: always()
+        if: always() && steps.check_allure.outputs.allure_results_exist == 'true'
         with:
           name: allure-results-main-${{ github.run_id }}
           path: allure-results/
@@ -80,7 +80,7 @@ jobs:
       # Получение истории прогонов Allure
       - name: Get Allure history
         uses: actions/checkout@v4
-        if: always()
+        if: always() && steps.check_allure.outputs.allure_results_exist == 'true'
         continue-on-error: true
         with:
           ref: gh-pages
@@ -89,7 +89,7 @@ jobs:
       # Генерация отчета с учетом истории прогонов
       - name: Generate Allure report
         uses: simple-elf/allure-report-action@master
-        if: steps.check_allure.outputs.allure_results_exist == 'true'
+        if: always() && steps.check_allure.outputs.allure_results_exist == 'true'
         id: allure-report
         with:
           allure_results: allure-results
@@ -100,7 +100,7 @@ jobs:
       # Публикация отчета Allure  
       - name: Publish Allure report
         uses: peaceiris/actions-gh-pages@v2
-        if: steps.check_allure.outputs.allure_results_exist == 'true'
+        if: always() && steps.check_allure.outputs.allure_results_exist == 'true'
         env:
           PERSONAL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PUBLISH_BRANCH: gh-pages
