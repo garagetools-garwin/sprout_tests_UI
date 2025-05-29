@@ -1,0 +1,41 @@
+# Virtual environments
+.venv/
+venv/
+
+# IDE files
+.idea/
+
+# Git-specific files
+.gitignore
+
+# Python cache files
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.swp
+*.swo
+*.log
+
+# Environment variables
+.env
+
+# Allure reports and results
+allure-*
+
+# Test traces and logs
+traces
+logs
+
+# Authentication state files
+auth_states
+auth_state.json
+auth_state_empty.json
+
+# General trace files
+trace*
+*.zip
+
+# OS
+.DS_Store
+Thumbs.db
