@@ -2,32 +2,27 @@ import os
 
 import allure
 from playwright.sync_api import Page
-from dotenv import load_dotenv
 
-load_dotenv()
 
-ADMIN_BUYER_EMAIL = os.getenv("ADMIN_BUYER_EMAIL")
-ADMIN_BUYER_PASSWORD = os.getenv("ADMIN_BUYER_PASSWORD")
-
-class AutorizationPage:
+class HomePage:
     def __init__(self, page: Page):
         self.page = page
 
-    PATH = "/login"
+    PATH = "/"
 
-    EMAIL_INPUT = "#email"
-    PASSWORD_INPUT = "#password"
-    SUBMIT_BUTTON = "div button[type='submit']"
-
+    SETTINGS_ICON = ".sidebar-item.sidebar-item__active"
+    SETTINGS_BUTTON = ".sidebar-item__label.sidebar__header-label"
 
     def open(self, base_url):
         with allure.step(f"Открываю {base_url + self.PATH}"):
             return self.page.goto(base_url + self.PATH)
 
 
-    @allure.step("Авторизуюсь")
-    def authorize(self):
-        self.page.type(self.EMAIL_INPUT, ADMIN_BUYER_EMAIL)
-        self.page.type(self.PASSWORD_INPUT, ADMIN_BUYER_PASSWORD)
-        self.page.click(self.SUBMIT_BUTTON)
-        return ADMIN_BUYER_EMAIL
+    @allure.step("Кликаю на иконку настроек")
+    def click_settings_button(self):
+        self.page.hover(self.SETTINGS_ICON)
+        self.page.click(self.SETTINGS_BUTTON)
+
+
+
+#фейковаю почту на один ищ аккаунтов зареганых на sptout
