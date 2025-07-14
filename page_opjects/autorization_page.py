@@ -11,6 +11,12 @@ load_dotenv()
 ADMIN_BUYER_EMAIL = os.getenv("ADMIN_BUYER_EMAIL")
 ADMIN_BUYER_PASSWORD = os.getenv("ADMIN_BUYER_PASSWORD")
 TEST_BUYER_PASSWORD = os.getenv("TEST_BUYER_PASSWORD")
+ADMIN_SELLER_EMAIL = os.getenv("ADMIN_SELLER_EMAIL")
+ADMIN_SELLER_PASSWORD = os.getenv("ADMIN_SELLER_PASSWORD")
+PURCHASER_EMAIL = os.getenv("PURCHASER_EMAIL")
+PURCHASER_PASSWORD = os.getenv("PURCHASER_PASSWORD")
+CONTRACT_MANAGER_EMAIL = os.getenv("CONTRACT_MANAGER_EMAIL")
+CONTRACT_MANAGER_PASSWORD = os.getenv("CONTRACT_MANAGER_PASSWORD")
 TESTMAIL_JSON_ = os.getenv("TESTMAIL_JSON_")
 TESTMAIL_ADRESS_ = os.getenv("TESTMAIL_ADRESS_")
 
@@ -32,18 +38,42 @@ class AutorizationPage:
             return self.page.goto(base_url + self.PATH)
 
 
-    @allure.step("Авторизуюсь")
+    @allure.step("Авторизуюсь (Покупатель Администратор)")
     def admin_buyer_authorize(self):
         self.page.type(self.EMAIL_INPUT, ADMIN_BUYER_EMAIL)
         self.page.type(self.PASSWORD_INPUT, ADMIN_BUYER_PASSWORD)
-        self.page.click(self.SUBMIT_BUTTON)
+        self.page.locator(self.SUBMIT_BUTTON).click()
         return ADMIN_BUYER_EMAIL
 
-    @allure.step("Авторизуюсь")
+    # Не готов Подтя нуть мыло с паролем из .env
+    @allure.step("Авторизуюсь (Закупщик)")
+    def purchaser_authorize(self):
+        self.page.type(self.EMAIL_INPUT, PURCHASER_EMAIL)
+        self.page.type(self.PASSWORD_INPUT, PURCHASER_PASSWORD)
+        self.page.locator(self.SUBMIT_BUTTON).click()
+        return ADMIN_BUYER_EMAIL
+
+    # Не готов
+    @allure.step("Авторизуюсь (Менеджер контракта")
+    def contract_manager_authorize(self):
+        self.page.type(self.EMAIL_INPUT, CONTRACT_MANAGER_EMAIL)
+        self.page.type(self.PASSWORD_INPUT, CONTRACT_MANAGER_PASSWORD)
+        self.page.locator(self.SUBMIT_BUTTON).click()
+        return ADMIN_BUYER_EMAIL
+
+    # Не готов
+    @allure.step("Авторизуюсь (Продавец администратор")
+    def admin_seller_authorize(self):
+        self.page.type(self.EMAIL_INPUT, ADMIN_SELLER_EMAIL)
+        self.page.type(self.PASSWORD_INPUT, ADMIN_SELLER_PASSWORD)
+        self.page.locator(self.SUBMIT_BUTTON).click()
+        return ADMIN_BUYER_EMAIL
+
+    @allure.step("Авторизуюсь (Тестовый покупатель)")
     def test_buyer_authorize(self):
         self.page.type(self.EMAIL_INPUT, TESTMAIL_ADRESS_)
         self.page.type(self.PASSWORD_INPUT, TEST_BUYER_PASSWORD)
-        self.page.click(self.SUBMIT_BUTTON)
+        self.page.locator(self.SUBMIT_BUTTON).click()
         return
 
     @allure.step("Получаю ссылку для активации аккаунта")
@@ -78,20 +108,20 @@ class AutorizationPage:
         self.page.goto(activation_url)
 
         with allure.step("Кликаю на кнопку Активировать"):
-            self.page.click(self.SUBMIT_BUTTON)  # Кнопка "Активировать"
+            self.page.locator(self.SUBMIT_BUTTON).click()  # Кнопка "Активировать"
         with allure.step("Кликаю на кнопку Далее"):
-            self.page.click(self.SUBMIT_BUTTON)  # Кнопка "Далее"
+            self.page.locator(self.SUBMIT_BUTTON).click()  # Кнопка "Далее"
 
         with allure.step("Ввожу пароль, подтверждаю его"):
             self.page.type(self.PASSWORD_INPUT, TEST_BUYER_PASSWORD)
             self.page.type(self.CONFIRM_PASSWORD_INPUT, TEST_BUYER_PASSWORD)
 
         with allure.step("Кликаю на кнопку Войти в систему"):
-            self.page.click(self.SUBMIT_BUTTON)
+            self.page.locator(self.SUBMIT_BUTTON).click()
 
     # Клик для любой подтверждающей кнопки
     def click_submit_button(self):
-        self.page.click(self.SUBMIT_BUTTON)
+        self.page.locator(self.SUBMIT_BUTTON).click()
 
     @allure.step("Получаю текст подсказки в карточке пользователя")
     def get_notification_text(self):

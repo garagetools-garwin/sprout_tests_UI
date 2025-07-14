@@ -21,7 +21,7 @@ class HomePage:
     @allure.step("Кликаю на иконку настроек")
     def click_settings_button(self):
         self.page.hover(self.SETTINGS_ICON)
-        self.page.click(self.SETTINGS_BUTTON)
+        self.page.locator(self.SETTINGS_BUTTON).click()
 
 
 

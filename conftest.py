@@ -149,17 +149,26 @@ AUTH_PASSWORD = os.getenv("AUTH_PASSWORD")
 
 
 # === ФАБРИКА СТРАНИЦ === #
-def page_factory(browser: Browser, base_url: str, use_auth=False, use_auth_empty=False, use_manual_login=False) -> Page:
+# Функция которая создает кастомный page
+def page_factory(browser: Browser, base_url: str, use_buyer_admin_auth=False, use_seller_admin_auth=False, use_manual_login=False) -> Page:
     project_root = os.path.dirname(os.path.abspath(__file__))
     auth_states_dir = os.path.join(project_root, 'auth_states')
     os.makedirs(auth_states_dir, exist_ok=True)
 
-    auth_state_path = os.path.join(auth_states_dir, "auth_state.json")
+    # Определяем окружение
+    is_stage = "stage" in base_url or "review-site" in base_url
+    is_prod = "sprout-store.ru" in base_url and not is_stage
+
+    # Выбор файла куков
+    auth_state_path = os.path.join(
+        auth_states_dir,
+        "auth_state_stage.json" if is_stage else "auth_state_prod.json"
+    )
     auth_state_empty_path = os.path.join(auth_states_dir, "auth_state_empty.json")
 
-    if use_auth:
+    if use_buyer_admin_auth:
         context = browser.new_context(storage_state=auth_state_path)
-    elif use_auth_empty:
+    elif use_seller_admin_auth:
         context = browser.new_context(storage_state=auth_state_empty_path)
     else:
         context = browser.new_context()
@@ -167,7 +176,8 @@ def page_factory(browser: Browser, base_url: str, use_auth=False, use_auth_empty
     page = context.new_page()
     page.set_viewport_size({"width": 1920, "height": 1080})
 
-    if not use_manual_login and ("stage.sprout-store.ru" in base_url or "review-site" in base_url):
+    # Базовая авторизация (только для стейджа)
+    if is_stage and not use_manual_login:
         auth_url = base_url.replace("https://", f"https://{AUTH_USERNAME}:{AUTH_PASSWORD}@")
         page.goto(auth_url)
         context.storage_state(path=auth_state_path)
@@ -176,16 +186,17 @@ def page_factory(browser: Browser, base_url: str, use_auth=False, use_auth_empty
 
 
 # === ЕДИНАЯ ФИКСТУРА С ТРАССИРОВКОЙ === #
+# Фикстура оборачивает кастомный page и управляет окружением, трассировкой и прочим.
 @pytest.fixture()
-def page_factory_fixture(browser: Browser, request, base_url):
+def page_fixture(browser: Browser, request, base_url):
     pages = []
 
-    def _factory(use_auth=False, use_auth_empty=False, use_manual_login=False):
+    def _factory(use_buyer_admin_auth=False, use_seller_admin_auth=False, use_manual_login=False):
         page = page_factory(
             browser=browser,
             base_url=base_url,
-            use_auth=use_auth,
-            use_auth_empty=use_auth_empty,
+            use_buyer_admin_auth=use_buyer_admin_auth,
+            use_seller_admin_auth=use_seller_admin_auth,
             use_manual_login=use_manual_login
         )
         pages.append(page)
@@ -218,7 +229,7 @@ import allure
 
 
 @pytest.fixture
-def delete_user_fixture(base_url, page_factory_fixture):
+def delete_user_fixture(base_url, page_fixture):
     """Фикстура для удаления пользователя после теста, если он был создан, но не удалён вручную."""
 
     state = {
@@ -245,7 +256,7 @@ def delete_user_fixture(base_url, page_factory_fixture):
         try:
             with allure.step("Удаляю пользователя в teardown"):
                 # Создаём новый контекст страницы
-                admin_page = page_factory_fixture()
+                admin_page = page_fixture()
                 authorization_page = AutorizationPage(admin_page)
                 settings_account_page = SettingsAccountPage(admin_page)
                 home_page = HomePage(admin_page)
@@ -297,3 +308,54 @@ def pytest_runtest_makereport(item, call):
     if report.outcome == "failed" and item.get_closest_marker("rerun"):
         allure.dynamic.label("rerun", "Test Rerun")
 
+@pytest.fixture(scope="session", autouse=True)
+def autorization_fixture(browser: Browser, base_url):
+
+    # Путь к auth_states
+    project_root = os.path.dirname(os.path.abspath(__file__))
+    auth_states_dir = os.path.join(project_root, 'auth_states')
+    os.makedirs(auth_states_dir, exist_ok=True)
+    auth_buyer_admin_state_path = os.path.join(auth_states_dir, "auth_buyer_admin_state_prod.json")
+    auth_seller_admin_state_path = os.path.join(auth_states_dir, "auth_seller_admin_state_prod.json")
+    auth_purchaser_state_path = os.path.join(auth_states_dir, "auth_purchaser_state_prod.json")
+    auth_contract_manager_state_path = os.path.join(auth_states_dir, "auth_contract_manager_state_prod.json")
+
+    # Записываем куки авторизации в json для админа покупателя
+    buyer_admin_context = browser.new_context()
+    buyer_admin_page = buyer_admin_context.new_page()
+    buyer_admin_autorization_page = AutorizationPage(buyer_admin_page)
+
+    buyer_admin_autorization_page.open(base_url)
+    buyer_admin_autorization_page.admin_buyer_authorize()
+    buyer_admin_page.context.storage_state(path=auth_buyer_admin_state_path)
+    buyer_admin_context.close()
+
+    # Записываем куки авторизации в json для админа продавца
+    seller_admin_context = browser.new_context()
+    seller_admin_page = seller_admin_context.new_page()
+    seller_admin_autorization_page = AutorizationPage(seller_admin_page)
+
+    seller_admin_autorization_page.open(base_url)
+    seller_admin_autorization_page.admin_seller_authorize() #TODO здесь либо другой метод авторозации, специально для продавца, либо какаято параметризация для метода авторизации
+    seller_admin_page.context.storage_state(path=auth_seller_admin_state_path)
+    seller_admin_context.close()
+
+    # Записываем куки авторизации в json для Закупщика
+    purchaser_context = browser.new_context()
+    purchaser_page = purchaser_context.new_page()
+    purchaser_autorization_page = AutorizationPage(purchaser_page)
+
+    purchaser_autorization_page.open(base_url)
+    purchaser_autorization_page.purchaser_authorize() #TODO здесь либо другой метод авторозации, специально для продавца, либо какаято параметризация для метода авторизации
+    purchaser_page.context.storage_state(path=auth_purchaser_state_path)
+    purchaser_context.close()
+
+    # Записываем куки авторизации в json для менеджера контракта
+    contract_manager_context = browser.new_context()
+    contract_manager_page = contract_manager_context.new_page()
+    contract_manager_autorization_page = AutorizationPage(contract_manager_page)
+
+    contract_manager_autorization_page.open(base_url)
+    contract_manager_autorization_page.contract_manager_authorize() #TODO здесь либо другой метод авторозации, специально для продавца, либо какаято параметризация для метода авторизации
+    contract_manager_page.context.storage_state(path=auth_contract_manager_state_path)
+    contract_manager_context.close()

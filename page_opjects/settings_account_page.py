@@ -39,19 +39,18 @@ class SettingsAccountPage:
 
     @allure.step("Кликаю на крестик")
     def click_close_button(self):
-        self.page.click(self.CLOSE_BUTTON)
-
+        self.page.locator(self.CLOSE_BUTTON).click()
     @allure.step("Закрываю модальное окно")
     def close_modal(self):
         self.page.mouse.click(50, 100)
 
     @allure.step("Кликаю на иконку Пользователи")
     def click_users_button(self):
-        self.page.click(self.USERS_BUTTON)
+        self.page.locator(self.USERS_BUTTON).click()
 
     @allure.step("Кликаю на иконку Добавить пользователя")
     def click_add_user_button(self):
-        self.page.click(self.ADD_USER_BUTTON)
+        self.page.locator(self.ADD_USER_BUTTON).click()
 
     @allure.step("Добавляю пользователя")
     def add_user(self):
@@ -59,20 +58,20 @@ class SettingsAccountPage:
         self.page.type(self.EMAIL_INPUT, TESTMAIL_ADRESS_)
         self.page.type(self.LASTNAME_INPUT, "Тестовый")
         self.page.type(self.FIRSTNAME_INPUT, "Тест")
-        self.page.click(self.SEND_AN_INVATION_BUTTON)
+        self.page.locator(self.SEND_AN_INVATION_BUTTON).click()
         return TEST_BUYER_EMAIL
 
     @allure.step("Кликаю на первого пользователя в списке")
     def click_first_user_table_row(self):
-        self.page.click(self.USER_TABLE_ROW)
+        self.page.locator(self.USER_TABLE_ROW).nth(0).click()
 
     @allure.step("Кликаю кнопку удаления пользователя")
     def click_user_delete_button(self):
-        self.page.click(self.USER_DELETE_BUTTON)
+        self.page.locator(self.USER_DELETE_BUTTON).click()
 
     @allure.step("Кликаю кнопку удаления пользователя")
     def confirm_user_deletion(self):
-        self.page.click(self.CONFIRM_DELETION_BUTTON)
+        self.page.locator(self.CONFIRM_DELETION_BUTTON).click()
 
 
     @allure.step("Удаляю последнего созданного пользователя")
