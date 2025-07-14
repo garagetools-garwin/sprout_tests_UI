@@ -51,7 +51,6 @@ class AutorizationPage:
         self.page.type(self.EMAIL_INPUT, PURCHASER_EMAIL)
         self.page.type(self.PASSWORD_INPUT, PURCHASER_PASSWORD)
         self.page.locator(self.SUBMIT_BUTTON).click()
-        return ADMIN_BUYER_EMAIL
 
     # Не готов
     @allure.step("Авторизуюсь (Менеджер контракта")
@@ -59,7 +58,6 @@ class AutorizationPage:
         self.page.type(self.EMAIL_INPUT, CONTRACT_MANAGER_EMAIL)
         self.page.type(self.PASSWORD_INPUT, CONTRACT_MANAGER_PASSWORD)
         self.page.locator(self.SUBMIT_BUTTON).click()
-        return ADMIN_BUYER_EMAIL
 
     # Не готов
     @allure.step("Авторизуюсь (Продавец администратор")
@@ -67,14 +65,12 @@ class AutorizationPage:
         self.page.type(self.EMAIL_INPUT, ADMIN_SELLER_EMAIL)
         self.page.type(self.PASSWORD_INPUT, ADMIN_SELLER_PASSWORD)
         self.page.locator(self.SUBMIT_BUTTON).click()
-        return ADMIN_BUYER_EMAIL
 
     @allure.step("Авторизуюсь (Тестовый покупатель)")
     def test_buyer_authorize(self):
         self.page.type(self.EMAIL_INPUT, TESTMAIL_ADRESS_)
         self.page.type(self.PASSWORD_INPUT, TEST_BUYER_PASSWORD)
         self.page.locator(self.SUBMIT_BUTTON).click()
-        return
 
     @allure.step("Получаю ссылку для активации аккаунта")
     def get_activation_link_testmail_app(self):
