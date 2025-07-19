@@ -1,1 +1,0 @@
-[{"uid":"fdf6f4318c4484f8","name":"Авторизация","time":{"start":1752383950022,"stop":1752383950022,"duration":0},"status":"broken","severity":"normal"},{"uid":"fe02731c84aff884","name":"Приглашение пользователя и проверка активации","time":{"start":1752383984038,"stop":1752383996268,"duration":12230},"status":"broken","severity":"normal"}]
