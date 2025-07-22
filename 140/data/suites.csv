@@ -1,0 +1,3 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"","64071","Приглашение пользователя и проверка активации","tests","Tue Jul 22 05:24:22 GMT 2025","passed","Tue Jul 22 05:25:26 GMT 2025","","test_users","",""
+"","8603","Авторизация","tests","Tue Jul 22 05:24:13 GMT 2025","passed","Tue Jul 22 05:24:22 GMT 2025","","test_autorization","",""
