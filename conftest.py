@@ -147,40 +147,57 @@ AUTH_PASSWORD = os.getenv("AUTH_PASSWORD")
 #             # Закрываем контекст браузера
 #             page.context.close()
 
-
-# === ФАБРИКА СТРАНИЦ === #
-# Функция которая создает кастомный page
-def page_factory(browser: Browser, base_url: str, use_buyer_admin_auth=False, use_seller_admin_auth=False, use_manual_login=False) -> Page:
+# === Утилиты === #
+# Создаёт дерикторию (если не существует) и возвращает путь к ней (auth_states)
+def ensure_auth_states_dir_exists() -> str:
     project_root = os.path.dirname(os.path.abspath(__file__))
     auth_states_dir = os.path.join(project_root, 'auth_states')
     os.makedirs(auth_states_dir, exist_ok=True)
+    return auth_states_dir
 
-    # Определяем окружение
-    is_stage = "stage" in base_url or "review-site" in base_url
-    is_prod = "sprout-store.ru" in base_url and not is_stage
+# Получаем инфу об окружении исходя из указаного URL
+def get_env_from_url(base_url: str) -> str:
+    if "stage" in base_url or "review-site" in base_url:
+        return "stage"
+    return "prod"
 
-    # Выбор файла куков
-    auth_state_path = os.path.join(
-        auth_states_dir,
-        "auth_state_stage.json" if is_stage else "auth_state_prod.json"
-    )
-    auth_state_empty_path = os.path.join(auth_states_dir, "auth_state_empty.json")
+# Создает путь к файлу авторизации (storage_state) основываясь на роли и окружении
+def build_auth_state_path(role: str, env: str) -> str:
+    return os.path.join(ensure_auth_states_dir_exists(), f"auth_{role}_state_{env}.json")
 
-    if use_buyer_admin_auth:
-        context = browser.new_context(storage_state=auth_state_path)
-    elif use_seller_admin_auth:
-        context = browser.new_context(storage_state=auth_state_empty_path)
+# === ФАБРИКА СТРАНИЦ === #
+# Создает кастомный page
+def page_factory(
+    browser: Browser,
+    base_url: str,
+    role: str = None,
+    use_manual_login: bool = False
+) -> Page:
+
+    # Определяет окружение
+    env = get_env_from_url(base_url)
+    context = None
+
+    # Если указана роль создает контекст с нужным storage_state
+    if role:
+        storage_state_path = build_auth_state_path(role, env)
+        context = browser.new_context(storage_state=storage_state_path)
     else:
         context = browser.new_context()
 
+    # Открывает новую страницу, задает размер окна
     page = context.new_page()
     page.set_viewport_size({"width": 1920, "height": 1080})
 
     # Базовая авторизация (только для стейджа)
-    if is_stage and not use_manual_login:
-        auth_url = base_url.replace("https://", f"https://{AUTH_USERNAME}:{AUTH_PASSWORD}@")
+    if env == "stage" and not use_manual_login and role:
+        from dotenv import load_dotenv
+        load_dotenv()
+        user = os.getenv("AUTH_USERNAME")
+        pwd = os.getenv("AUTH_PASSWORD")
+        auth_url = base_url.replace("https://", f"https://{user}:{pwd}@")
         page.goto(auth_url)
-        context.storage_state(path=auth_state_path)
+        context.storage_state(path=storage_state_path)
 
     return page
 
@@ -191,14 +208,8 @@ def page_factory(browser: Browser, base_url: str, use_buyer_admin_auth=False, us
 def page_fixture(browser: Browser, request, base_url):
     pages = []
 
-    def _factory(use_buyer_admin_auth=False, use_seller_admin_auth=False, use_manual_login=False):
-        page = page_factory(
-            browser=browser,
-            base_url=base_url,
-            use_buyer_admin_auth=use_buyer_admin_auth,
-            use_seller_admin_auth=use_seller_admin_auth,
-            use_manual_login=use_manual_login
-        )
+    def create_page(role: str = None, use_manual_login: bool = False):
+        page = page_factory(browser, base_url, role, use_manual_login)
         pages.append(page)
 
         current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -210,7 +221,7 @@ def page_fixture(browser: Browser, request, base_url):
         page._trace_path = trace_path
         return page
 
-    yield _factory
+    yield create_page
 
     for page in pages:
         trace_path = getattr(page, "_trace_path", None)
@@ -224,9 +235,29 @@ def page_fixture(browser: Browser, request, base_url):
                 page.context.tracing.stop()
         page.context.close()
 
-import pytest
-import allure
+# === Авторизация всех ролей один раз за сессию === #
+@pytest.fixture(scope="session")
+def autorization_fixture(browser: Browser, base_url):
+    env = get_env_from_url(base_url)
 
+    role_to_auth_method = {
+        "buyer_admin": "admin_buyer_authorize",
+        "seller_admin": "admin_seller_authorize",
+        "purchaser": "purchaser_authorize",
+        "contract_manager": "contract_manager_authorize",
+        "vi_test": "vi_test_authorize",
+    }
+
+    for role, auth_method in role_to_auth_method.items():
+        context = browser.new_context()
+        page = context.new_page()
+        auth_page = AutorizationPage(page)
+
+        auth_page.open(base_url)
+        getattr(auth_page, auth_method)()
+
+        context.storage_state(path=build_auth_state_path(role, env))
+        context.close()
 
 @pytest.fixture
 def delete_user_fixture(base_url, page_fixture):
@@ -275,21 +306,10 @@ def delete_user_fixture(base_url, page_fixture):
             print(f"=== TEARDOWN CRASHED: {e} ===")
             allure.attach(str(e), "Ошибка в teardown при удалении пользователя", allure.attachment_type.TEXT)
 
-
 """Добавляет опции"""
 def pytest_addoption(parser):
     # Добавляет опцию --url для выбора окружения
-    parser.addoption(
-        "--url", default="https://sprout-store.ru"
-    )
-
-"""Фикстура для подмены нового контекста авторизованным"""
-@pytest.fixture(scope="function")
-def authorized_context(browser):
-    # Передает состояние авторизации для создания контекста
-    return {
-        "storage_state": "auth_state.json"
-    }
+    parser.addoption("--url", default="https://sprout-store.ru")
 
 """Возвращает базовый URL из параметров командной строки через --url"""
 @pytest.fixture(scope="session")
@@ -308,54 +328,63 @@ def pytest_runtest_makereport(item, call):
     if report.outcome == "failed" and item.get_closest_marker("rerun"):
         allure.dynamic.label("rerun", "Test Rerun")
 
-@pytest.fixture(scope="session", autouse=True)
-def autorization_fixture(browser: Browser, base_url):
+# @pytest.fixture(scope="session", autouse=True)
+# def autorization_fixture(browser: Browser, base_url):
+#
+#     # Путь к auth_states
+#     project_root = os.path.dirname(os.path.abspath(__file__))
+#     auth_states_dir = os.path.join(project_root, 'auth_states')
+#     os.makedirs(auth_states_dir, exist_ok=True)
+#     auth_buyer_admin_state_path = os.path.join(auth_states_dir, "auth_buyer_admin_state_prod.json")
+#     auth_seller_admin_state_path = os.path.join(auth_states_dir, "auth_seller_admin_state_prod.json")
+#     auth_purchaser_state_path = os.path.join(auth_states_dir, "auth_purchaser_state_prod.json")
+#     auth_contract_manager_state_path = os.path.join(auth_states_dir, "auth_contract_manager_state_prod.json")
+#
+#     # Записываем куки авторизации в json для админа покупателя
+#     buyer_admin_context = browser.new_context()
+#     buyer_admin_page = buyer_admin_context.new_page()
+#     buyer_admin_autorization_page = AutorizationPage(buyer_admin_page)
+#
+#     buyer_admin_autorization_page.open(base_url)
+#     buyer_admin_autorization_page.admin_buyer_authorize()
+#     buyer_admin_page.context.storage_state(path=auth_buyer_admin_state_path)
+#     buyer_admin_context.close()
+#
+#     # Записываем куки авторизации в json для админа продавца
+#     seller_admin_context = browser.new_context()
+#     seller_admin_page = seller_admin_context.new_page()
+#     seller_admin_autorization_page = AutorizationPage(seller_admin_page)
+#
+#     seller_admin_autorization_page.open(base_url)
+#     seller_admin_autorization_page.admin_seller_authorize() #TODO здесь либо другой метод авторозации, специально для продавца, либо какаято параметризация для метода авторизации
+#     seller_admin_page.context.storage_state(path=auth_seller_admin_state_path)
+#     seller_admin_context.close()
+#
+#     # Записываем куки авторизации в json для Закупщика
+#     purchaser_context = browser.new_context()
+#     purchaser_page = purchaser_context.new_page()
+#     purchaser_autorization_page = AutorizationPage(purchaser_page)
+#
+#     purchaser_autorization_page.open(base_url)
+#     purchaser_autorization_page.purchaser_authorize() #TODO здесь либо другой метод авторозации, специально для продавца, либо какаято параметризация для метода авторизации
+#     purchaser_page.context.storage_state(path=auth_purchaser_state_path)
+#     purchaser_context.close()
+#
+#     # Записываем куки авторизации в json для менеджера контракта
+#     contract_manager_context = browser.new_context()
+#     contract_manager_page = contract_manager_context.new_page()
+#     contract_manager_autorization_page = AutorizationPage(contract_manager_page)
+#
+#     contract_manager_autorization_page.open(base_url)
+#     contract_manager_autorization_page.contract_manager_authorize() #TODO здесь либо другой метод авторозации, специально для продавца, либо какаято параметризация для метода авторизации
+#     contract_manager_page.context.storage_state(path=auth_contract_manager_state_path)
+#     contract_manager_context.close()
 
-    # Путь к auth_states
-    project_root = os.path.dirname(os.path.abspath(__file__))
-    auth_states_dir = os.path.join(project_root, 'auth_states')
-    os.makedirs(auth_states_dir, exist_ok=True)
-    auth_buyer_admin_state_path = os.path.join(auth_states_dir, "auth_buyer_admin_state_prod.json")
-    auth_seller_admin_state_path = os.path.join(auth_states_dir, "auth_seller_admin_state_prod.json")
-    auth_purchaser_state_path = os.path.join(auth_states_dir, "auth_purchaser_state_prod.json")
-    auth_contract_manager_state_path = os.path.join(auth_states_dir, "auth_contract_manager_state_prod.json")
-
-    # Записываем куки авторизации в json для админа покупателя
-    buyer_admin_context = browser.new_context()
-    buyer_admin_page = buyer_admin_context.new_page()
-    buyer_admin_autorization_page = AutorizationPage(buyer_admin_page)
-
-    buyer_admin_autorization_page.open(base_url)
-    buyer_admin_autorization_page.admin_buyer_authorize()
-    buyer_admin_page.context.storage_state(path=auth_buyer_admin_state_path)
-    buyer_admin_context.close()
-
-    # Записываем куки авторизации в json для админа продавца
-    seller_admin_context = browser.new_context()
-    seller_admin_page = seller_admin_context.new_page()
-    seller_admin_autorization_page = AutorizationPage(seller_admin_page)
-
-    seller_admin_autorization_page.open(base_url)
-    seller_admin_autorization_page.admin_seller_authorize() #TODO здесь либо другой метод авторозации, специально для продавца, либо какаято параметризация для метода авторизации
-    seller_admin_page.context.storage_state(path=auth_seller_admin_state_path)
-    seller_admin_context.close()
-
-    # Записываем куки авторизации в json для Закупщика
-    purchaser_context = browser.new_context()
-    purchaser_page = purchaser_context.new_page()
-    purchaser_autorization_page = AutorizationPage(purchaser_page)
-
-    purchaser_autorization_page.open(base_url)
-    purchaser_autorization_page.purchaser_authorize() #TODO здесь либо другой метод авторозации, специально для продавца, либо какаято параметризация для метода авторизации
-    purchaser_page.context.storage_state(path=auth_purchaser_state_path)
-    purchaser_context.close()
-
-    # Записываем куки авторизации в json для менеджера контракта
-    contract_manager_context = browser.new_context()
-    contract_manager_page = contract_manager_context.new_page()
-    contract_manager_autorization_page = AutorizationPage(contract_manager_page)
-
-    contract_manager_autorization_page.open(base_url)
-    contract_manager_autorization_page.contract_manager_authorize() #TODO здесь либо другой метод авторозации, специально для продавца, либо какаято параметризация для метода авторизации
-    contract_manager_page.context.storage_state(path=auth_contract_manager_state_path)
-    contract_manager_context.close()
+# Фикстура для ручного дебага(не закрывает контекст автоматически)
+@pytest.fixture
+def manual_page_factory(browser: Browser, base_url: str):
+    def create_manual_page(role: str = None, use_manual_login: bool = False):
+        page = page_factory(browser, base_url, role, use_manual_login)
+        page.context.tracing.start(screenshots=True, snapshots=True)
+        return page
+    return create_manual_page

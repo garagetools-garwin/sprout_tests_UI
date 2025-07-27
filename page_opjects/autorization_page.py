@@ -59,6 +59,11 @@ class AutorizationPage:
         self.page.type(self.PASSWORD_INPUT, CONTRACT_MANAGER_PASSWORD)
         self.page.locator(self.SUBMIT_BUTTON).click()
 
+    @allure.step("Авторизуюсь на vi")
+    def vi_test_authorize(self):
+        self.page.goto("https://www.vseinstrumenti.ru/")
+        pass
+
     # Не готов
     @allure.step("Авторизуюсь (Продавец администратор")
     def admin_seller_authorize(self):

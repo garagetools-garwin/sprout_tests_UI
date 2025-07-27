@@ -39,3 +39,9 @@ trace*
 # OS
 .DS_Store
 Thumbs.db
+
+tests/test_test.py
+tests/test_vi.py
+tests/prices.csv
+tests/prices.txt
+auth_vi_test_state_prod.json

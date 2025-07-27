@@ -1,4 +1,6 @@
 import os
+import time
+from os.path import split
 
 import allure
 import pytest
@@ -8,6 +10,8 @@ from page_opjects.cart_page import CartPage
 from page_opjects.autorization_page import AutorizationPage
 from page_opjects.home_page import HomePage
 from page_opjects.listing_page import ListingPage
+from page_opjects.my_orders_page import MyOrdersPage
+from page_opjects.purchase_orders import PurchaseOrdersPage
 from page_opjects.settings_account_page import SettingsAccountPage
 
 
@@ -17,22 +21,13 @@ def test_user_invitation(base_url, page_fixture, delete_user_fixture):
     # Получаем методы из фикстуры
     mark_user_created, mark_user_deleted = delete_user_fixture
 
-    # Путь к auth_states
-    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    auth_states_dir = os.path.join(project_root, 'auth_states')
-    auth_state_path = os.path.join(auth_states_dir, "auth_state_prod.json")
-
     # === Админ: создаёт пользователя ===
-    admin_page = page_fixture()
+    admin_page = page_fixture(role="buyer_admin")
     autorization_page = AutorizationPage(admin_page)
     home_page = HomePage(admin_page)
     settings_account_page = SettingsAccountPage(admin_page)
-    autorization_page.open(base_url)
-    autorization_page.admin_buyer_authorize()
 
-    # Записываем куки авторизации в json
-    admin_page.context.storage_state(path=auth_state_path)
-
+    home_page.open(base_url)
     home_page.click_settings_button()
     settings_account_page.click_users_button()
     settings_account_page.add_user()
@@ -78,47 +73,68 @@ def test_user_invitation(base_url, page_fixture, delete_user_fixture):
             expect(temp_page).to_have_url(f"{base_url}/login")
 
 
-# @allure.title("Путь пользователя от авторизации до создания заказа")
-# def test_critical_way(base_url, page_fixture, delete_user_fixture):
-#
-#     # Авторизоватся куками или в ручную (покупателем)
-#     # Перейти в конкретный листинг, а лучше в конкретную позицию(если возможно)
-#     # добавить позицию или 2 в корзину
-#     # перейти в корзину
-#     # нажать Оформить заказа
-#     # проверить, что появилаfсь модалка с Заказ от 11.07.2025 в очереди на рассмотрение
-#     # авторизуюсь закупщиком???? purchaser
-#     # Перейти в заявки на закупку
-#     # выбрать первую заявку
-#     # Выбрать все
-#     # Нажать на согласовать
-#     # Авторизоватся менеджером контракта
-#     # Перейти в заказы
-#     # ВЫбрать первый заказ
-#     # Выделить все
-#     # Нажать Назначить поставку
-#     # Выбрать дату поставки первая, которая не имеет disabled а лучше рандом среди них
-#     # Применить
-#
-#     buyer_page = page_fixture()
-#     autorization_page = AutorizationPage(buyer_page)
-#     listing_page = ListingPage(buyer_page)
-#     home_page = HomePage(buyer_page)
-#     settings_account_page = SettingsAccountPage(buyer_page)
-#     cart_page = CartPage(buyer_page)
-#
-#     # === Покупатель: создаёт заказ ===
-#     autorization_page.open(base_url)
-#     autorization_page.admin_buyer_authorize()
-#     listing_page.open(base_url)
-#     listing_page.add_to_cart()
-#     cart_page.open(base_url)
-#     cart_page.click_send_button()
-#
-#     # === Закупщик: согласует заказ ===
-#
-#
-#     # === Менеджер контракта: отправляет заказ в систему ===
+@allure.title("Путь пользователя от авторизации до создания заказа")
+def test_critical_way(base_url, page_fixture, delete_user_fixture):
+
+    # === Покупатель: создаёт заказ ===
+    buyer_page = git page_fixture(role="buyer_admin")
+    listing_page = ListingPage(buyer_page)
+    cart_page = CartPage(buyer_page)
+    my_orders_page = MyOrdersPage(buyer_page)
+
+    listing_page.open(base_url)
+    listing_page.add_to_cart()
+    cart_page.open(base_url)
+    cart_page.click_send_button()
+    my_orders_page.open(base_url)
+    order_number = my_orders_page.get_order_number()
+
+    # === Закупщик: согласует заказ ===
+    purchaser_page = page_fixture(role="purchaser")
+    purchase_orders_page = PurchaseOrdersPage(purchaser_page)
+
+    purchase_orders_page.open(base_url)
+    # purchase_orders_page.move_to_first_order_in_list()
+    purchase_orders_page.move_to_order_with_number(order_number)
+    purchase_orders_page.select_all_products_in_order()
+
+    request_id = order_number.split("-")[1]
+
+    with allure.step("Проверяю, что кнопка отправляет запрос в систему учёта"):
+        with purchaser_page.expect_response(
+                "**/change-status"
+        ) as response_info:
+            purchase_orders_page.click_approve_button_in_modal()
+
+            # Базовая проверка ответа
+            response = response_info.value
+            assert response.ok, (
+                f"Сервер вернул ошибку: HTTP {response.status}\n"
+                f"URL: {response.url}\n"
+                f"Тело: {response.text()}"
+            )
+
+            # Проверка, что ответ не пустой (без привязки к структуре)
+            response_body = response.json()
+            assert response_body, "Пустой ответ от сервера"
+
+    # === Менеджер контракта(продавец): принмает заказ ===
+    contract_manager_page = page_fixture(role="contract_manager")
+    contract_manager_orders_page = PurchaseOrdersPage(contract_manager_page)
+
+    time.sleep(2)
+    contract_manager_orders_page.open_ready_orders(base_url)
+    time.sleep(2)
+    assert contract_manager_orders_page.has_order_number(order_number)
+
+
+
+
+    # Проверить, что
+
+
+
+    # === Менеджер контракта: отправляет заказ в систему ===
 #
 #
 #
@@ -264,3 +280,5 @@ def test_user_invitation(base_url, page_fixture, delete_user_fixture):
     #TODO написать фикстуру которая будет активироватся раз в сессию и создавать файлы с куками аторизации для всех пользователей
     #TODO нанаписать метод или фикстуру, которая будет авторизовывать все аккаунт
     #TODO Написать фикстуру на уровне сессии, которая будет смотреть конкретного пользователя и удалять его.
+
+

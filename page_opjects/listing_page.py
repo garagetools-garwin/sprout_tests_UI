@@ -37,6 +37,8 @@ class ListingPage:
     def click_add_to_cart_button(self):
         self.page.locator(self.ADD_TO_CART_BUTTON).click()
 
+    def open_vs(self, base_url):
+        self.page.goto("https://www.vseinstrumenti.ru/product/bolgarka-ushm-sturm-ag9012t-711829/")
 
 
 
