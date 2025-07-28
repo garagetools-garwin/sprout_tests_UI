@@ -236,7 +236,7 @@ def page_fixture(browser: Browser, request, base_url):
         page.context.close()
 
 # === Авторизация всех ролей один раз за сессию === #
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="session", autouse=True)
 def autorization_fixture(browser: Browser, base_url):
     env = get_env_from_url(base_url)
 
