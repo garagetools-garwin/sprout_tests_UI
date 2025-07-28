@@ -77,7 +77,7 @@ def test_user_invitation(base_url, page_fixture, delete_user_fixture):
 def test_critical_way(base_url, page_fixture, delete_user_fixture):
 
     # === Покупатель: создаёт заказ ===
-    buyer_page = git page_fixture(role="buyer_admin")
+    buyer_page = page_fixture(role="buyer_admin")
     listing_page = ListingPage(buyer_page)
     cart_page = CartPage(buyer_page)
     my_orders_page = MyOrdersPage(buyer_page)
