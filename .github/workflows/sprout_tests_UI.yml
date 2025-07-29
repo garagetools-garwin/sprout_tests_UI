@@ -54,6 +54,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Показать cwd и содержимое директории проекта
+        run: |
+          pwd
+          ls -l
+          ls -l auth_states || echo "auth_states пока нет"
+
       # Установка браузеров
       - name: Ensure browsers are installed
         run: python -m playwright install --with-deps
@@ -61,7 +67,14 @@ jobs:
       # Запуск тестов
       - name: Run tests
         run: |
-          pytest --reruns 2 --reruns-delay 3 --alluredir=allure-results
+          pytest --reruns 2 --reruns-delay 3 --alluredir=allure-results --tb=short -v
+
+      - name: Показать содержимое auth_states после тестов
+        run: |
+          echo "::group::Содержимое папки auth_states"
+          ls -l auth_states || echo "Папка auth_states не создана"
+          find . -type f -name '*.json'
+          echo "::endgroup::"
           
       # Проверка наличия json-файлов в allure-results (чтобы не запушить сломаный отчет)
       - name: Check if Allure results exist
