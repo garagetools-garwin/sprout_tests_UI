@@ -70,6 +70,7 @@ jobs:
           pytest --reruns 2 --reruns-delay 3 --alluredir=allure-results --tb=short -v
 
       - name: Показать содержимое auth_states после тестов
+        if: always()
         run: |
           echo "::group::Содержимое папки auth_states"
           ls -l auth_states || echo "Папка auth_states не создана"
