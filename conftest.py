@@ -244,8 +244,7 @@ def autorization_fixture(browser: Browser, base_url):
         "buyer_admin": "admin_buyer_authorize",
         "seller_admin": "admin_seller_authorize",
         "purchaser": "purchaser_authorize",
-        "contract_manager": "contract_manager_authorize",
-        "vi_test": "vi_test_authorize",
+        "contract_manager": "contract_manager_authorize"
     }
 
     for role, auth_method in role_to_auth_method.items():
