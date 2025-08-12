@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 import os
 import re
 import json
-import datetime
+from datetime import datetime
 from playwright.sync_api import Browser, Page
 
 from page_opjects.autorization_page import AutorizationPage
