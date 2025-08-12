@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import os
 import re
 import json
+import datetime
 from playwright.sync_api import Browser, Page
 
 from page_opjects.autorization_page import AutorizationPage
@@ -182,6 +183,9 @@ def page_factory(
     # Если указана роль создает контекст с нужным storage_state
     if role:
         storage_state_path = build_auth_state_path(role, env)
+        assert os.path.exists(storage_state_path), f"Storage state not found: {storage_state_path}"
+        size = os.path.getsize(storage_state_path)
+        assert size > 500, f"Storage state too small ({size} bytes) for role={role}, env={env}"
         context = browser.new_context(storage_state=storage_state_path)
     else:
         context = browser.new_context()
@@ -292,6 +296,19 @@ def autorization_fixture(browser: Browser, base_url):
         # Сохраняем storage_state
         context.storage_state(path=storage_path)
         size = os.path.getsize(storage_path)
+        with open(storage_path, encoding="utf-8") as f:
+            state = json.load(f)
+            origins = [o["origin"] for o in state.get("origins", [])]
+            print(f"[DEBUG] {role} origins: {origins}")
+            assert any("sprout-store.ru" in o for o in origins), f"No sprout-store.ru origin in storage_state for {role}"
+        has_creds = False
+        for origin in state.get("origins", []):
+            if "sprout-store.ru" in origin.get("origin", ""):
+                for ls in origin.get("localStorage", []):
+                    if ls["name"] == "creds" and ls["value"]:
+                        has_creds = True
+                        break
+        assert has_creds, f"No localStorage.creds found in storage_state for {role}"
         print(f"[DEBUG] {role} state size: {size} bytes")
 
         # Читаем и печатаем origin и срок жизни токена
