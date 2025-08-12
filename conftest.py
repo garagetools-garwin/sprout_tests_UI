@@ -240,6 +240,14 @@ def page_fixture(browser: Browser, request, base_url):
 def autorization_fixture(browser: Browser, base_url):
     env = get_env_from_url(base_url)
 
+    print(f"[DEBUG] BASE_URL: {base_url}")
+
+    # Очищаем папку auth_states перед созданием файлов
+    auth_dir = ensure_auth_states_dir_exists()
+    for f in os.listdir(auth_dir):
+        os.remove(os.path.join(auth_dir, f))
+    print(f"[DEBUG] Очищено: {auth_dir}")
+
     role_to_auth_method = {
         "buyer_admin": "admin_buyer_authorize",
         "seller_admin": "admin_seller_authorize",
