@@ -265,12 +265,12 @@ def autorization_fixture(browser: Browser, base_url):
         auth_page.open(base_url)
         getattr(auth_page, auth_method)()
 
-                # Ждём перехода на /settings
+                # Ждём перехода на /profile
         try:
-            page.wait_for_url("**/settings", timeout=15000)
+            page.wait_for_url("**/profile", timeout=15000)
             print(f"[DEBUG] {role} перешёл на страницу настроек")
         except:
-            print(f"[WARN] {role} не перешёл на /settings в течение 15 секунд")
+            print(f"[WARN] {role} не перешёл на /profile в течение 15 секунд")
 
         # Ждём появления localStorage.creds
         try:
