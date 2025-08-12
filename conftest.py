@@ -180,31 +180,53 @@ def page_factory(
     env = get_env_from_url(base_url)
     context = None
 
-    # Если указана роль создает контекст с нужным storage_state
+        # Если указана роль создает контекст с нужным storage_state
     if role:
         storage_state_path = build_auth_state_path(role, env)
+    
+        # Защита от тихого создания «пустого» контекста
         assert os.path.exists(storage_state_path), f"Storage state not found: {storage_state_path}"
         size = os.path.getsize(storage_state_path)
-        assert size > 500, f"Storage state too small ({size} bytes) for role={role}, env={env}"
+        assert size > 500, f"Storage state too small ({size} bytes): {storage_state_path}"
+    
         context = browser.new_context(storage_state=storage_state_path)
     else:
         context = browser.new_context()
-
-    # Открывает новую страницу, задает размер окна
+    
     page = context.new_page()
     page.set_viewport_size({"width": 1920, "height": 1080})
-
-    # Базовая авторизация (только для стейджа)
+    
+    # Для stage была базовая HTTP-авторизация — оставляем как было
     if env == "stage" and not use_manual_login and role:
-        from dotenv import load_dotenv
-        load_dotenv()
         user = os.getenv("AUTH_USERNAME")
         pwd = os.getenv("AUTH_PASSWORD")
         auth_url = base_url.replace("https://", f"https://{user}:{pwd}@")
         page.goto(auth_url)
-        context.storage_state(path=storage_state_path)
-
+        context.storage_state(path=storage_state_path)  # сохранить актуальное
+        return page
+    
+    # Новое: явная ре-гидратация sessionStorage из localStorage для ролей (prod)
+    if role:
+        # 1) Открыть базовый домен, чтобы применился origin и localStorage был доступен
+        page.goto(base_url, wait_until="domcontentloaded")
+    
+        # 2) Продублировать creds из localStorage в sessionStorage (если фронт этого требует)
+        page.evaluate("""
+            () => {
+              try {
+                const creds = window.localStorage.getItem('creds');
+                if (creds) {
+                  window.sessionStorage.setItem('creds', creds);
+                }
+              } catch (e) { /* ignore */ }
+            }
+        """)
+    
+        # 3) Перейти на защищённую страницу и дать фронту инициализироваться
+        page.goto(f"{base_url}/profile", wait_until="domcontentloaded")
+    
     return page
+
 
 
 # === ЕДИНАЯ ФИКСТУРА С ТРАССИРОВКОЙ === #
