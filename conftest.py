@@ -167,103 +167,37 @@ def build_auth_state_path(role: str, env: str) -> str:
 
 # === ФАБРИКА СТРАНИЦ === #
 # Создает кастомный page
-import os
-import json
-from urllib.parse import urlparse
-
 def page_factory(
     browser: Browser,
     base_url: str,
     role: str = None,
     use_manual_login: bool = False
 ) -> Page:
+
+    # Определяет окружение
     env = get_env_from_url(base_url)
     context = None
 
-    def read_state_file(path: str):
-        if not os.path.exists(path):
-            return None
-        try:
-            with open(path, encoding="utf-8") as f:
-                return json.load(f)
-        except Exception as e:
-            print(f"[DEBUG] Error reading state file {path}: {e}")
-            return None
-
-    def state_origin_matches(path: str, url: str) -> bool:
-        data = read_state_file(path)
-        if not data:
-            return False
-        parsed_url = urlparse(url)
-        expected_origin = f"{parsed_url.scheme}://{parsed_url.netloc}"
-        origins = [o["origin"] for o in data.get("origins", [])]
-        if expected_origin not in origins:
-            print(f"[WARN] State origin mismatch for {path}: expected {expected_origin}, got {origins}")
-            return False
-        return True
-
-    def state_has_creds(path: str) -> bool:
-        data = read_state_file(path)
-        if not data:
-            return False
-        for origin in data.get("origins", []):
-            for ls in origin.get("localStorage", []):
-                if ls["name"] == "creds":
-                    return True
-        return False
-
+    # Если указана роль создает контекст с нужным storage_state
     if role:
         storage_state_path = build_auth_state_path(role, env)
-
-        # 1. Проверяем origin совпадение
-        if not state_origin_matches(storage_state_path, base_url):
-            print(f"[WARN] Origin mismatch — re-login for role {role}")
-            creds_found = False
-        else:
-            creds_found = state_has_creds(storage_state_path)
-
-        # 2. Загружаем state
         context = browser.new_context(storage_state=storage_state_path)
-        page = context.new_page()
-        page.set_viewport_size({"width": 1920, "height": 1080})
-        page.goto(base_url)
-
-        # 3. Проверка creds в localStorage
-        creds_value = page.evaluate("() => window.localStorage.getItem('creds')")
-        print(f"[DEBUG] {role} creds from localStorage after load: {creds_value}")
-
-        if not creds_found or not creds_value:
-            print(f"[WARN] {role} creds not found — re-login...")
-            context.close()
-
-            # Логиним заново
-            context = browser.new_context()
-            page = context.new_page()
-            auth_page = AutorizationPage(page)
-            page.goto(f"{base_url}/login")
-            getattr(auth_page, f"{role}_authorize")()
-
-            # Ждём появления creds
-            page.wait_for_function(
-                "() => window.localStorage.getItem('creds') !== null",
-                timeout=5000
-            )
-
-            # Сохраняем новый state
-            context.storage_state(path=storage_state_path)
-            print(f"[DEBUG] {role} re-login done, state updated: {storage_state_path}")
-
-            # Открываем заново с новым state
-            context.close()
-            context = browser.new_context(storage_state=storage_state_path)
-            page = context.new_page()
-            page.set_viewport_size({"width": 1920, "height": 1080})
-            page.goto(base_url)
-
     else:
         context = browser.new_context()
-        page = context.new_page()
-        page.set_viewport_size({"width": 1920, "height": 1080})
+
+    # Открывает новую страницу, задает размер окна
+    page = context.new_page()
+    page.set_viewport_size({"width": 1920, "height": 1080})
+
+    # Базовая авторизация (только для стейджа)
+    if env == "stage" and not use_manual_login and role:
+        from dotenv import load_dotenv
+        load_dotenv()
+        user = os.getenv("AUTH_USERNAME")
+        pwd = os.getenv("AUTH_PASSWORD")
+        auth_url = base_url.replace("https://", f"https://{user}:{pwd}@")
+        page.goto(auth_url)
+        context.storage_state(path=storage_state_path)
 
     return page
 
