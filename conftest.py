@@ -248,14 +248,42 @@ def autorization_fixture(browser: Browser, base_url):
     }
 
     for role, auth_method in role_to_auth_method.items():
+        storage_path = build_auth_state_path(role, env)
         context = browser.new_context()
         page = context.new_page()
         auth_page = AutorizationPage(page)
 
+        print(f"[DEBUG] Авторизация роли: {role}")
         auth_page.open(base_url)
         getattr(auth_page, auth_method)()
 
-        context.storage_state(path=build_auth_state_path(role, env))
+        # Сохраняем скриншот и URL после логина
+        screenshot_path = os.path.join(auth_dir, f"{role}_after_login.png")
+        page.screenshot(path=screenshot_path, full_page=True)
+        allure.attach.file(screenshot_path, name=f"{role} after login", attachment_type=allure.attachment_type.PNG)
+        print(f"[DEBUG] {role} URL после логина: {page.url}")
+
+        # Сохраняем storage_state
+        context.storage_state(path=storage_path)
+        size = os.path.getsize(storage_path)
+        print(f"[DEBUG] {role} state size: {size} bytes")
+
+        # Читаем и печатаем origin и срок жизни токена
+        try:
+            with open(storage_path, encoding="utf-8") as f:
+                state = json.load(f)
+            origins = [o["origin"] for o in state.get("origins", [])]
+            print(f"[DEBUG] {role} origins: {origins}")
+
+            for origin in state.get("origins", []):
+                for ls in origin.get("localStorage", []):
+                    if ls["name"] == "creds":
+                        creds = json.loads(ls["value"])
+                        exp = creds["access"]["expiredAt"]
+                        print(f"[DEBUG] {role} access token expires at: {datetime.datetime.fromtimestamp(exp)}")
+        except Exception as e:
+            print(f"[DEBUG] Ошибка чтения state для {role}: {e}")
+
         context.close()
 
 @pytest.fixture
