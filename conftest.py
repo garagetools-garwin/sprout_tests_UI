@@ -265,6 +265,23 @@ def autorization_fixture(browser: Browser, base_url):
         auth_page.open(base_url)
         getattr(auth_page, auth_method)()
 
+                # Ждём перехода на /settings
+        try:
+            page.wait_for_url("**/settings", timeout=15000)
+            print(f"[DEBUG] {role} перешёл на страницу настроек")
+        except:
+            print(f"[WARN] {role} не перешёл на /settings в течение 15 секунд")
+
+        # Ждём появления localStorage.creds
+        try:
+            page.wait_for_function(
+                "() => window.localStorage.getItem('creds') !== null",
+                timeout=5000
+            )
+            print(f"[DEBUG] {role} localStorage.creds найден")
+        except:
+            print(f"[WARN] {role} localStorage.creds не найден")
+
         # Сохраняем скриншот и URL после логина
         screenshot_path = os.path.join(auth_dir, f"{role}_after_login.png")
         page.screenshot(path=screenshot_path, full_page=True)
