@@ -1,9 +1,6 @@
-import os
 import time
-from os.path import split
 
 import allure
-import pytest
 from playwright.sync_api import expect
 
 from page_opjects.cart_page import CartPage
@@ -12,7 +9,8 @@ from page_opjects.home_page import HomePage
 from page_opjects.listing_page import ListingPage
 from page_opjects.my_orders_page import MyOrdersPage
 from page_opjects.purchase_orders import PurchaseOrdersPage
-from page_opjects.settings_account_page import SettingsAccountPage
+from page_opjects.settings_page.account_settings_general_page import AccountSettingsGeneralPage
+from page_opjects.settings_page.users_settings_page import UsersSettingsPage
 
 
 @allure.title("Приглашение пользователя и проверка активации")
@@ -22,18 +20,24 @@ def test_user_invitation(base_url, page_fixture, delete_user_fixture):
     mark_user_created, mark_user_deleted = delete_user_fixture
 
     # === Админ: создаёт пользователя ===
-    admin_page = page_fixture(role="buyer_admin")
+    # admin_page = page_fixture(role="buyer_admin")
+    admin_page = page_fixture()
     autorization_page = AutorizationPage(admin_page)
     home_page = HomePage(admin_page)
-    settings_account_page = SettingsAccountPage(admin_page)
+    settings_account_page = UsersSettingsPage(admin_page)
+    settings_general = AccountSettingsGeneralPage(admin_page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_buyer_authorize()
 
     home_page.open(base_url)
     home_page.click_settings_button()
-    settings_account_page.click_users_button()
+    settings_general.click_users_button()
     settings_account_page.add_user()
 
     mark_user_created()  # Сообщаем фикстуре, что пользователь создан
 
+    time.sleep(3)
     admin_page.reload()
 
     with allure.step("Проверяем, что пользователь уже есть, но не активирован"):
@@ -77,10 +81,17 @@ def test_user_invitation(base_url, page_fixture, delete_user_fixture):
 def test_critical_way(base_url, page_fixture, delete_user_fixture):
 
     # === Покупатель: создаёт заказ ===
-    buyer_page = page_fixture(role="buyer_admin")
+    # buyer_page = page_fixture(role="buyer_admin")
+
+    buyer_page = page_fixture()
     listing_page = ListingPage(buyer_page)
     cart_page = CartPage(buyer_page)
     my_orders_page = MyOrdersPage(buyer_page)
+
+    autorization_page = AutorizationPage(buyer_page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_buyer_authorize()
 
     listing_page.open(base_url)
     listing_page.add_to_cart()
@@ -90,8 +101,14 @@ def test_critical_way(base_url, page_fixture, delete_user_fixture):
     order_number = my_orders_page.get_order_number()
 
     # === Закупщик: согласует заказ ===
-    purchaser_page = page_fixture(role="purchaser")
+    # purchaser_page = page_fixture(role="purchaser")
+
+    purchaser_page = page_fixture()
     purchase_orders_page = PurchaseOrdersPage(purchaser_page)
+    autorization_page = AutorizationPage(purchaser_page)
+
+    autorization_page.open(base_url)
+    autorization_page.purchaser_authorize()
 
     purchase_orders_page.open(base_url)
     # purchase_orders_page.move_to_first_order_in_list()
@@ -119,8 +136,14 @@ def test_critical_way(base_url, page_fixture, delete_user_fixture):
             assert response_body, "Пустой ответ от сервера"
 
     # === Менеджер контракта(продавец): принмает заказ ===
-    contract_manager_page = page_fixture(role="contract_manager")
+    # contract_manager_page = page_fixture(role="contract_manager")
+
+    contract_manager_page = page_fixture()
     contract_manager_orders_page = PurchaseOrdersPage(contract_manager_page)
+    autorization_page = AutorizationPage(contract_manager_page)
+
+    autorization_page.open(base_url)
+    autorization_page.contract_manager_authorize()
 
     time.sleep(2)
     contract_manager_orders_page.open_ready_orders(base_url)

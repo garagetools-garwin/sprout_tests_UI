@@ -13,13 +13,12 @@ TESTMAIL_ADRESS_ = os.getenv("TESTMAIL_ADRESS_")
 
 
 
-class SettingsAccountPage:
+class UsersSettingsPage:
     def __init__(self, page: Page):
         self.page = page
 
     PATH = "/settings/account/user-list"
 
-    USERS_BUTTON = ".ant-menu-title-content:has-text('Пользователи')"
     # Страница Пользователи
     ADD_USER_BUTTON = ".account-user-list-settings__filters .button-circle.primary"
     EMAIL_INPUT = "#email"
@@ -43,10 +42,6 @@ class SettingsAccountPage:
     @allure.step("Закрываю модальное окно")
     def close_modal(self):
         self.page.mouse.click(50, 100)
-
-    @allure.step("Кликаю на иконку Пользователи")
-    def click_users_button(self):
-        self.page.locator(self.USERS_BUTTON).click()
 
     @allure.step("Кликаю на иконку Добавить пользователя")
     def click_add_user_button(self):

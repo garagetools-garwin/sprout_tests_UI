@@ -8,7 +8,7 @@ from playwright.sync_api import Browser, Page
 
 from page_opjects.autorization_page import AutorizationPage
 from page_opjects.home_page import HomePage
-from page_opjects.settings_account_page import SettingsAccountPage
+from page_opjects.settings_page.users_settings_page import UsersSettingsPage
 
 load_dotenv()  # Загружаем переменные из .env
 
@@ -236,7 +236,7 @@ def page_fixture(browser: Browser, request, base_url):
         page.context.close()
 
 # === Авторизация всех ролей один раз за сессию === #
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session")
 def autorization_fixture(browser: Browser, base_url):
     env = get_env_from_url(base_url)
 
@@ -288,7 +288,7 @@ def delete_user_fixture(base_url, page_fixture):
                 # Создаём новый контекст страницы
                 admin_page = page_fixture()
                 authorization_page = AutorizationPage(admin_page)
-                settings_account_page = SettingsAccountPage(admin_page)
+                settings_account_page = UsersSettingsPage(admin_page)
                 home_page = HomePage(admin_page)
 
                 settings_account_page.open(base_url)

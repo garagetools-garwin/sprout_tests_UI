@@ -10,6 +10,8 @@ class CartPage:
     PATH = "/basket"
 
     SEND_BUTTON = "button.button-lg.primary"
+    MINI_CART_BADGE = "text=добавлен в корзину"
+    LIMIT_EXCEEDED_BANNER = "text=Стоимость позиции превышает допустимый лимит на цену товара."
 
     def open(self, base_url):
         with allure.step(f"Открываю {base_url + self.PATH}"):
