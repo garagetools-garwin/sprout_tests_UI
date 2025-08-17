@@ -4,6 +4,8 @@ import pytest
 from dotenv import load_dotenv
 import os
 import re
+import json
+from datetime import datetime
 from playwright.sync_api import Browser, Page
 
 from page_opjects.autorization_page import AutorizationPage
@@ -178,28 +180,53 @@ def page_factory(
     env = get_env_from_url(base_url)
     context = None
 
-    # Если указана роль создает контекст с нужным storage_state
+        # Если указана роль создает контекст с нужным storage_state
     if role:
         storage_state_path = build_auth_state_path(role, env)
+    
+        # Защита от тихого создания «пустого» контекста
+        assert os.path.exists(storage_state_path), f"Storage state not found: {storage_state_path}"
+        size = os.path.getsize(storage_state_path)
+        assert size > 500, f"Storage state too small ({size} bytes): {storage_state_path}"
+    
         context = browser.new_context(storage_state=storage_state_path)
     else:
         context = browser.new_context()
-
-    # Открывает новую страницу, задает размер окна
+    
     page = context.new_page()
     page.set_viewport_size({"width": 1920, "height": 1080})
-
-    # Базовая авторизация (только для стейджа)
+    
+    # Для stage была базовая HTTP-авторизация — оставляем как было
     if env == "stage" and not use_manual_login and role:
-        from dotenv import load_dotenv
-        load_dotenv()
         user = os.getenv("AUTH_USERNAME")
         pwd = os.getenv("AUTH_PASSWORD")
         auth_url = base_url.replace("https://", f"https://{user}:{pwd}@")
         page.goto(auth_url)
-        context.storage_state(path=storage_state_path)
-
+        context.storage_state(path=storage_state_path)  # сохранить актуальное
+        return page
+    
+    # Новое: явная ре-гидратация sessionStorage из localStorage для ролей (prod)
+    if role:
+        # 1) Открыть базовый домен, чтобы применился origin и localStorage был доступен
+        page.goto(base_url, wait_until="domcontentloaded")
+    
+        # 2) Продублировать creds из localStorage в sessionStorage (если фронт этого требует)
+        page.evaluate("""
+            () => {
+              try {
+                const creds = window.localStorage.getItem('creds');
+                if (creds) {
+                  window.sessionStorage.setItem('creds', creds);
+                }
+              } catch (e) { /* ignore */ }
+            }
+        """)
+    
+        # 3) Перейти на защищённую страницу и дать фронту инициализироваться
+        page.goto(f"{base_url}/profile", wait_until="domcontentloaded")
+    
     return page
+
 
 
 # === ЕДИНАЯ ФИКСТУРА С ТРАССИРОВКОЙ === #
@@ -240,6 +267,14 @@ def page_fixture(browser: Browser, request, base_url):
 def autorization_fixture(browser: Browser, base_url):
     env = get_env_from_url(base_url)
 
+    print(f"[DEBUG] BASE_URL: {base_url}")
+
+    # Очищаем папку auth_states перед созданием файлов
+    auth_dir = ensure_auth_states_dir_exists()
+    for f in os.listdir(auth_dir):
+        os.remove(os.path.join(auth_dir, f))
+    print(f"[DEBUG] Очищено: {auth_dir}")
+
     role_to_auth_method = {
         "buyer_admin": "admin_buyer_authorize",
         "seller_admin": "admin_seller_authorize",
@@ -248,14 +283,72 @@ def autorization_fixture(browser: Browser, base_url):
     }
 
     for role, auth_method in role_to_auth_method.items():
+        storage_path = build_auth_state_path(role, env)
         context = browser.new_context()
         page = context.new_page()
         auth_page = AutorizationPage(page)
 
+        print(f"[DEBUG] Авторизация роли: {role}")
         auth_page.open(base_url)
         getattr(auth_page, auth_method)()
 
-        context.storage_state(path=build_auth_state_path(role, env))
+                # Ждём перехода на /profile
+        try:
+            page.wait_for_url("**/profile", timeout=15000)
+            print(f"[DEBUG] {role} перешёл на страницу настроек")
+        except:
+            print(f"[WARN] {role} не перешёл на /profile в течение 15 секунд")
+
+        # Ждём появления localStorage.creds
+        try:
+            page.wait_for_function(
+                "() => window.localStorage.getItem('creds') !== null",
+                timeout=5000
+            )
+            print(f"[DEBUG] {role} localStorage.creds найден")
+        except:
+            print(f"[WARN] {role} localStorage.creds не найден")
+
+        # Сохраняем скриншот и URL после логина
+        screenshot_path = os.path.join(auth_dir, f"{role}_after_login.png")
+        page.screenshot(path=screenshot_path, full_page=True)
+        allure.attach.file(screenshot_path, name=f"{role} after login", attachment_type=allure.attachment_type.PNG)
+        print(f"[DEBUG] {role} URL после логина: {page.url}")
+
+        # Сохраняем storage_state
+        context.storage_state(path=storage_path)
+        size = os.path.getsize(storage_path)
+        with open(storage_path, encoding="utf-8") as f:
+            state = json.load(f)
+            origins = [o["origin"] for o in state.get("origins", [])]
+            print(f"[DEBUG] {role} origins: {origins}")
+            assert any("sprout-store.ru" in o for o in origins), f"No sprout-store.ru origin in storage_state for {role}"
+        has_creds = False
+        for origin in state.get("origins", []):
+            if "sprout-store.ru" in origin.get("origin", ""):
+                for ls in origin.get("localStorage", []):
+                    if ls["name"] == "creds" and ls["value"]:
+                        has_creds = True
+                        break
+        assert has_creds, f"No localStorage.creds found in storage_state for {role}"
+        print(f"[DEBUG] {role} state size: {size} bytes")
+
+        # Читаем и печатаем origin и срок жизни токена
+        try:
+            with open(storage_path, encoding="utf-8") as f:
+                state = json.load(f)
+            origins = [o["origin"] for o in state.get("origins", [])]
+            print(f"[DEBUG] {role} origins: {origins}")
+
+            for origin in state.get("origins", []):
+                for ls in origin.get("localStorage", []):
+                    if ls["name"] == "creds":
+                        creds = json.loads(ls["value"])
+                        exp = creds["access"]["expiredAt"]
+                        print(f"[DEBUG] {role} access token expires at: {datetime.datetime.fromtimestamp(exp)}")
+        except Exception as e:
+            print(f"[DEBUG] Ошибка чтения state для {role}: {e}")
+
         context.close()
 
 @pytest.fixture

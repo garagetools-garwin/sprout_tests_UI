@@ -31,6 +31,7 @@ def test_user_invitation(base_url, page_fixture, delete_user_fixture):
     autorization_page.admin_buyer_authorize()
 
     home_page.open(base_url)
+    expect(admin_page).not_to_have_url(f"{base_url}/login")
     home_page.click_settings_button()
     settings_general.click_users_button()
     settings_account_page.add_user()
@@ -94,6 +95,7 @@ def test_critical_way(base_url, page_fixture, delete_user_fixture):
     autorization_page.admin_buyer_authorize()
 
     listing_page.open(base_url)
+    expect(buyer_page).not_to_have_url(f"{base_url}/login")
     listing_page.add_to_cart()
     cart_page.open(base_url)
     cart_page.click_send_button()
