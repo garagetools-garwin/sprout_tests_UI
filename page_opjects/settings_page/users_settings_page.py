@@ -1,17 +1,17 @@
 import os
 from multiprocessing.pool import CLOSE
-
+import random
+from faker import Faker
 import allure
 from playwright.sync_api import Page
 from dotenv import load_dotenv
 
+fake = Faker('ru_RU')
 load_dotenv()
 
 TEST_BUYER_EMAIL = os.getenv("TEST_BUYER_EMAIL")
 TEST_BUYER_PASSWORD = os.getenv("TEST_BUYER_PASSWORD")
 TESTMAIL_ADRESS_ = os.getenv("TESTMAIL_ADRESS_")
-
-
 
 class UsersSettingsPage:
     def __init__(self, page: Page):
@@ -31,6 +31,9 @@ class UsersSettingsPage:
     CONFIRM_DELETION_BUTTON = ".ant-btn.danger"
     SEARCH_INPUT = "input.ant-input.css-amq5gd"
     CLOSE_BUTTON = "button.ant-drawer-close"
+    USER_CARD = ".ant-table-row.ant-table-row-level-0"
+    MODAL = 'div.ant-drawer-content-wrapper'
+    ADMIN_BADGE = ".user-role-chip__name:has-text('Администратор аккаунта')"
 
     def open(self, base_url):
         with allure.step(f"Открываю {base_url + self.PATH}"):
@@ -81,6 +84,181 @@ class UsersSettingsPage:
         self.page.keyboard.press("Enter")
         self.page.wait_for_timeout(1000)
         return self.page.locator(self.USER_TABLE_ROW).count() > 0
+
+    def get_users_cards(self):
+        return self.page.locator(self.USER_CARD)
+
+    @allure.step("Открываю карточку пользователя по email {email}")
+    def open_user_card_by_email(self, email):
+        row = self.page.locator(f"{self.USER_CARD}:has-text('{email}')")
+        row.click()
+
+    @allure.step("Проверяю наличие плашки 'Администратор аккаунта' у пользователя в списке")
+    def is_admin_badge_present(self, email):
+        row = self.page.locator(f"{self.USER_CARD}:has-text('{email}')")
+        return row.locator(self.ADMIN_BADGE).is_visible()
+
+
+class UserModal:
+    def __init__(self, page: Page):
+        self.page = page
+
+    EMAIL_INPUT = 'input#email'
+    LASTNAME_INPUT = 'input#lastName'
+    FIRSTNAME_INPUT = 'input#firstName'
+    PATRONYMIC_INPUT = 'input#patronymic'
+    POSITION_INPUT = "input#position"
+    PHONE_INPUT = "input#phone"
+    EMAIL_TIP = "#email_help"
+    LASTNAME_TIP = '#lastName_help'
+    FIRSTNAME_TIP = '#firstName_help'
+    PATRONYMIC_TIP = 'input#patronymic'
+    SEND_INVITE_BUTTON = "button:has-text('Отправить приглашение')"
+    SAVE_BUTTON = "button:has-text('Сохранить')"
+    MAIN_ROLE_BUTTON = ".text-tag-accent.color-dark-grey"
+    USER_CARD_ROLES_BLOCK = ".user-card__roles.mb-14"
+
+    ALL_CHECKBOX = "input[type='checkbox']"
+    MANAGER_LINK = "a[href='/request-list/manager']"
+    WORKSPACE_LIST_LINK = "a[href='/workspace-list']"
+    HEAD_ROLE_LABEL = "label:has-text('Руководитель подразделения')"
+    HEAD_ROLE_INPUT = ".ant-select-selection-search-input"
+    DELETE_BUTTON = "button.deleting"
+
+
+    @allure.step("Удаляю последнего созданного пользователя")
+    def delete_last_created_user(self):
+        self.click_first_user_table_row()
+        self.click_user_delete_button()
+        self.confirm_user_deletion()
+
+    @allure.step("Заполняю обязательные поля заданными значениями")
+    def fill_main_fields(self, email, last_name, first_name):
+        self.page.locator(self.EMAIL_INPUT).fill(email)
+        self.page.locator(self.LASTNAME_INPUT).fill(last_name)
+        self.page.locator(self.FIRSTNAME_INPUT).fill(first_name)
+
+    @allure.step("Заполняю все поля случайными значениями")
+    def fill_in_data_randomize(self):
+        # Генерируем данные
+        last_name = fake.last_name()
+        first_name = fake.first_name()
+        patronymic = fake.middle_name()
+        position = fake.job()
+        phone = f"+7 ({random.randint(900, 999)}) {random.randint(100, 999)}-{random.randint(10, 99)}-{random.randint(10, 99)}"
+
+        self.page.locator(self.LASTNAME_INPUT).fill(last_name)
+        self.page.locator(self.FIRSTNAME_INPUT).fill(first_name)
+        self.page.locator(self.PATRONYMIC_INPUT).fill(patronymic)
+        self.page.locator(self.POSITION_INPUT).fill(position)
+        self.page.locator(self.PHONE_INPUT).fill(phone)
+
+        return last_name, first_name, patronymic, position, phone
+
+    @allure.step("Нажимаю Отправить приглашение")
+    def click_send_invite(self):
+        self.page.locator(self.SEND_INVITE_BUTTON).click()
+
+    @allure.step("Нажимаю Сохранить")
+    def click_save_button(self):
+        self.page.locator(self.SAVE_BUTTON).click()
+
+    @allure.step("Нажимаю Назначить роль")
+    def click_main_role_button(self):
+        self.page.locator(self.MAIN_ROLE_BUTTON).click()
+
+    @allure.step("Дважды кликаю по чекбоксу Все, чтобы сбросить роли")
+    def deselect_all_roles(self):
+        all_checkbox = self.page.locator(self.ALL_CHECKBOX).first
+        if not all_checkbox.is_checked():
+            all_checkbox.click()
+            all_checkbox.click()
+        else:
+            all_checkbox.click()
+
+    @allure.step("Выбираю все роли (клик по чекбоксу Все)")
+    def select_all_roles(self):
+        all_checkbox = self.page.locator(self.ALL_CHECKBOX).first
+        all_checkbox.click()
+
+    @allure.step("Перехожу в подразделение и раскрываю поиск по 'Руководитель подразделения'")
+    def open_head_role_selector(self):
+        inp = self.page.locator(self.HEAD_ROLE_LABEL)
+        inp = inp.locator("xpath=../../..").locator(self.HEAD_ROLE_INPUT)
+        inp.click()
+
+    @allure.step("Перехожу по ссылке {url}")
+    def go_to_url(self, url):
+        self.page.goto(url)
+
+    @allure.step("Открываю последнюю карточку пользователя")
+    def open_last_user_card(self, cards):
+        cards.last.click()
+
+    @allure.step("Получаю блок ролей")
+    def get_roles_block(self):
+        return self.page.locator(self.USER_CARD_ROLES_BLOCK)
+
+    @allure.step("Проверяю наличие ссылки на менеджера")
+    def is_manager_link_visible(self):
+        return self.page.locator(self.MANAGER_LINK).is_visible()
+
+    @allure.step("Проверяю наличие ссылки карты оснащения")
+    def is_workspace_list_link_visible(self):
+        return self.page.locator(self.WORKSPACE_LIST_LINK).is_visible()
+
+
+
+
+
+
+    @allure.step("Открываю страницу списка пользователей")
+    def open(self, base_url):
+        self.page.goto(f"{base_url}/settings/account/user-list")
+
+
+
+
+
+    ROLES_BTN = "div:has-text('Назначить роль')"
+    ADMIN_ROLE_CHECKBOX = "label:has-text('Администратор аккаунта') input[type='checkbox']"
+    CLOSE_BTN = "button[aria-label='close'], .ant-modal-close"
+
+    @allure.step("Открываю окно ролей")
+    def open_roles(self):
+        self.page.locator(self.ROLES_BTN).click()
+
+    @allure.step("Включаю роль администратора")
+    def set_admin_role(self):
+        cb = self.page.locator(self.ADMIN_ROLE_CHECKBOX)
+        if not cb.is_checked():
+            cb.click()
+
+    @allure.step("Отключаю роль администратора")
+    def unset_admin_role(self):
+        cb = self.page.locator(self.ADMIN_ROLE_CHECKBOX)
+        if cb.is_checked():
+            cb.click()
+
+    @allure.step("Закрываю карточку пользователя")
+    def close(self):
+        self.page.locator(self.CLOSE_BTN).click()
+
+    @allure.step("Проверяю, что роль администратора установлена внутри карточки")
+    def is_admin_role_displayed_in_card(self):
+        return self.page.locator("text=Администратор аккаунта").is_visible()
+
+    @allure.step("Проверяю, что у root нельзя отключить роль администратора")
+    def admin_role_is_not_toggleable(self):
+        cb = self.page.locator(self.ADMIN_ROLE_CHECKBOX)
+        # Проверяем, что чекбокс disabled
+        assert cb.is_disabled(), "Чекбокс роли администратора должен быть неактивен для root"
+
+    @allure.step("Проверяю, что root-пользователя нельзя удалить")
+    def root_delete_button_is_disabled(self):
+        delete_btn = self.page.locator(self.DELETE_BUTTON)
+        assert delete_btn.is_disabled(), "Кнопка удаления должна быть неактивна для root"
+
 
         #TODO удалять по наименованию имейла
 

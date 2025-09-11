@@ -1,4 +1,5 @@
 import re
+import time
 from asyncio import wait_for
 
 import allure
@@ -8,10 +9,12 @@ from page_opjects.autorization_page import AutorizationPage
 from page_opjects.home_page import HomePage
 from page_opjects.listing_page import ListingPage
 from page_opjects.cart_page import CartPage
-from page_opjects.settings_page.users_settings_page import UsersSettingsPage
+from page_opjects.personal_account_page import PersonalAccountPage
+from page_opjects.settings_page.legal_entities_settings_page import LegalEntitiesPage, LegalEntityModal
+from page_opjects.settings_page.users_settings_page import UsersSettingsPage, UserModal
 
 # Новые объекты
-from page_opjects.settings_page.account_settings_general_page import AccountSettingsGeneralPage
+from page_opjects.settings_page.general_settings_page import GeneralSettingsPage
 from page_opjects.settings_page.contracts_settings_page import ContractsSettingsPage
 from page_opjects.settings_page.company_name_modal import CompanyNameModal
 
@@ -126,7 +129,7 @@ def test_edit_company_name(base_url, page_fixture):
     # page = page_fixture(role="buyer_admin")
 
     page = page_fixture()
-    settings_general = AccountSettingsGeneralPage(page)
+    settings_general = GeneralSettingsPage(page)
     modal = CompanyNameModal(page)
     autorization_page = AutorizationPage(page)
 
@@ -154,7 +157,7 @@ def test_go_to_settings_pages(base_url, page_fixture):
     # page = page_fixture(role="buyer_admin")
 
     page = page_fixture()
-    settings_general = AccountSettingsGeneralPage(page)
+    settings_general = GeneralSettingsPage(page)
     home_page = HomePage(page)
     autorization_page = AutorizationPage(page)
 
@@ -183,4 +186,546 @@ def test_go_to_settings_pages(base_url, page_fixture):
         expect(page).to_have_url(re.compile(r".*/contracts.*"))
         expect(page.request.get(page.url)).to_be_ok()
 
+"""Страница Юридические лица"""
 
+
+@allure.title("Открытие карточки юр. лица")
+def test_open_legal_entity_card(base_url, page_fixture):
+    page = page_fixture()
+    entities_page = LegalEntitiesPage(page)
+    autorization_page = AutorizationPage(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_buyer_authorize()
+
+    entities_page.open(base_url)
+    with allure.step("Проверяю, что листинг не пустой"):
+        entities_page.page.wait_for_load_state('networkidle')
+        cards = entities_page.get_entity_cards()
+        assert cards.count() > 0
+    with allure.step("Открываю первую карточку юр. лица"):
+        cards.first.click()
+    with allure.step("Проверяю, что окно отображается корректно"):
+        assert page.locator(LegalEntityModal.MODAL).is_visible()
+
+@allure.title("Открытие окна редактирования юр. лица (открытие из карточки юр лица)")
+def test_open_edit_legal_entity_modal(base_url, page_fixture):
+    page = page_fixture()
+    entities_page = LegalEntitiesPage(page)
+    autorization_page = AutorizationPage(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_buyer_authorize()
+
+    entities_page.open(base_url)
+    with allure.step("Открываю первую карточку юр. лица"):
+        cards = entities_page.get_entity_cards()
+        cards.first.click()
+    entities_page.click_edit()
+    with allure.step("Проверяю, что окно отображается корректно"):
+        assert page.locator(LegalEntityModal.MODAL).is_visible()
+
+@allure.title('Открытие окна нового юр. лица')
+def test_open_new_legal_entity_modal(base_url, page_fixture):
+    page = page_fixture()
+    entities_page = LegalEntitiesPage(page)
+    autorization_page = AutorizationPage(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_buyer_authorize()
+    entities_page.open(base_url)
+    entities_page.click_add_new()
+    with allure.step("Проверяю, что окно отображается корректно"):
+        assert page.locator(LegalEntityModal.MODAL).is_visible()
+
+@allure.title("Создание нового и удаление юридического лица")
+def test_create_legal_entity(base_url, page_fixture, delete_legal_entity_fixture):
+
+    # Получаем методы из фикстуры
+    mark_legal_entity_created, mark_legal_entity_deleted = delete_legal_entity_fixture
+
+    page = page_fixture()
+    entities_page = LegalEntitiesPage(page)
+    modal = LegalEntityModal(page)
+    autorization_page = AutorizationPage(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_buyer_authorize()
+
+    entities_page.open(base_url)
+
+    with allure.step("Проверяю, что записи с вводимым названием еще нет"):
+        entities_page.page.wait_for_load_state('networkidle')
+        cards = entities_page.get_entity_cards()
+
+        with allure.step("Проверяем наличие записи с 'Автотест'"):
+            existing_entities = [cards.nth(i).text_content() for i in range(cards.count())
+                                 if "Автотест" in cards.nth(i).text_content()]
+
+            if existing_entities:
+                # Запись уже существует
+                mark_legal_entity_created()
+                assert False, f"Найдены существующие записи с 'Автотест': {existing_entities}"
+
+    entities_page.click_add_new()
+
+    with allure.step("Ввожу данные для записи"):
+        modal.fill("Автотест", "9999999999", "123456789")
+        modal.add()
+
+        mark_legal_entity_created() # Сообщаем фикстуре, что юр лицо создано
+
+    with allure.step("Проверяю, что ошибки не отображаются"):
+        assert not page.locator('text=ИНН должен быть равен 10 символам').is_visible()
+        assert not page.locator('text=КПП должен быть равен 9 символам').is_visible()
+    with allure.step("Проверяю, появилась ли запись в списке"):
+        cards = entities_page.get_entity_cards()
+        assert any("Автотест" in cards.nth(i).text_content() for i in range(cards.count()))
+
+    with allure.step("Удаляю созданную карточку юр лица"):
+        with allure.step("Считаю количество карточек"):
+            initial_count = entities_page.get_entity_cards().count()
+            print(f"Изначальное число карточек: {initial_count}")
+
+        # Найти все строки таблицы (rows)
+        rows = entities_page.page.locator('.ant-table-row.ant-table-row-level-0')
+        autotest_row = None
+        for i in range(rows.count()):
+            row_text = rows.nth(i).text_content() or ""
+            if "Автотест" in row_text:
+                autotest_row = rows.nth(i)
+                break
+        assert autotest_row is not None, "Карточка с 'Автотест' не найдена!"
+
+        with allure.step("Открываю меню действий у найденной строки"):
+            # Берите кнопку только внутри строки!
+            action_menu_button = autotest_row.locator('button.button-icon')  # уточните селектор на свой!
+            action_menu_button.hover()
+
+        with allure.step("Удаляю найденную карточку"):
+            delete_button = entities_page.page.locator("text=Удалить")  # уточните путь, если в меню кнопка не видна глобально
+            delete_button.click()
+
+        with allure.step("В появившейся модалке подтверждаю удаление"):
+            modal.click_delete()
+
+        with allure.step("Проверяю, что число карточек уменьшилось"):
+            new_count = entities_page.get_entity_cards().count()
+            print(f"Новое число карточек: {new_count}")
+            assert new_count == initial_count - 1
+
+        mark_legal_entity_deleted() # Сообщаем фикстуре, что юр лицо удалено
+
+@allure.title("Редактирование юридического лица") # открытие из лиситнга
+def test_edit_and_delete_legal_entity(base_url, page_fixture):
+    page = page_fixture()
+    entities_page = LegalEntitiesPage(page)
+    modal = LegalEntityModal(page)
+    autorization_page = AutorizationPage(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_buyer_authorize()
+
+    entities_page.open(base_url)
+    entities_page.open_action_menu()
+    entities_page.click_edit()
+    with allure.step("Ввожу новые данные для записи"):
+        modal.fill("Изменено", "8888888888", "987654321")
+        modal.save()
+    with allure.step("Проверяю, что ошибки не отображаются"):
+        assert not page.locator('text=ИНН должен быть равен 10 символам').is_visible()
+        assert not page.locator('text=КПП должен быть равен 9 символам').is_visible()
+    with allure.step("Проверяю, что запись в списке изменилась"):
+        cards = entities_page.get_entity_cards()
+        assert any("Изменено" in cards.nth(i).text_content() for i in range(cards.count()))
+
+@allure.title("Открытие окна подтверждения удаления и отмена удаления (открытие из карточки юр лица)")
+def test_cancel_delete_legal_entity(base_url, page_fixture):
+    page = page_fixture()
+    entities_page = LegalEntitiesPage(page)
+    modal = LegalEntityModal(page)
+    autorization_page = AutorizationPage(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_buyer_authorize()
+
+    entities_page.open(base_url)
+    with allure.step("Открываю первую карточку юр. лица"):
+        cards = entities_page.get_entity_cards()
+        cards.first.click()
+    entities_page.click_delete()
+
+    with allure.step("В появившейся модалке отменяем удаление"):
+        modal.cancel_delete()
+    with allure.step("Проеверяю, что модалка подтверждения удаления закрыта"):
+        assert not page.locator(LegalEntityModal.DELETE_MODAL).is_visible()
+    with allure.step("Проеверяю, что модалка юр лица открыта"):
+        assert page.locator(LegalEntityModal.MODAL).is_visible()
+    with allure.step("Проеверяю, что запись не была удалена"):
+        assert entities_page.get_entity_cards().count() > 0
+
+
+@allure.title("Обязательность всех полей")
+def test_mandatory_all_fields(base_url, page_fixture):
+    page = page_fixture()
+    entities_page = LegalEntitiesPage(page)
+    modal = LegalEntityModal(page)
+    autorization_page = AutorizationPage(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_buyer_authorize()
+
+    entities_page.open(base_url)
+    entities_page.click_add_new()
+
+    with allure.step("Проверяю обязательность всех полей"):
+        # Оставляем все поля пустыми
+        modal.fill("", "", "")
+        modal.add()
+        assert page.locator("#name_help").get_by_text("Обязательное поле при сохранении").is_visible()
+        assert page.locator("#kpp_help").get_by_text("Обязательное поле при сохранении").is_visible()
+        assert page.locator("#name_help").get_by_text("Обязательное поле при сохранении").is_visible()
+
+    with allure.step("ИНН обязателен к заполнению"):
+        modal.fill("BoundTest", "", "123456789")
+        modal.add()
+        assert page.locator("#inn_help").get_by_text("Обязательное поле при сохранении").is_visible()
+
+    with allure.step("КПП обязателен к заполнению"):
+        modal.fill("BoundTest", "1234567890", "")
+        modal.add()
+        assert page.locator("#kpp_help").get_by_text("Обязательное поле при сохранении").is_visible()
+
+    with allure.step("Наименование обязательно к заполнению"):
+        modal.fill("", "1234567890", "123456789")
+        modal.add()
+        assert page.locator("#name_help").get_by_text("Обязательное поле при сохранении").is_visible()
+
+@allure.title("Граничные значения для ИНН и КПП")
+def test_inn_kpp_boundaries(base_url, page_fixture):
+    page = page_fixture()
+    entities_page = LegalEntitiesPage(page)
+    modal = LegalEntityModal(page)
+    autorization_page = AutorizationPage(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_buyer_authorize()
+
+    entities_page.open(base_url)
+    entities_page.click_add_new()
+
+    with allure.step("Проеверяю, ИНН < 10 символов"):
+        modal.fill("BoundTest", "123456789", "123456789")
+        modal.add()
+        assert page.locator('text=ИНН должен быть равен 10 символам').is_visible()
+
+    with allure.step("Проеверяю, ИНН > 10 символов"):
+        modal.fill("BoundTest", "12345678901", "123456789")
+        modal.add()
+        assert page.locator('text=ИНН должен быть равен 10 символам').is_visible()
+
+    with allure.step("Проеверяю, КПП < 9 символов"):
+        modal.fill("BoundTest", "1234567890", "12345678")
+        modal.add()
+        assert page.locator('text=КПП должен быть равен 9 символам').is_visible()
+
+    with allure.step("Проеверяю, КПП > 9 символов"):
+        modal.fill("BoundTest", "1234567890", "1234567890")
+        modal.add()
+        assert page.locator('text=КПП должен быть равен 9 символам').is_visible()
+
+@allure.title("Копирование реквизитов ИНН/КПП из карточки юр. лица")
+def test_copy_inn_kpp(base_url, page_fixture, clipboard_getter):
+    page = page_fixture()
+    entities_page = LegalEntitiesPage(page)
+    modal = LegalEntityModal(page)
+    autorization_page = AutorizationPage(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_buyer_authorize()
+
+    entities_page.open(base_url)
+    with allure.step("Открываю первую карточку юр. лица"):
+        cards = entities_page.get_entity_cards()
+        cards.first.click()
+
+    with allure.step("Копирую ИНН"):
+        modal.click_copy_inn()
+    with allure.step("Проверяю, что информация в буфере обмена соотвествует настоящему ИНН"):
+        assert clipboard_getter() == page.locator('.legal-entity-card__details-table-row-container div.text-body').text_content()
+
+    with allure.step("Копирую КПП"):
+        modal.click_copy_kpp()
+    with allure.step("Проверяю, что информация в буфере обмена соотвествует настоящему КПП"):
+        assert clipboard_getter() == page.locator('.legal-entity-card__details-table-row-container span.text-body').text_content()
+
+"""Страница Пользователь"""
+
+@allure.title("Открытие окна нового пользователя")
+def test_open_new_user_modal(base_url, page_fixture):
+    page = page_fixture()
+    users = UsersSettingsPage(page)
+    autorization_page = AutorizationPage(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_buyer_authorize()
+
+    users.open(base_url)
+    users.click_add_user_button()
+    assert page.locator("text='Пригласить пользователя'").is_visible()
+
+@allure.title("Открытие карточки любого пользователя")
+def test_open_user_card(base_url, page_fixture):
+    page = page_fixture()
+    users = UsersSettingsPage(page)
+    autorization_page = AutorizationPage(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_buyer_authorize()
+
+    users.open(base_url)
+    with allure.step("Проверяю, что листинг не пустой"):
+        users.page.wait_for_load_state('networkidle')
+        cards = users.get_users_cards()
+        assert cards.count() > 0
+    with allure.step("Открываю первую карточку юр. лица"):
+        cards.first.click()
+    with allure.step("Проверяю, что окно отображается корректно"):
+        assert page.locator(UsersSettingsPage.MODAL).is_visible()
+
+@allure.title("Кнопка Удалить в карточке пользователя — открывается окно удаления")
+def test_open_user_delete_modal(base_url, page_fixture):
+    page = page_fixture()
+    users = UsersSettingsPage(page)
+    autorization_page = AutorizationPage(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_buyer_authorize()
+    users.open(base_url)
+    cards = users.get_users_cards()
+    cards.first.click()
+    page.locator("button:has-text('Удалить')").click()
+    assert page.locator("text='Вы уверены, что хотите удалить пользователя?'").is_visible()
+
+@allure.title("Обязательность всех полей")
+def test_mandatory_all_fields_for_user(base_url, page_fixture):
+    page = page_fixture()
+    users = UsersSettingsPage(page)
+    autorization_page = AutorizationPage(page)
+    modal = UserModal(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_buyer_authorize()
+
+    users.open(base_url)
+    users.click_add_user_button()
+
+    with allure.step("Проверяю обязательность всех полей"):
+        # Оставляем все поля пустыми
+        modal.fill_main_fields("", "", "")
+        modal.click_send_invite()
+        assert page.locator(modal.EMAIL_TIP).get_by_text("Обязательное поле при сохранении").is_visible()
+        assert page.locator(modal.LASTNAME_TIP).get_by_text("Обязательное поле при сохранении").is_visible()
+        assert page.locator(modal.FIRSTNAME_TIP).get_by_text("Обязательное поле при сохранении").is_visible()
+
+    with allure.step("Фамилия обязательна к заполнению"):
+        modal.fill_main_fields("mail@test.com", "", "first_name")
+        modal.click_send_invite()
+        assert page.locator(modal.LASTNAME_TIP).get_by_text("Обязательное поле при сохранении").is_visible()
+
+    with allure.step("Имя обязательно к заполнению"):
+        modal.fill_main_fields("mail@test.com", "last_name", "")
+        modal.click_send_invite()
+        assert page.locator(modal.FIRSTNAME_TIP).get_by_text("Обязательное поле при сохранении").is_visible()
+
+    with allure.step("E-mail обязателен к заполнению"):
+        modal.fill_main_fields("", "last_name", "first_name")
+        modal.click_send_invite()
+        assert page.locator(modal.EMAIL_TIP).get_by_text("Обязательное поле при сохранении").is_visible()
+
+@allure.title("Невадидный e-mail")
+def test_ivalid_email_for_user(base_url, page_fixture):
+    page = page_fixture()
+    users = UsersSettingsPage(page)
+    autorization_page = AutorizationPage(page)
+    modal = UserModal(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_buyer_authorize()
+
+
+    users.open(base_url)
+    users.click_add_user_button()
+
+    with allure.step("email без собаки"):
+        # Оставляем все поля пустыми
+        modal.fill_main_fields("mailtest.com", "last_name", "first_name")
+        modal.click_send_invite()
+        assert page.locator(modal.EMAIL_TIP).get_by_text("Неверный формат электронной почты").is_visible()
+
+    with allure.step("email без точки"):
+        modal.fill_main_fields("mail@testcom", "last_name", "first_name")
+        modal.click_send_invite()
+        assert page.locator(modal.EMAIL_TIP).get_by_text("Неверный формат электронной почты").is_visible()
+
+    with allure.step("email с двумия собаками"):
+        modal.fill_main_fields("mail@@test.com", "last_name", "first_name")
+        modal.click_send_invite()
+        assert page.locator(modal.EMAIL_TIP).get_by_text("Неверный формат электронной почты").is_visible()
+
+@allure.title("Приглашение уже активированного email")
+def test_invite_existing_email(base_url, page_fixture):
+    page = page_fixture()
+    users = UsersSettingsPage(page)
+    autorization_page = AutorizationPage(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_buyer_authorize()
+    users.open(base_url)
+    users.click_add_user_button()
+    modal = UserModal(page)
+    modal.fill_main_fields(email="testgarwin_yur+b2b@mail.ru", last_name="Фам", first_name="Имя")
+    modal.click_send_invite()
+    assert page.locator("text='Адрес электронной почты уже используется'").is_visible()
+
+@allure.title("Редактирование пользователя и проверка изменений")
+def test_user_edit_and_save(base_url, page_fixture):
+    page = page_fixture()
+    users = UsersSettingsPage(page)
+    autorization_page = AutorizationPage(page)
+    modal = UserModal(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_buyer_authorize()
+
+    users.open(base_url)
+    cards = users.get_users_cards()
+    cards.first.click()
+    page.locator("button:has-text('Редактировать')").click()
+    with allure.step("Проверяю, что окно редактирования пользователя открыто"):
+        assert page.locator("text='Редактировать данные'").is_visible()
+
+    last_name, first_name, patronymic, position, phone = modal.fill_in_data_randomize()
+    modal.click_save_button()
+    assert page.locator("text=Данные пользователя успешно изменены").is_visible(timeout=4000)
+    assert cards.first.locator(f':has-text("{last_name} {first_name} {patronymic}")').first.is_visible()
+
+@allure.title("Операция с ролями (выбор, проверка доступных ролей, массовый выбор)")
+def test_roles_selection_in_user_card(base_url, page_fixture):
+    page = page_fixture()
+    users = UsersSettingsPage(page)
+    autorization_page = AutorizationPage(page)
+    modal = UserModal(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_buyer_authorize()
+    users.open(base_url)
+    cards = users.get_users_cards()
+    modal.open_last_user_card(cards)
+
+    roles_block = modal.get_roles_block()
+    with allure.step("Проверяю, что отображаются роли 'Пользователь' и 'Администратор аккаунта'"):
+        assert roles_block.locator("text=Пользователь").is_visible()
+        assert roles_block.locator("text=Администратор аккаунта").is_visible()
+
+    modal.click_main_role_button()
+    modal.deselect_all_roles()
+
+    with allure.step("Проверяю, что ссылка /request-list/manager НЕ отображается (Доступна только закупщику)"):
+        assert not modal.is_manager_link_visible()
+
+    modal.go_to_url("https://sprout-store.ru/settings/subdivision/136/general")
+    modal.open_head_role_selector()
+    full_name = "Тестовый Покупатель (администратор) (ФИО пользователя)"  # подставьте нужное ФИО
+
+    with allure.step("Проверяю, что ФИО в подразделении отсутствует"):
+        assert full_name not in page.content()
+
+    modal.go_to_url(base_url + "/settings/account/user-list")
+    modal.open_last_user_card(cards)
+    modal.click_main_role_button()
+    modal.select_all_roles()
+
+    roles_block = modal.get_roles_block()
+    with allure.step("Проверяю, что все роли теперь видимы в карточке"):
+        assert roles_block.locator("text=Пользователь").is_visible()
+        assert roles_block.locator("text=Администратор аккаунта").is_visible()
+        assert roles_block.locator("text=Закупщик").is_visible()
+        assert roles_block.locator("text=Руководитель подразделения").is_visible()
+
+    with allure.step("Проверяю, что ссылка /request-list/manager отображается (Доступна только закупщику)"):
+        assert modal.is_manager_link_visible()
+
+    modal.go_to_url("https://sprout-store.ru/settings/subdivision/136/general")
+    modal.open_head_role_selector()
+    with allure.step("Проверяю, что теперь ФИО присутствует хотя бы 1 раз"):
+        expect(page.locator(f"text={full_name}")).to_be_visible(timeout=5000)
+        assert full_name in page.content()
+
+@allure.title("Рутового пользователя нельзя удалить/отменить роль админстратора")
+def test_root_user_cannot_be_deleted(base_url, page_fixture):
+    page = page_fixture()
+    users = UsersSettingsPage(page)
+    autorization_page = AutorizationPage(page)
+    modal = UserModal(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_buyer_authorize()
+    users.open(base_url)
+    cards = users.get_users_cards()
+    modal.open_last_user_card(cards)
+
+    modal.click_main_role_button()
+
+    modal.root_delete_button_is_disabled()
+    modal.admin_role_is_not_toggleable()
+
+
+@allure.title("Выдаем и забираем роль администратора у обычного пользователя")
+def test_change_admin_role_flow(base_url, page_fixture):
+
+    page_user = page_fixture()
+    users_user = UsersSettingsPage(page_user)
+    autorization_user = AutorizationPage(page_user)
+    modal_user = UserModal(page_user)
+
+    with allure.step("Вхожу как обычный пользователь"):
+        autorization_user.open(base_url)
+        autorization_user.test_buyer_for_admin_role_authorize()
+
+    with allure.step("Проверяю, что ссылка /workspace-list НЕ отображается (Доступна только админу)"):
+        page_user.wait_for_selector('.sidebar__body', state='visible')
+        assert not modal_user.is_workspace_list_link_visible()
+
+    page_admin = page_fixture()
+    users_admin = UsersSettingsPage(page_admin)
+    autorization_admin = AutorizationPage(page_admin)
+    modal_admin = UserModal(page_admin)
+
+    with allure.step("Захожу как админ"):
+        autorization_admin.open(base_url)
+        autorization_admin.admin_buyer_authorize()
+
+        users_admin.open(base_url)
+
+    with allure.step("Открыть карточку нужного пользователя по email"):
+        users_admin.open_user_card_by_email("testgarwin_yur+2@mail.ru")
+        modal_admin.click_main_role_button()
+        modal_admin.set_admin_role()
+
+    with allure.step("Проверяю, что в списке пользователей появилось 'Администратор аккаунта' у юзера"):
+        assert users_admin.is_admin_badge_present("testgarwin_yur+2@mail.ru")
+
+    users_user.open(base_url)
+    with allure.step("Проверяю, что ссылка /workspace-list отображается (Доступна только админу)"):
+        page_user.wait_for_selector('.sidebar__body', state='visible')
+        assert modal_user.is_workspace_list_link_visible()
+
+    with allure.step("Открыть карточку нужного пользователя по email"):
+        users_admin.open(base_url)
+        users_admin.open_user_card_by_email("testgarwin_yur+2@mail.ru")
+        modal_admin.click_main_role_button()
+        modal_admin.unset_admin_role()
+
+    with allure.step("Проверяю, что в списке пользователей 'Администратор аккаунта' у юзера отсутствует"):
+        assert not users_admin.is_admin_badge_present("testgarwin_yur+2@mail.ru")

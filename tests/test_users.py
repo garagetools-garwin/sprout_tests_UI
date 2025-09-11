@@ -9,7 +9,7 @@ from page_opjects.home_page import HomePage
 from page_opjects.listing_page import ListingPage
 from page_opjects.my_orders_page import MyOrdersPage
 from page_opjects.purchase_orders import PurchaseOrdersPage
-from page_opjects.settings_page.account_settings_general_page import AccountSettingsGeneralPage
+from page_opjects.settings_page.general_settings_page import GeneralSettingsPage
 from page_opjects.settings_page.users_settings_page import UsersSettingsPage
 
 
@@ -25,7 +25,7 @@ def test_user_invitation(base_url, page_fixture, delete_user_fixture):
     autorization_page = AutorizationPage(admin_page)
     home_page = HomePage(admin_page)
     settings_account_page = UsersSettingsPage(admin_page)
-    settings_general = AccountSettingsGeneralPage(admin_page)
+    settings_general = GeneralSettingsPage(admin_page)
 
     autorization_page.open(base_url)
     autorization_page.admin_buyer_authorize()

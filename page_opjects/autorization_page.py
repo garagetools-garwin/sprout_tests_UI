@@ -19,6 +19,7 @@ CONTRACT_MANAGER_EMAIL = os.getenv("CONTRACT_MANAGER_EMAIL")
 CONTRACT_MANAGER_PASSWORD = os.getenv("CONTRACT_MANAGER_PASSWORD")
 TESTMAIL_JSON_ = os.getenv("TESTMAIL_JSON_")
 TESTMAIL_ADRESS_ = os.getenv("TESTMAIL_ADRESS_")
+TEST_BUYER_EMAIL = os.getenv("TEST_BUYER_EMAIL")
 
 class AutorizationPage:
     def __init__(self, page: Page):
@@ -74,6 +75,12 @@ class AutorizationPage:
     @allure.step("Авторизуюсь (Тестовый покупатель)")
     def test_buyer_authorize(self):
         self.page.type(self.EMAIL_INPUT, TESTMAIL_ADRESS_)
+        self.page.type(self.PASSWORD_INPUT, TEST_BUYER_PASSWORD)
+        self.page.locator(self.SUBMIT_BUTTON).click()
+
+    @allure.step("Авторизуюсь (Тестовый покупатель для роли админа)")
+    def test_buyer_for_admin_role_authorize(self):
+        self.page.type(self.EMAIL_INPUT, TEST_BUYER_EMAIL)
         self.page.type(self.PASSWORD_INPUT, TEST_BUYER_PASSWORD)
         self.page.locator(self.SUBMIT_BUTTON).click()
 

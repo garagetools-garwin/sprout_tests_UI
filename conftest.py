@@ -5,11 +5,14 @@ from dotenv import load_dotenv
 import os
 import re
 import json
+import pyperclip
 from datetime import datetime
 from playwright.sync_api import Browser, Page
 
 from page_opjects.autorization_page import AutorizationPage
 from page_opjects.home_page import HomePage
+from page_opjects.settings_page.general_settings_page import GeneralSettingsPage
+from page_opjects.settings_page.legal_entities_settings_page import LegalEntitiesPage
 from page_opjects.settings_page.users_settings_page import UsersSettingsPage
 
 load_dotenv()  # Загружаем переменные из .env
@@ -279,7 +282,8 @@ def autorization_fixture(browser: Browser, base_url):
         "buyer_admin": "admin_buyer_authorize",
         "seller_admin": "admin_seller_authorize",
         "purchaser": "purchaser_authorize",
-        "contract_manager": "contract_manager_authorize"
+        "contract_manager": "contract_manager_authorize",
+        "buyer_user": "test_buyer_for_admin_role_authorize"
     }
 
     for role, auth_method in role_to_auth_method.items():
@@ -398,6 +402,55 @@ def delete_user_fixture(base_url, page_fixture):
             print(f"=== TEARDOWN CRASHED: {e} ===")
             allure.attach(str(e), "Ошибка в teardown при удалении пользователя", allure.attachment_type.TEXT)
 
+@pytest.fixture
+def delete_legal_entity_fixture(base_url, page_fixture):
+    """Фикстура для удаления юр лица после теста, если он был создан, но не удалён вручную."""
+
+    state = {
+        "legal_entity_created": False,
+        "legal_entity_deleted": False
+    }
+
+    def mark_legal_entity_created():
+        state["legal_entity_created"] = True
+        print("=== legal_entity CREATED ===")
+        allure.attach("Юр лицо создано", name="DEBUG", attachment_type=allure.attachment_type.TEXT)
+
+    def mark_legal_entity_deleted():
+        state["legal_entity_deleted"] = True
+        print("=== legal_entity DELETED MANUALLY ===")
+        allure.attach("Юр лицо удалёно вручную", name="DEBUG", attachment_type=allure.attachment_type.TEXT)
+
+    yield mark_legal_entity_created, mark_legal_entity_deleted
+
+    print("=== TEARDOWN STARTED ===")
+    allure.attach("Teardown начался", name="DEBUG", attachment_type=allure.attachment_type.TEXT)
+
+    if state["legal_entity_created"] and not state["legal_entity_deleted"]:
+        try:
+            with allure.step("Удаляю Юр лицо в teardown"):
+                # Создаём новый контекст страницы
+                admin_page = page_fixture()
+                general_settings_page = GeneralSettingsPage(admin_page)
+                authorization_page = AutorizationPage(admin_page)
+                settings_account_page = UsersSettingsPage(admin_page)
+                home_page = HomePage(admin_page)
+                entities_page = LegalEntitiesPage(admin_page)
+
+                settings_account_page.open(base_url)
+                authorization_page.admin_buyer_authorize()
+                home_page.click_settings_button()
+                general_settings_page.click_legal_antities_button()
+                entities_page.delete_autotest_legal_entity(base_url)
+
+                print("=== legal_entity DELETED IN TEARDOWN ===")
+                allure.attach("Юр лицо удалёно в teardown", name="DEBUG",
+                              attachment_type=allure.attachment_type.TEXT)
+
+        except Exception as e:
+            print(f"=== TEARDOWN CRASHED: {e} ===")
+            allure.attach(str(e), "Ошибка в teardown при удалении Юр лица", allure.attachment_type.TEXT)
+
 """Добавляет опции"""
 def pytest_addoption(parser):
     # Добавляет опцию --url для выбора окружения
@@ -480,3 +533,8 @@ def manual_page_factory(browser: Browser, base_url: str):
         page.context.tracing.start(screenshots=True, snapshots=True)
         return page
     return create_manual_page
+
+"""Это фикстура для получения данных из системного буфера обмена (clipboard) тестовой машины после нажатия “копировать”"""
+@pytest.fixture
+def clipboard_getter():
+    return lambda : pyperclip.paste()

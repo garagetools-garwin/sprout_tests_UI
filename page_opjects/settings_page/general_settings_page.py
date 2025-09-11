@@ -2,7 +2,7 @@ import allure
 from playwright.sync_api import Page, expect
 
 
-class AccountSettingsGeneralPage:
+class GeneralSettingsPage:
     PATH = "/settings/account"
 
     # Иконка профиля/вход в карточку "Настройки аккаунта"
