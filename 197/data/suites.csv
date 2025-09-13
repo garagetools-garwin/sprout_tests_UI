@@ -1,8 +1,0 @@
-"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
-"","62169","Приглашение пользователя и проверка активации","tests","Mon Aug 25 14:07:31 UTC 2025","passed","Mon Aug 25 14:08:33 UTC 2025","","test_users","",""
-"","8442","Авторизация","tests","Mon Aug 25 14:06:18 UTC 2025","passed","Mon Aug 25 14:06:26 UTC 2025","","test_autorization","",""
-"","15029","Округление копеек в листинге через настройку в Контрактах","tests","Mon Aug 25 14:06:27 UTC 2025","passed","Mon Aug 25 14:06:42 UTC 2025","","test_settings","",""
-"","38301","Путь пользователя от авторизации до создания заказа","tests","Mon Aug 25 14:08:33 UTC 2025","passed","Mon Aug 25 14:09:11 UTC 2025","","test_users","",""
-"","12203","Редактирование названия компании","tests","Mon Aug 25 14:07:05 UTC 2025","passed","Mon Aug 25 14:07:17 UTC 2025","","test_settings","",""
-"","23336","Проверка работы блока «Лимиты на закупку»","tests","Mon Aug 25 14:06:42 UTC 2025","passed","Mon Aug 25 14:07:05 UTC 2025","","test_settings","",""
-"","13590","Переход по вкладкам страницы настроек","tests","Mon Aug 25 14:07:17 UTC 2025","passed","Mon Aug 25 14:07:31 UTC 2025","","test_settings","",""
