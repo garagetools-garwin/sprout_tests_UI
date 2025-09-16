@@ -538,3 +538,10 @@ def manual_page_factory(browser: Browser, base_url: str):
 @pytest.fixture
 def clipboard_getter():
     return lambda : pyperclip.paste()
+
+@pytest.fixture(scope="session")
+def browser_context_args(browser_context_args):
+    return {
+        **browser_context_args,
+        "permissions": ["clipboard-read", "clipboard-write"]
+    }

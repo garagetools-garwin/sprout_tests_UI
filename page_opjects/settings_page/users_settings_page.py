@@ -183,7 +183,13 @@ class UserModal:
 
     @allure.step("Перехожу в подразделение и раскрываю поиск по 'Руководитель подразделения'")
     def open_head_role_selector(self):
+        # Если есть кнопка очистки (ant-select-clear), кликаем по ней
         inp = self.page.locator(self.HEAD_ROLE_LABEL)
+        inp.hover()
+        clear_btn = self.page.locator('span.ant-select-clear')
+        if clear_btn.count() > 0 and clear_btn.is_visible():
+            clear_btn.hover()
+            clear_btn.click()
         inp = inp.locator("xpath=../../..").locator(self.HEAD_ROLE_INPUT)
         inp.click()
 
