@@ -3,7 +3,7 @@ from playwright.sync_api import Page, expect
 
 
 class GeneralSettingsPage:
-    PATH = "/settings/account"
+    PATH = "/settings/account/contracts"
 
     # Иконка профиля/вход в карточку "Настройки аккаунта"
     PROFILE_AVATAR = "header:has-text('Тестовый П.') img, header .ant-avatar, header [role='img']"
@@ -11,6 +11,7 @@ class GeneralSettingsPage:
     USERS_BUTTON = ".ant-menu-title-content:has-text('Пользователи')"
     CONTRACTS_BUTTON = ".ant-menu-title-content:has-text('Контракты')"
     LEGAL_ENTITIES_BUTTON = ".ant-menu-title-content:has-text('Юридические лица')"
+    PERSONAL_LIMITS_BUTTON = ".ant-menu-title-content:has-text('Персональные лимиты')"
 
     def __init__(self, page: Page):
         self.page = page
@@ -37,3 +38,6 @@ class GeneralSettingsPage:
     def click_legal_antities_button(self):
         self.page.locator(self.LEGAL_ENTITIES_BUTTON).click()
 
+    @allure.step("Кликаю на иконку Персональные лимиты")
+    def click_personal_limits_button(self):
+        self.page.locator(self.PERSONAL_LIMITS_BUTTON).click()

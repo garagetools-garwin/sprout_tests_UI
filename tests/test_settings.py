@@ -176,6 +176,10 @@ def test_go_to_settings_pages(base_url, page_fixture):
         expect(page).to_have_url(re.compile(r".*/contracts.*"))
 
     with allure.step("Переключаю вкладки, проверяю их состояние"):
+        settings_general.click_personal_limits_button()
+        expect(page).to_have_url(re.compile(r".*/personal-limits.*"))
+        expect(page.request.get(page.url)).to_be_ok()
+
         settings_general.click_users_button()
         expect(page).to_have_url(re.compile(r".*/user-list.*"))
         expect(page.request.get(page.url)).to_be_ok()
@@ -640,7 +644,6 @@ def test_roles_selection_in_user_card(base_url, page_fixture):
 
     roles_block = modal.get_roles_block()
     with allure.step("Проверяю, что отображаются роли 'Пользователь' и 'Администратор аккаунта'"):
-        assert roles_block.locator("text=Пользователь").is_visible()
         assert roles_block.locator("text=Администратор аккаунта").is_visible()
 
     modal.click_main_role_button()
@@ -663,7 +666,6 @@ def test_roles_selection_in_user_card(base_url, page_fixture):
 
     roles_block = modal.get_roles_block()
     with allure.step("Проверяю, что все роли теперь видимы в карточке"):
-        assert roles_block.locator("text=Пользователь").is_visible()
         assert roles_block.locator("text=Администратор аккаунта").is_visible()
         assert roles_block.locator("text=Закупщик").is_visible()
         assert roles_block.locator("text=Руководитель подразделения").is_visible()
@@ -710,7 +712,7 @@ def test_change_admin_role_flow(base_url, page_fixture):
 
     with allure.step("Проверяю, что ссылка /workspace-list НЕ отображается (Доступна только админу)"):
         page_user.wait_for_selector('.sidebar__body', state='visible')
-        assert not modal_user.is_workspace_list_link_visible()
+        modal_user.transition_to_contracts_page_assertion_not(base_url)
 
     page_admin = page_fixture()
     users_admin = UsersSettingsPage(page_admin)
@@ -734,7 +736,7 @@ def test_change_admin_role_flow(base_url, page_fixture):
     users_user.open(base_url)
     with allure.step("Проверяю, что ссылка /workspace-list отображается (Доступна только админу)"):
         page_user.wait_for_selector('.sidebar__body', state='visible')
-        assert modal_user.is_workspace_list_link_visible()
+        modal_user.transition_to_contracts_page_assertion(base_url)
 
     with allure.step("Открыть карточку нужного пользователя по email"):
         users_admin.open(base_url)

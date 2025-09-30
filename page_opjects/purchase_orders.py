@@ -25,8 +25,8 @@ class PurchaseOrdersPage:
             return self.page.goto(base_url + self.PATH)
 
     def open_ready_orders(self, base_url):
-        with allure.step(f"Открываю {base_url + self.PATH + "?status=processing"}"):
-            return self.page.goto(base_url + self.PATH + "?status=processing")
+        with allure.step(f"Открываю {base_url + "/request-list/seller_manager/requests"}"):
+            return self.page.goto(base_url + "/request-list/seller_manager/requests")
 
     def has_order_number(self, order_number: str) -> bool:
         # Найдём все строки заказов, а не только первую!

@@ -1,9 +1,10 @@
 import os
+import time
 from multiprocessing.pool import CLOSE
 import random
 from faker import Faker
 import allure
-from playwright.sync_api import Page
+from playwright.sync_api import Page, expect
 from dotenv import load_dotenv
 
 fake = Faker('ru_RU')
@@ -29,7 +30,7 @@ class UsersSettingsPage:
     USER_DELETE_BUTTON = "button.deleting"
     USER_TABLE_ROW = ".ant-table-row.ant-table-row-level-0"
     CONFIRM_DELETION_BUTTON = ".ant-btn.danger"
-    SEARCH_INPUT = "input.ant-input.css-amq5gd"
+    SEARCH_INPUT = "input.ant-input.css-2nkxv5"
     CLOSE_BUTTON = "button.ant-drawer-close"
     USER_CARD = ".ant-table-row.ant-table-row-level-0"
     MODAL = 'div.ant-drawer-content-wrapper'
@@ -115,8 +116,8 @@ class UserModal:
     PATRONYMIC_TIP = 'input#patronymic'
     SEND_INVITE_BUTTON = "button:has-text('Отправить приглашение')"
     SAVE_BUTTON = "button:has-text('Сохранить')"
-    MAIN_ROLE_BUTTON = ".text-tag-accent.color-dark-grey"
-    USER_CARD_ROLES_BLOCK = ".user-card__roles.mb-14"
+    MAIN_ROLE_BUTTON = ".user-card-role-selector"
+    USER_CARD_ROLES_BLOCK = ".mb-11.d-flex.align-center.flex-wrap"
 
     ALL_CHECKBOX = "input[type='checkbox']"
     MANAGER_LINK = "a[href='/request-list/manager']"
@@ -213,7 +214,26 @@ class UserModal:
     def is_workspace_list_link_visible(self):
         return self.page.locator(self.WORKSPACE_LIST_LINK).is_visible()
 
+    @allure.step("Проверяю наличие админских прав путем перехода в настройки аккаунта")
+    def transition_to_contracts_page_assertion(self, base_url):
+        # Переход на нужную страницу
+        self.page.goto(base_url + "/settings/account/contracts")
 
+        # Явное ожидание, что URL изменился на нужный
+        expect(self.page).to_have_url(base_url + "/settings/account/contracts", timeout=7000)
+
+        # Проверка по заголовку страницы (если есть)
+        expect(self.page.locator("span.ant-menu-title-content").first).to_contain_text(
+            "Контракты")  # если заголовок "Контракты"
+
+    @allure.step("Проверяю отсутствие админских прав путем перехода в настройки аккаунта")
+    def transition_to_contracts_page_assertion_not(self, base_url):
+        # Переход на нужную страницу
+        self.page.goto(base_url + "/settings/account/contracts")
+
+        time.sleep(2)
+        # Явное ожидание, что URL изменился на нужный
+        expect(self.page).not_to_have_url(base_url + "/settings/account/contracts", timeout=7000)
 
 
 

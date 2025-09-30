@@ -19,7 +19,7 @@ class ListingPage:
     PRICE_IN_CARD = ".text-accent"
 
     # Карточка товара
-    ADD_TO_CART_BUTTON = ".goods-card__btn button.ant-btn"
+    ADD_TO_CART_BUTTON = ".ant-drawer-body .mb-14 button.ant-btn.css-2nkxv5.ant-btn-default.button-lg"
 
     # Листинг
 
