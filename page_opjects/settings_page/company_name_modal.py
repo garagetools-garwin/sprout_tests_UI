@@ -11,7 +11,6 @@ class CompanyNameModal:
     COMPANY_NAME = ".account-settings-name__value"
     EDIT_BUTTON = ".account-settings-name__edit-btn"
 
-
     def __init__(self, page: Page):
         self.page = page
 

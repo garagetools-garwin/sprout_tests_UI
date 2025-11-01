@@ -13,6 +13,8 @@ from page_opjects.autorization_page import AutorizationPage
 from page_opjects.home_page import HomePage
 from page_opjects.settings_page.general_settings_page import GeneralSettingsPage
 from page_opjects.settings_page.legal_entities_settings_page import LegalEntitiesPage
+from page_opjects.settings_page.subdivisions_page.subdivisions_settings_page import SubdivisionsSettingsPage, \
+    SubdivisionUserCard, SubdivisionUsersPage, AddUserToSubdivisionModal, SubdivisionAddressesPage
 from page_opjects.settings_page.users_settings_page import UsersSettingsPage
 
 load_dotenv()  # Загружаем переменные из .env
@@ -450,6 +452,237 @@ def delete_legal_entity_fixture(base_url, page_fixture):
         except Exception as e:
             print(f"=== TEARDOWN CRASHED: {e} ===")
             allure.attach(str(e), "Ошибка в teardown при удалении Юр лица", allure.attachment_type.TEXT)
+
+
+@pytest.fixture
+def delete_subdivision_fixture(base_url, page_fixture):
+    """Фикстура для удаления подразделения после теста, если он был создан, но не удалён вручную."""
+
+    state = {
+        "subdivision_created": False,
+        "subdivision_deleted": False
+    }
+
+    def mark_subdivision_created():
+        state["subdivision_created"] = True
+        print("=== subdivision CREATED ===")
+        allure.attach("Подразделение создано", name="DEBUG", attachment_type=allure.attachment_type.TEXT)
+
+    def mark_subdivision_deleted():
+        state["subdivision_deleted"] = True
+        print("=== subdivision DELETED MANUALLY ===")
+        allure.attach("Подразделение удалёно вручную", name="DEBUG", attachment_type=allure.attachment_type.TEXT)
+
+    yield mark_subdivision_created, mark_subdivision_deleted
+
+    print("=== TEARDOWN STARTED ===")
+    allure.attach("Teardown начался", name="DEBUG", attachment_type=allure.attachment_type.TEXT)
+
+    if state["subdivision_created"] and not state["subdivision_deleted"]:
+        try:
+            with allure.step("Удаляю подразделение в teardown"):
+                # Создаём новый контекст страницы
+                admin_page = page_fixture()
+                general_settings_page = GeneralSettingsPage(admin_page)
+                authorization_page = AutorizationPage(admin_page)
+                settings_account_page = UsersSettingsPage(admin_page)
+                home_page = HomePage(admin_page)
+                subdivisions_page = SubdivisionsSettingsPage(admin_page)
+
+                settings_account_page.open(base_url)
+                authorization_page.admin_buyer_authorize()
+                # home_page.click_settings_button()
+                # general_settings_page.click_legal_antities_button()
+                subdivisions_page.delete_subdivision(base_url)
+
+                print("=== subdivision DELETED IN TEARDOWN ===")
+                allure.attach("Подразделение удалёно в teardown", name="DEBUG",
+                              attachment_type=allure.attachment_type.TEXT)
+
+        except Exception as e:
+            print(f"=== TEARDOWN CRASHED: {e} ===")
+            allure.attach(str(e), "Ошибка в teardown при удалении подразделения", allure.attachment_type.TEXT)
+
+@pytest.fixture
+def delete_child_subdivision_fixture(base_url, page_fixture):
+    """Фикстура для удаления подразделения после теста, если он был создан, но не удалён вручную."""
+
+    state = {
+        "subdivision_created": False,
+        "subdivision_deleted": False
+    }
+
+    def mark_subdivision_created(new_name):
+        state["subdivision_created"] = True
+        state['subdivision_name'] = new_name
+        print("=== subdivision CREATED ===")
+        allure.attach("Подразделение создано", name="DEBUG", attachment_type=allure.attachment_type.TEXT)
+
+    def mark_subdivision_deleted():
+        state["subdivision_deleted"] = True
+        print("=== subdivision DELETED MANUALLY ===")
+        allure.attach("Подразделение удалёно вручную", name="DEBUG", attachment_type=allure.attachment_type.TEXT)
+
+    yield mark_subdivision_created, mark_subdivision_deleted
+
+    print("=== TEARDOWN STARTED ===")
+    allure.attach("Teardown начался", name="DEBUG", attachment_type=allure.attachment_type.TEXT)
+
+    if state["subdivision_created"] and not state["subdivision_deleted"]:
+        try:
+            with allure.step("Удаляю подразделение в teardown"):
+                # Создаём новый контекст страницы
+                admin_page = page_fixture()
+                general_settings_page = GeneralSettingsPage(admin_page)
+                authorization_page = AutorizationPage(admin_page)
+                settings_account_page = UsersSettingsPage(admin_page)
+                home_page = HomePage(admin_page)
+                subdivisions_page = SubdivisionsSettingsPage(admin_page)
+
+                settings_account_page.open(base_url)
+                authorization_page.admin_buyer_authorize()
+                # home_page.click_settings_button()
+                # general_settings_page.click_legal_antities_button()
+                new_name = state["subdivision_name"]
+                subdivisions_page.delete_child_subdivision(base_url, new_name)
+
+                print("=== subdivision DELETED IN TEARDOWN ===")
+                allure.attach("Подразделение удалёно в teardown", name="DEBUG",
+                              attachment_type=allure.attachment_type.TEXT)
+
+        except Exception as e:
+            print(f"=== TEARDOWN CRASHED: {e} ===")
+            allure.attach(str(e), "Ошибка в teardown при удалении подразделения", allure.attachment_type.TEXT)
+
+@pytest.fixture
+def unbind_user_fixture(base_url, page_fixture):
+    """Фикстура для удаления пользователя после теста, если он был создан, но не удалён вручную."""
+
+    state = {
+        "user_created": False,
+        "user_deleted": False
+    }
+
+    def mark_user_created():
+        state["user_created"] = True
+        print("=== user CREATED ===")
+        allure.attach("Пользователь создан", name="DEBUG", attachment_type=allure.attachment_type.TEXT)
+
+    def mark_user_deleted():
+        state["user_deleted"] = True
+        print("=== user DELETED MANUALLY ===")
+        allure.attach("Пользователь удалён вручную", name="DEBUG", attachment_type=allure.attachment_type.TEXT)
+
+    yield mark_user_created, mark_user_deleted
+
+    print("=== TEARDOWN STARTED ===")
+    allure.attach("Teardown начался", name="DEBUG", attachment_type=allure.attachment_type.TEXT)
+
+    if state["user_created"] and not state["user_deleted"]:
+        try:
+            with allure.step("Удаляю подразделение в teardown"):
+                # Создаём новый контекст страницы
+                admin_page = page_fixture()
+                authorization_page = AutorizationPage(admin_page)
+                settings_account_page = UsersSettingsPage(admin_page)
+                subdivisions_page = SubdivisionsSettingsPage(admin_page)
+                users_page = SubdivisionUsersPage(admin_page)
+                user_card = SubdivisionUserCard(admin_page)
+
+                settings_account_page.open(base_url)
+                authorization_page.admin_buyer_authorize()
+                subdivisions_page.open(base_url)
+                subdivisions_page.click_subdivision_list_button()
+                subdivisions_page.open_subdivision(0)
+                subdivisions_page.click_users_tab()
+
+                initial_count = users_page.get_user_cards().count()
+
+                users_page.open_user_card(0)
+
+                with allure.step("Проверяю, что карточка отображается"):
+                    assert admin_page.locator(SubdivisionUserCard.MODAL).is_visible()
+
+                with allure.step("Отвязываю пользователя"):
+                    user_card.click_unbind()
+
+                with allure.step("Проверяю, что пользователь отвязан"):
+                    admin_page.wait_for_timeout(2000)
+                    new_count = users_page.get_user_cards().count()
+                    assert new_count < initial_count
+
+                print("=== user DELETED IN TEARDOWN ===")
+                allure.attach("Пользователь удалён в teardown", name="DEBUG",
+                              attachment_type=allure.attachment_type.TEXT)
+
+        except Exception as e:
+            print(f"=== TEARDOWN CRASHED: {e} ===")
+            allure.attach(str(e), "Ошибка в teardown при удалении пользователя", allure.attachment_type.TEXT)
+
+@pytest.fixture
+def delete_adress_fixture(base_url, page_fixture):
+    """Фикстура для удаления адреса после теста, если он был создан, но не удалён вручную."""
+
+    state = {
+        "adress_created": False,
+        "adress_deleted": False
+    }
+
+    def mark_adress_created():
+        state["adress_created"] = True
+        print("=== adress CREATED ===")
+        allure.attach("Пользователь создан", name="DEBUG", attachment_type=allure.attachment_type.TEXT)
+
+    def mark_adress_deleted():
+        state["adress_deleted"] = True
+        print("=== adress DELETED MANUALLY ===")
+        allure.attach("Пользователь удалён вручную", name="DEBUG", attachment_type=allure.attachment_type.TEXT)
+
+    yield mark_adress_created, mark_adress_deleted
+
+    print("=== TEARDOWN STARTED ===")
+    allure.attach("Teardown начался", name="DEBUG", attachment_type=allure.attachment_type.TEXT)
+
+    if state["adress_created"] and not state["adress_deleted"]:
+        try:
+            with allure.step("Удаляю адрес в teardown"):
+                # Создаём новый контекст страницы
+                admin_page = page_fixture()
+                authorization_page = AutorizationPage(admin_page)
+                settings_account_page = UsersSettingsPage(admin_page)
+                subdivisions_page = SubdivisionsSettingsPage(admin_page)
+                addresses_page = SubdivisionAddressesPage(admin_page)
+
+                settings_account_page.open(base_url)
+                authorization_page.admin_buyer_authorize()
+                subdivisions_page.open(base_url)
+                subdivisions_page.click_subdivision_list_button()
+                subdivisions_page.open_subdivision(0)
+                subdivisions_page.click_addresses_tab()
+
+                old_adress_count = addresses_page.get_address_cards().count()
+
+                with allure.step("Открываю меню и выбираю Удалить"):
+                    addresses_page.hover_address_action_menu(0)
+                    addresses_page.click_delete_option()
+
+                with allure.step("Проверяю, что окно подтверждения удаления открыто"):
+                    assert admin_page.locator("text=Вы уверены").is_visible()
+
+                with allure.step("Подтверждаю удаление"):
+                    addresses_page.confirm_delete()
+
+                new_adress_count = addresses_page.get_address_cards().count()
+                assert old_adress_count > new_adress_count
+
+                print("=== user DELETED IN TEARDOWN ===")
+                allure.attach("Адрес удалён в teardown", name="DEBUG",
+                              attachment_type=allure.attachment_type.TEXT)
+
+        except Exception as e:
+            print(f"=== TEARDOWN CRASHED: {e} ===")
+            allure.attach(str(e), "Ошибка в teardown при удалении адреса", allure.attachment_type.TEXT)
+
 
 """Добавляет опции"""
 def pytest_addoption(parser):

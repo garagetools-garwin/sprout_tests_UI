@@ -260,6 +260,12 @@ class UserModal:
         if not cb.is_checked():
             cb.click()
 
+    @allure.step("Выключаю роль администратора")
+    def disable_admin_role(self):
+        cb = self.page.locator(self.ADMIN_ROLE_CHECKBOX)
+        if cb.is_checked():
+            cb.click()
+
     @allure.step("Отключаю роль администратора")
     def unset_admin_role(self):
         cb = self.page.locator(self.ADMIN_ROLE_CHECKBOX)
