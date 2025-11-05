@@ -13,6 +13,9 @@ class CartPage:
     MINI_CART_BADGE = "text=добавлен в корзину"
     LIMIT_EXCEEDED_BANNER = "text=Стоимость позиции превышает допустимый лимит на цену товара."
     LIMIT_EXCEEDED_BANNER_2 = "text=Ваш заказ превышает доступный лимит на покупки"
+    OPTION_BUTTON = ".ant-dropdown-trigger.button-circle.secondary"
+    CLEAR_CART_BUTTON = ".ant-dropdown-menu-item.ant-dropdown-menu-item-only-child"
+    CONFIRM_CLEAR_CART_BUTTON = ".button-lg.danger"
 
     ADDRESS_LABEL = "text=Адрес:"
     ADDRESS_CONTAINER = ".."
@@ -26,6 +29,27 @@ class CartPage:
     def click_send_button(self):
         self.page.locator(self.SEND_BUTTON).click()
 
+    @allure.step("Очищаю корзину")
+    def clear_cart(self, base_url):
+        self.open(base_url)
+        self.click_option_button()
+        if self.page.locator(self.CLEAR_CART_BUTTON).is_enabled():
+            self.click_clear_cart_button()
+            self.clear_confirm__clear_cart_button()
+        else:
+            pass
+
+    @allure.step("Нажимаю на кнопку меню")
+    def click_option_button(self):
+        self.page.locator(self.OPTION_BUTTON).click()
+
+    @allure.step("Нажимаю на Очистить корзину")
+    def click_clear_cart_button(self):
+        self.page.locator(self.CLEAR_CART_BUTTON).click()
+
+    @allure.step("Подтверждаю очистку корзины")
+    def clear_confirm__clear_cart_button(self):
+        self.page.locator(self.CONFIRM_CLEAR_CART_BUTTON).click()
 
     def get_primary_address_text(self):
         """Получить текст основного адреса из корзины"""

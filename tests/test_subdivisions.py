@@ -331,6 +331,9 @@ def test_purchase_limit_in_cart(base_url, page_fixture):
 
     autorization_page.open(base_url)
     autorization_page.admin_buyer_authorize()
+
+    cart.clear_cart(base_url)
+
     page.goto(f"{base_url}/settings/subdivision/134/general")
 
     with allure.step("Устанавливаю лимит"):
@@ -372,6 +375,9 @@ def test_item_price_limit_in_cart(base_url, page_fixture):
 
     autorization_page.open(base_url)
     autorization_page.admin_buyer_authorize()
+
+    cart.clear_cart(base_url)
+
     page.goto(f"{base_url}/settings/subdivision/134/general")
 
     with allure.step("Устанавливаю лимит"):
@@ -636,8 +642,8 @@ def test_confirmation_of_adding_a_user_from_another_subdivisions(base_url, page_
         with allure.step("Проверяю, что карточка отображается"):
             assert page.locator(SubdivisionUserCard.MODAL).is_visible()
 
-        # with allure.step("Отвязываю пользователя"):
-        #     user_card.click_unbind()
+        with allure.step("Отвязываю пользователя"):
+            user_card.click_unbind()
 
         with allure.step("Проверяю, что пользователь отвязан"):
             page.wait_for_timeout(2000)
@@ -801,6 +807,8 @@ def test_set_primary_address(base_url, page_fixture):
     # Авторизация
     autorization_page.open(base_url)
     autorization_page.admin_buyer_authorize()
+
+    cart.clear_cart(base_url)
 
     # Добавление товара в корзину
     with allure.step("Добавляю товар в корзину"):

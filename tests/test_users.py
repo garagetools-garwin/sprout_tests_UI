@@ -94,6 +94,8 @@ def test_critical_way(base_url, page_fixture, delete_user_fixture):
     autorization_page.open(base_url)
     autorization_page.admin_buyer_authorize()
 
+    cart_page.clear_cart(base_url)
+
     listing_page.open(base_url)
     expect(buyer_page).not_to_have_url(f"{base_url}/login")
     listing_page.add_to_cart()

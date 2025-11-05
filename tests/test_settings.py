@@ -84,9 +84,12 @@ def test_purchase_limits_banner_and_cart_behavior(base_url, page_fixture):
     cart = CartPage(page)
     contracts_settings = ContractsSettingsPage(page)
     autorization_page = AutorizationPage(page)
+    cart_page = CartPage(page)
 
     autorization_page.open(base_url)
     autorization_page.admin_buyer_authorize()
+
+    cart_page.clear_cart(base_url)
 
     contracts_settings.open(base_url)
     with allure.step("Устанавливаю лимит"):
@@ -114,7 +117,7 @@ def test_purchase_limits_banner_and_cart_behavior(base_url, page_fixture):
 
     with allure.step("Устанавливаю лимит выше стоимости добавленого товара"):
         contracts_settings.open(base_url)
-        contracts_settings.set_item_price_limit("100000")
+        contracts_settings.set_item_price_limit("1000000")
         page.mouse.click(0, 0)
         # contracts_settings.click_beside_limit_input_and_expect_toast()
 
