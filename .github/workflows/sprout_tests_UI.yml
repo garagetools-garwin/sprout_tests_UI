@@ -36,6 +36,9 @@ jobs:
       CONTRACT_MANAGER_PASSWORD: ${{ secrets.CONTRACT_MANAGER_PASSWORD }}
       TESTMAIL_ADRESS_: ${{ secrets.TESTMAIL_ADRESS_ }}
       TESTMAIL_JSON_: ${{ secrets.TESTMAIL_JSON_ }}
+      ADMIN_BUYER_LIMIT_EMAIL: ${{ secrets.ADMIN_BUYER_LIMIT_EMAIL }}
+      ADMIN_BUYER_LIMIT_PASSWORD: ${{ secrets.ADMIN_BUYER_LIMIT_PASSWORD }}
+      
 
     steps:
 
