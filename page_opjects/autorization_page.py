@@ -20,6 +20,9 @@ CONTRACT_MANAGER_PASSWORD = os.getenv("CONTRACT_MANAGER_PASSWORD")
 TESTMAIL_JSON_ = os.getenv("TESTMAIL_JSON_")
 TESTMAIL_ADRESS_ = os.getenv("TESTMAIL_ADRESS_")
 TEST_BUYER_EMAIL = os.getenv("TEST_BUYER_EMAIL")
+ADMIN_BUYER_LIMIT_EMAIL = os.getenv("ADMIN_BUYER_LIMIT_EMAIL")
+ADMIN_BUYER_LIMIT_PASSWORD = os.getenv("ADMIN_BUYER_LIMIT_PASSWORD")
+
 
 class AutorizationPage:
     def __init__(self, page: Page):
@@ -82,6 +85,12 @@ class AutorizationPage:
     def test_buyer_for_admin_role_authorize(self):
         self.page.type(self.EMAIL_INPUT, TEST_BUYER_EMAIL)
         self.page.type(self.PASSWORD_INPUT, TEST_BUYER_PASSWORD)
+        self.page.locator(self.SUBMIT_BUTTON).click()
+
+    @allure.step("Авторизуюсь (Тестовый покупатель для проверки лимитов в настройках)")
+    def buyer_admin_for_limit_authorize(self):
+        self.page.type(self.EMAIL_INPUT, ADMIN_BUYER_LIMIT_EMAIL)
+        self.page.type(self.PASSWORD_INPUT, ADMIN_BUYER_LIMIT_PASSWORD)
         self.page.locator(self.SUBMIT_BUTTON).click()
 
     @allure.step("Получаю ссылку для активации аккаунта")

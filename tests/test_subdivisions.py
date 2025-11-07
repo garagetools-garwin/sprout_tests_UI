@@ -582,6 +582,7 @@ def test_open_edit_user_from_subdivision(base_url, page_fixture):
     subdivisions.click_subdivision_list_button()
     subdivisions.open_subdivision(0)
     page.goto("https://sprout-store.ru/settings/subdivision/138/user-list")
+    users_page.open_user_card(0)
 
     with allure.step("Нажимаю Редактировать"):
         user_card.click_edit()
@@ -739,8 +740,7 @@ def test_address_action_menu(base_url, page_fixture):
     autorization_page.open(base_url)
     autorization_page.admin_buyer_authorize()
     subdivisions.open(base_url)
-    subdivisions.click_subdivision_list_button()
-    subdivisions.open_subdivision(0)
+    page.goto(f"{base_url}/settings/subdivision/136/general")
     subdivisions.click_addresses_tab()
 
     with allure.step("Навожу на экшн меню адреса"):
@@ -762,8 +762,7 @@ def test_open_edit_address_modal(base_url, page_fixture):
     autorization_page.open(base_url)
     autorization_page.admin_buyer_authorize()
     subdivisions.open(base_url)
-    subdivisions.click_subdivision_list_button()
-    subdivisions.open_subdivision(0)
+    page.goto(f"{base_url}/settings/subdivision/136/general")
     subdivisions.click_addresses_tab()
 
     with allure.step("Открываю меню и выбираю Редактировать"):
@@ -784,8 +783,7 @@ def test_open_delete_address_confirmation(base_url, page_fixture):
     autorization_page.open(base_url)
     autorization_page.admin_buyer_authorize()
     subdivisions.open(base_url)
-    subdivisions.click_subdivision_list_button()
-    subdivisions.open_subdivision(0)
+    page.goto(f"{base_url}/settings/subdivision/136/general")
     subdivisions.click_addresses_tab()
 
     with allure.step("Открываю меню и выбираю Удалить"):
@@ -955,8 +953,7 @@ def test_edit_address(base_url, page_fixture):
     autorization_page.open(base_url)
     autorization_page.admin_buyer_authorize()
     subdivisions.open(base_url)
-    subdivisions.click_subdivision_list_button()
-    subdivisions.open_subdivision(0)
+    page.goto(f"{base_url}/settings/subdivision/136/general")
     subdivisions.click_addresses_tab()
 
     addresses_page.hover_address_action_menu(0)

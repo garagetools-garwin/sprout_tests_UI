@@ -87,7 +87,7 @@ def test_purchase_limits_banner_and_cart_behavior(base_url, page_fixture):
     cart_page = CartPage(page)
 
     autorization_page.open(base_url)
-    autorization_page.admin_buyer_authorize()
+    autorization_page.buyer_admin_for_limit_authorize()
 
     cart_page.clear_cart(base_url)
 
