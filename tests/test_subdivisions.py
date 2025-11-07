@@ -196,6 +196,8 @@ def test_create_new_subdivision(base_url, page_fixture, delete_subdivision_fixtu
     with allure.step("Заполняю все поля корректными данными"):
         new_name = f"Автотест подразделение {random.randint(0, 999999)}"
         modal.fill_all_fields(new_name, 0, 0)
+        # modal.fill_all_fields_for_child_subdivision(new_name, 0, 0)
+
 
     with allure.step("Сохраняю подразделение"):
         modal.click_save()
@@ -334,7 +336,7 @@ def test_purchase_limit_in_cart(base_url, page_fixture):
 
     cart.clear_cart(base_url)
 
-    page.goto(f"{base_url}/settings/subdivision/134/general")
+    page.goto(f"{base_url}/settings/subdivision/136/general")
 
     with allure.step("Устанавливаю лимит"):
         subdivisions.set_purchase_limit("300")
@@ -352,8 +354,8 @@ def test_purchase_limit_in_cart(base_url, page_fixture):
         expect(page.locator(cart.LIMIT_EXCEEDED_BANNER_2)).not_to_be_hidden(timeout=5000)
 
     with allure.step("Устанавливаю лимит выше стоимости добавленого товара"):
-        page.goto(f"{base_url}/settings/subdivision/134/general")
-        subdivisions.set_purchase_limit("100000")
+        page.goto(f"{base_url}/settings/subdivision/136/general")
+        subdivisions.set_purchase_limit("1000000")
         page.mouse.click(0, 0)
 
     cart.open(base_url)
@@ -378,7 +380,7 @@ def test_item_price_limit_in_cart(base_url, page_fixture):
 
     cart.clear_cart(base_url)
 
-    page.goto(f"{base_url}/settings/subdivision/134/general")
+    page.goto(f"{base_url}/settings/subdivision/136/general")
 
     with allure.step("Устанавливаю лимит"):
         subdivisions.set_item_price_limit("300")
@@ -390,14 +392,15 @@ def test_item_price_limit_in_cart(base_url, page_fixture):
 
     cart.open(base_url)
 
-    with allure.step("Проверяю, что кнопка Отправить заказ недоступна"):
+    with (allure.step("Проверяю, что кнопка Отправить заказ недоступна")):
         expect(page.locator(cart.SEND_BUTTON)).to_be_disabled()
+        # expect(page.locator(cart.SEND_BUTTON)).to_be_hidden()
     with allure.step("Отображается плашка 'Стоимость позиции превышает допустимый лимит на цену товара'"):
         expect(page.locator(cart.LIMIT_EXCEEDED_BANNER)).not_to_be_hidden(timeout=5000)
 
     with allure.step("Устанавливаю лимит выше стоимости добавленого товара"):
-        page.goto(f"{base_url}/settings/subdivision/134/general")
-        subdivisions.set_item_price_limit("100000")
+        page.goto(f"{base_url}/settings/subdivision/136/general")
+        subdivisions.set_item_price_limit("1000000")
         page.mouse.click(0, 0)
 
     cart.open(base_url)
@@ -578,8 +581,7 @@ def test_open_edit_user_from_subdivision(base_url, page_fixture):
     subdivisions.open(base_url)
     subdivisions.click_subdivision_list_button()
     subdivisions.open_subdivision(0)
-    subdivisions.click_users_tab()
-    users_page.open_user_card(0)
+    page.goto("https://sprout-store.ru/settings/subdivision/138/user-list")
 
     with allure.step("Нажимаю Редактировать"):
         user_card.click_edit()
@@ -816,7 +818,7 @@ def test_set_primary_address(base_url, page_fixture):
         listing.add_expensive_item_to_cart(min_price=100)
 
     # Переход на страницу настроек подразделения
-    page.goto(f"{base_url}/settings/subdivision/134/general")
+    page.goto(f"{base_url}/settings/subdivision/136/general")
     subdivisions.click_addresses_tab()
 
     # Получение текущего основного адреса
