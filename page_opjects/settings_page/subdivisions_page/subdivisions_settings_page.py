@@ -19,12 +19,17 @@ class SubdivisionModal:
     SAVE_BUTTON = "button:has-text('Добавить подразделение')"
     HEAD_SELECT = "span.ant-select-selection-search"
     HEAD_SELECT_G = "#rc_select_6"
+    HEAD_SELECT_GG = 'span.ant-select-selection-placeholder:has-text("Выберите из списка юр. лиц компании")'
     LEGAL_ENTITY_SELECT_G = "#rc_select_7"
     LEGAL_ENTITY_SELECT = "span.ant-select-selection-search"
     FIRST_HEAD = ".text-controls-accent.mb-2.select-with-search__custom-option-user-name"
     FIRST_LEGAL_ENTITY = ".rc-virtual-list-holder-inner .ant-select-item.ant-select-item-option.ant-select-item-option-active"
-    FIRST_UNSELECTED_HEAD = "#rc_select_6_list_0"
-    FIRST_UNSELECTED_LEGAL_ENTITY = "#rc_select_7_list_0"
+    FIRST_UNSELECTED_HEAD = 'div.ant-select-dropdown.redesign.select-with-search.css-2nkxv5.ant-select-dropdown-placement-bottomLeft:not(.ant-select-dropdown-hidden) :is([role="option"])'
+    # FIRST_UNSELECTED_HEAD = 'div.ant-select-dropdown :is([role="option"])'
+    # FIRST_UNSELECTED_HEAD = "#rc_select_6_list_0"
+    FIRST_UNSELECTED_LEGAL_ENTITY = 'div.ant-select-dropdown.redesign.select-with-search.css-2nkxv5.ant-select-dropdown-placement-bottomLeft:not(.ant-select-dropdown-hidden) :is([role="option"])'
+    # FIRST_UNSELECTED_LEGAL_ENTITY = 'div.ant-select-dropdown :is([role="option"])'
+    # FIRST_UNSELECTED_LEGAL_ENTITY = "#rc_select_7_list_0"
 
     DELETE_CONFIRM_BUTTON = ".button-lg.danger"
     NAME_TIP = "#name_help"
@@ -49,13 +54,13 @@ class SubdivisionModal:
 
     @allure.step("Выбираю руководителя подразделения")
     def select_head_child_subdivision(self, index=0):
-        self.page.locator(self.MODAL).locator(self.HEAD_SELECT_G).nth(0).click()
-        self.page.locator(self.FIRST_UNSELECTED_HEAD).click()
+        self.page.locator(self.MODAL).locator(self.HEAD_SELECT_G).nth(0).click(force=True)
+        self.page.locator(self.FIRST_UNSELECTED_HEAD).nth(0).click()
 
     @allure.step("Выбираю юридическое лицо")
     def select_legal_entity_child_subdivision(self, index=0):
-        self.page.locator(self.MODAL).locator(self.LEGAL_ENTITY_SELECT_G).nth(0).click()
-        self.page.locator(self.FIRST_UNSELECTED_LEGAL_ENTITY).click()
+        self.page.locator(self.MODAL).locator(self.LEGAL_ENTITY_SELECT_G).nth(0).click(force=True)
+        self.page.locator(self.FIRST_UNSELECTED_LEGAL_ENTITY).nth(0).click()
 
     @allure.step("Нажимаю Сохранить подразделение")
     def click_save(self):
