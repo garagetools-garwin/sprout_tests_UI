@@ -151,7 +151,7 @@ def test_edit_company_name(base_url, page_fixture):
         modal.assert_opened()
 
     with allure.step("Ввожу новое название и сохраняю"):
-        new_name = modal.generate_unique_company_name(prefix="Тестовый Покупатель")
+        new_name = modal.generate_unique_company_name(prefix="Покупатель ДЛЯ АВТОТЕСТОВ")
         modal.fill_company_name(new_name)
         modal.click_save()
 
