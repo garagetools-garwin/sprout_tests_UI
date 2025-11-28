@@ -16,7 +16,8 @@ class ListingPage:
     # Листинг
 
     PRODUCT = "tr.ant-table-row"
-    PRICE_IN_CARD = ".text-accent"
+    PRICE_IN_CARD = ".ff-semibold.fs-m"
+    PRICE_IN_CARD_WITH_NDS = ".ff-regular.fs-xs"
 
     # Карточка товара
     ADD_TO_CART_BUTTON = ".ant-drawer-body .mb-14 button.ant-btn.css-2nkxv5.ant-btn-default.button-lg"

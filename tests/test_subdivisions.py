@@ -7,6 +7,7 @@ from playwright.sync_api import expect
 from page_opjects.autorization_page import AutorizationPage
 from page_opjects.cart_page import CartPage
 from page_opjects.listing_page import ListingPage
+from page_opjects.settings_page.contracts_settings_page import ContractsSettingsPage
 from page_opjects.settings_page.subdivisions_page.subdivisions_settings_page import (
     SubdivisionsSettingsPage,
     SubdivisionModal,
@@ -330,6 +331,8 @@ def test_purchase_limit_in_cart(base_url, page_fixture):
     cart = CartPage(page)
     listing = ListingPage(page)
     autorization_page = AutorizationPage(page)
+    contracts_settings = ContractsSettingsPage(page)
+
 
     autorization_page.open(base_url)
     autorization_page.admin_buyer_authorize()
@@ -355,7 +358,7 @@ def test_purchase_limit_in_cart(base_url, page_fixture):
 
     with allure.step("Устанавливаю лимит выше стоимости добавленого товара"):
         page.goto(f"{base_url}/settings/subdivision/136/general")
-        subdivisions.set_purchase_limit("1000000")
+        subdivisions.set_purchase_limit("10000000")
         page.mouse.click(0, 0)
 
     cart.open(base_url)
@@ -374,6 +377,8 @@ def test_item_price_limit_in_cart(base_url, page_fixture):
     cart = CartPage(page)
     listing = ListingPage(page)
     autorization_page = AutorizationPage(page)
+    contracts_settings = ContractsSettingsPage(page)
+
 
     autorization_page.open(base_url)
     autorization_page.admin_buyer_authorize()
