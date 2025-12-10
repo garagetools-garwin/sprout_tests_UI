@@ -233,12 +233,13 @@ class SubdivisionsSettingsPage:
     CODE_INPUT = "input#code"
     CHILD_SUBDIVISION_BUTTON = "button:has-text('Дочернее подразделение')"
     DELETE_SUBDIVISION_BUTTON = "button:has-text('Удалить подразделение')"
-    PURCHASE_LIMIT_INPUT = "#limit"
+    PURCHASE_LIMIT_INPUT = "#balance"
     PRICE_LIMIT_INPUT = "#maxGoodPrice"
     FIRST_UNSELECTED_HEAD = ".ant-select-item.ant-select-item-option[label]:not(.ant-select-item-option-selected)"
     FIRST_UNSELECTED_LEGAL_ENTITY = ".ant-select-item.ant-select-item-option[label][title]:not(.ant-select-item-option-selected)"
     FIRST_UNSELECTED_MANAGER_SELECT = ".ant-select-item.ant-select-item-option[label][title]:not(.ant-select-item-option-selected)"
     SUCCESS_MESSAGE = "text=Подразделение успешно изменено"
+    CHANGE_LIMIT_BUTTON = "text=Изменить лимиты"
 
     @allure.step("Выбираю юридическое лицо")
     def select_legal_entity(self, index=0):
@@ -284,17 +285,21 @@ class SubdivisionsSettingsPage:
     def click_delete_subdivision(self):
         self.page.locator(self.DELETE_SUBDIVISION_BUTTON).click()
 
+    @allure.step("Нажимаю Изменить лимит")
+    def click_change_limit(self):
+        self.page.locator(self.CHANGE_LIMIT_BUTTON).click()
+
     @allure.step("Устанавливаю лимит расходов: {limit}")
     def set_purchase_limit(self, limit):
         self.page.locator(self.PURCHASE_LIMIT_INPUT).fill("")
         self.page.locator(self.PURCHASE_LIMIT_INPUT).fill(limit)
-        self.page.mouse.click(0, 0)
+        # self.page.mouse.click(0, 0)
 
     @allure.step("Устанавливаю лимит цены за единицу товара")
     def set_item_price_limit(self, value: str):
         self.page.fill(self.PRICE_LIMIT_INPUT, "")
         self.page.fill(self.PRICE_LIMIT_INPUT, value)
-        self.page.mouse.click(0, 0)
+        # self.page.mouse.click(0, 0)
 
 class SubdivisionUsersPage:
     def __init__(self, page: Page):
@@ -388,6 +393,7 @@ class SubdivisionAddressesPage:
     ACTION_MENU = ".ant-table-content button.ant-btn-icon-only.ant-dropdown-trigger"
     EDIT_OPTION = "text=Редактировать"
     DELETE_OPTION = "text=Удалить"
+    UNLINK_OPTION = "text=Отвязать адрес"
     MAKE_PRIMARY_OPTION = "text=Сделать основным"
     PRIMARY_BADGE = ".text-tag.color-dark-grey:has-text('Основной адрес')"
     DELETE_CONFIRM_BUTTON = ".button-lg.danger"
@@ -412,6 +418,11 @@ class SubdivisionAddressesPage:
     @allure.step("Кликаю Удалить")
     def click_delete_option(self):
         self.page.locator(self.DELETE_OPTION).click()
+
+    @allure.step("Кликаю Отвязать")
+    def click_unlink_option(self):
+        self.page.locator(self.UNLINK_OPTION).click()
+
 
     @allure.step("Кликаю Сделать основным")
     def click_make_primary_option(self):

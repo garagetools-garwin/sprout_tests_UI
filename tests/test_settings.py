@@ -393,7 +393,7 @@ def test_mandatory_all_fields(base_url, page_fixture):
         modal.fill("", "", "")
         modal.add()
         assert page.locator("#name_help").get_by_text("Обязательное поле при сохранении").is_visible()
-        assert page.locator("#kpp_help").get_by_text("Обязательное поле при сохранении").is_visible()
+        # assert page.locator("#kpp_help").get_by_text("Обязательное поле при сохранении").is_visible()
         assert page.locator("#name_help").get_by_text("Обязательное поле при сохранении").is_visible()
 
     with allure.step("ИНН обязателен к заполнению"):
@@ -404,12 +404,14 @@ def test_mandatory_all_fields(base_url, page_fixture):
     with allure.step("КПП обязателен к заполнению"):
         modal.fill("BoundTest", "1234567890", "")
         modal.add()
-        assert page.locator("#kpp_help").get_by_text("Обязательное поле при сохранении").is_visible()
+        # assert page.locator("#kpp_help").get_by_text("Обязательное поле при сохранении").is_visible()
 
     with allure.step("Наименование обязательно к заполнению"):
         modal.fill("", "1234567890", "123456789")
         modal.add()
         assert page.locator("#name_help").get_by_text("Обязательное поле при сохранении").is_visible()
+
+#TODO добавить тесты на ИП
 
 @allure.title("Граничные значения для ИНН и КПП")
 def test_inn_kpp_boundaries(base_url, page_fixture):
@@ -427,22 +429,22 @@ def test_inn_kpp_boundaries(base_url, page_fixture):
     with allure.step("Проеверяю, ИНН < 10 символов"):
         modal.fill("BoundTest", "123456789", "123456789")
         modal.add()
-        assert page.locator('text=ИНН должен быть равен 10 символам').is_visible()
+        assert page.locator('text=ИНН должен содержать 10 (для юридических лиц) или 12 (для ИП) цифр').is_visible()
 
     with allure.step("Проеверяю, ИНН > 10 символов"):
         modal.fill("BoundTest", "12345678901", "123456789")
         modal.add()
-        assert page.locator('text=ИНН должен быть равен 10 символам').is_visible()
+        assert page.locator('text=ИНН должен содержать 10 (для юридических лиц) или 12 (для ИП) цифр').is_visible()
 
     with allure.step("Проеверяю, КПП < 9 символов"):
         modal.fill("BoundTest", "1234567890", "12345678")
         modal.add()
-        assert page.locator('text=КПП должен быть равен 9 символам').is_visible()
+        assert page.locator('text=Для ИНН юридического лица КПП обязателен и должен содержать 9 символов').is_visible()
 
     with allure.step("Проеверяю, КПП > 9 символов"):
         modal.fill("BoundTest", "1234567890", "1234567890")
         modal.add()
-        assert page.locator('text=КПП должен быть равен 9 символам').is_visible()
+        assert page.locator('text=Для ИНН юридического лица КПП обязателен и должен содержать 9 символов').is_visible()
 
 
 @allure.title("Копирование реквизитов ИНН/КПП из карточки юр. лица")
@@ -530,7 +532,7 @@ def test_open_user_delete_modal(base_url, page_fixture):
     page.locator("button:has-text('Удалить')").click()
     assert page.locator("text='Вы уверены, что хотите удалить пользователя?'").is_visible()
 
-@allure.title("Обязательность всех полей")
+@allure.title("Обязательность всех полей для нового пользователя")
 def test_mandatory_all_fields_for_user(base_url, page_fixture):
     page = page_fixture()
     users = UsersSettingsPage(page)

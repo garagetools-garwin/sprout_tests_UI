@@ -323,6 +323,9 @@ def test_open_delete_from_settings(base_url, page_fixture):
     with allure.step("Проверяю, что окно подтверждения удаления открыто"):
         assert page.locator("text=Вы уверены").is_visible()
 
+#TODO Протестировать окно с лимитом
+#TODO Протестировать отображение лимита на странице подразделения
+#TODO
 
 @allure.title("Проверка работы лимита расходов на закупку")
 def test_purchase_limit_in_cart(base_url, page_fixture):
@@ -342,8 +345,9 @@ def test_purchase_limit_in_cart(base_url, page_fixture):
     page.goto(f"{base_url}/settings/subdivision/136/general")
 
     with allure.step("Устанавливаю лимит"):
+        subdivisions.click_change_limit()
         subdivisions.set_purchase_limit("300")
-    page.mouse.click(0, 0)
+        subdivisions.click_save()
 
     with allure.step("Добавляю в корзину товар дороже лимита"):
         page.goto(base_url + "/catalog/9/3707")
@@ -388,8 +392,9 @@ def test_item_price_limit_in_cart(base_url, page_fixture):
     page.goto(f"{base_url}/settings/subdivision/136/general")
 
     with allure.step("Устанавливаю лимит"):
+        subdivisions.click_change_limit()
         subdivisions.set_item_price_limit("300")
-    page.mouse.click(0, 0)
+    # page.mouse.click(0, 0)
 
     with allure.step("Добавляю в корзину товар дороже лимита"):
         page.goto(base_url + "/catalog/9/3707")
@@ -509,6 +514,7 @@ def test_add_user_to_subdivision_and_unbind(base_url, page_fixture, unbind_user_
         new_count = users_page.get_user_cards().count()
         assert new_count > initial_count
         mark_user_created()
+        page.reload()
 
         initial_count = users_page.get_user_cards().count()
 
@@ -642,6 +648,7 @@ def test_confirmation_of_adding_a_user_from_another_subdivisions(base_url, page_
         assert initial_count < new_count
 
         mark_user_created()
+        page.reload()
 
         initial_count = users_page.get_user_cards().count()
 
@@ -670,12 +677,13 @@ def test_open_add_address_modal(base_url, page_fixture):
     subdivisions = SubdivisionsSettingsPage(page)
     addresses_page = SubdivisionAddressesPage(page)
     autorization_page = AutorizationPage(page)
+    setting_page = UsersSettingsPage(page)
 
     autorization_page.open(base_url)
     autorization_page.admin_buyer_authorize()
-    subdivisions.open(base_url)
-    subdivisions.click_subdivision_list_button()
-    subdivisions.open_subdivision(0)
+    setting_page.open(base_url)
+    # subdivisions.click_subdivision_list_button()
+    # subdivisions.open_subdivision(0)
     subdivisions.click_addresses_tab()
 
     with allure.step("Нажимаю Добавить адрес"):
@@ -735,8 +743,8 @@ def test_create_and_delete_new_address(base_url, page_fixture, delete_adress_fix
     mark_adress_deleted()
 
 
-@allure.title("Отображение экшн меню адреса")
-def test_address_action_menu(base_url, page_fixture):
+@allure.title("Отображение экшн меню адреса в подразделении")
+def test_address_action_menu_in_subdivision(base_url, page_fixture):
     page = page_fixture()
     subdivisions = SubdivisionsSettingsPage(page)
     addresses_page = SubdivisionAddressesPage(page)
@@ -752,10 +760,29 @@ def test_address_action_menu(base_url, page_fixture):
         addresses_page.hover_address_action_menu(0)
 
     with allure.step("Проверяю отображение опций меню"):
-        assert page.locator(addresses_page.EDIT_OPTION).is_visible()
-        assert page.locator(addresses_page.DELETE_OPTION).is_visible()
+        assert page.locator(addresses_page.UNLINK_OPTION).is_visible()
         assert page.locator(addresses_page.MAKE_PRIMARY_OPTION).is_visible()
 
+@allure.title("Отображение экшн меню адреса в настройках аккаунта")
+def test_address_action_menu_in_settings(base_url, page_fixture):
+    page = page_fixture()
+    subdivisions = SubdivisionsSettingsPage(page)
+    addresses_page = SubdivisionAddressesPage(page)
+    autorization_page = AutorizationPage(page)
+    setting_page = UsersSettingsPage(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_buyer_authorize()
+    setting_page.open(base_url)
+    # page.goto(f"{base_url}/settings/subdivision/136/general")
+    subdivisions.click_addresses_tab()
+
+    with allure.step("Навожу на экшн меню адреса"):
+        addresses_page.hover_address_action_menu(0)
+
+    with allure.step("Проверяю отображение опций меню"):
+        assert page.locator(addresses_page.EDIT_OPTION).is_visible()
+        assert page.locator(addresses_page.DELETE_OPTION).is_visible()
 
 @allure.title("Открытие окна редактирования адреса")
 def test_open_edit_address_modal(base_url, page_fixture):
@@ -763,11 +790,12 @@ def test_open_edit_address_modal(base_url, page_fixture):
     subdivisions = SubdivisionsSettingsPage(page)
     addresses_page = SubdivisionAddressesPage(page)
     autorization_page = AutorizationPage(page)
+    setting_page = UsersSettingsPage(page)
 
     autorization_page.open(base_url)
     autorization_page.admin_buyer_authorize()
-    subdivisions.open(base_url)
-    page.goto(f"{base_url}/settings/subdivision/136/general")
+    setting_page.open(base_url)
+    # page.goto(f"{base_url}/settings/subdivision/136/general")
     subdivisions.click_addresses_tab()
 
     with allure.step("Открываю меню и выбираю Редактировать"):
@@ -777,9 +805,32 @@ def test_open_edit_address_modal(base_url, page_fixture):
     with allure.step("Проверяю, что окно редактирования открыто"):
         assert page.locator(AddressModal.MODAL).is_visible()
 
+#TODO УДАЛИТЬ И РЕДАКТИРОВАТЬ АДРЕС ПЕРЕЕХАЛО В НАСТРОЙКИ АККАУНТА, НУЖНО И ТЕСТЫ ПЕРЕНЕСТИ ТЕПРЬ ТУДА ЖЕ (тест выше)
+#TODO Вместо удалить адорес с подразделения теперь есть функция отвязать, требуется тест на это
 
-@allure.title("Открытие окна подтверждения удаления адреса")
-def test_open_delete_address_confirmation(base_url, page_fixture):
+@allure.title("Открытие окна подтверждения удаления адреса через кнопку Удалить")
+def test_open_delete_address_confirmation_1(base_url, page_fixture):
+    page = page_fixture()
+    subdivisions = SubdivisionsSettingsPage(page)
+    addresses_page = SubdivisionAddressesPage(page)
+    autorization_page = AutorizationPage(page)
+    setting_page = UsersSettingsPage(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_buyer_authorize()
+    setting_page.open(base_url)
+    # page.goto(f"{base_url}/settings/subdivision/136/general")
+    subdivisions.click_addresses_tab()
+
+    with allure.step("Открываю меню и выбираю Удалить"):
+        addresses_page.hover_address_action_menu(0)
+        addresses_page.click_delete_option()
+
+    with allure.step("Проверяю, что окно подтверждения удаления открыто"):
+        assert page.locator("text=Вы уверены").is_visible()
+
+@allure.title("Открытие окна подтверждения удаления адреса через кнопку Отвязать")
+def test_open_delete_address_confirmation_2(base_url, page_fixture):
     page = page_fixture()
     subdivisions = SubdivisionsSettingsPage(page)
     addresses_page = SubdivisionAddressesPage(page)
@@ -791,9 +842,9 @@ def test_open_delete_address_confirmation(base_url, page_fixture):
     page.goto(f"{base_url}/settings/subdivision/136/general")
     subdivisions.click_addresses_tab()
 
-    with allure.step("Открываю меню и выбираю Удалить"):
+    with allure.step("Открываю меню и выбираю Отвязать"):
         addresses_page.hover_address_action_menu(0)
-        addresses_page.click_delete_option()
+        addresses_page.click_unlink_option()
 
     with allure.step("Проверяю, что окно подтверждения удаления открыто"):
         assert page.locator("text=Вы уверены").is_visible()
@@ -861,12 +912,13 @@ def test_address_autocomplete(base_url, page_fixture):
     addresses_page = SubdivisionAddressesPage(page)
     address_modal = AddressModal(page)
     autorization_page = AutorizationPage(page)
+    setting_page = UsersSettingsPage(page)
 
     autorization_page.open(base_url)
     autorization_page.admin_buyer_authorize()
-    subdivisions.open(base_url)
-    subdivisions.click_subdivision_list_button()
-    subdivisions.open_subdivision(0)
+    setting_page.open(base_url)
+    # subdivisions.click_subdivision_list_button()
+    # subdivisions.open_subdivision(0)
     subdivisions.click_addresses_tab()
     addresses_page.click_add_address()
 
@@ -896,12 +948,13 @@ def test_address_required_fields_validation(base_url, page_fixture):
     addresses_page = SubdivisionAddressesPage(page)
     address_modal = AddressModal(page)
     autorization_page = AutorizationPage(page)
+    setting_page = UsersSettingsPage(page)
 
     autorization_page.open(base_url)
     autorization_page.admin_buyer_authorize()
-    subdivisions.open(base_url)
-    subdivisions.click_subdivision_list_button()
-    subdivisions.open_subdivision(0)
+    setting_page.open(base_url)
+    # subdivisions.click_subdivision_list_button()
+    # subdivisions.open_subdivision(0)
     subdivisions.click_addresses_tab()
     addresses_page.click_add_address()
 
@@ -954,11 +1007,12 @@ def test_edit_address(base_url, page_fixture):
     addresses_page = SubdivisionAddressesPage(page)
     address_modal = AddressModal(page)
     autorization_page = AutorizationPage(page)
+    setting_page = UsersSettingsPage(page)
 
     autorization_page.open(base_url)
     autorization_page.admin_buyer_authorize()
-    subdivisions.open(base_url)
-    page.goto(f"{base_url}/settings/subdivision/136/general")
+    setting_page.open(base_url)
+    # page.goto(f"{base_url}/settings/subdivision/136/general")
     subdivisions.click_addresses_tab()
 
     addresses_page.hover_address_action_menu(0)
