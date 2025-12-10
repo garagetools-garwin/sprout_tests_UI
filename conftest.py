@@ -653,11 +653,12 @@ def delete_adress_fixture(base_url, page_fixture):
                 subdivisions_page = SubdivisionsSettingsPage(admin_page)
                 addresses_page = SubdivisionAddressesPage(admin_page)
 
+
                 settings_account_page.open(base_url)
                 authorization_page.admin_buyer_authorize()
-                subdivisions_page.open(base_url)
-                subdivisions_page.click_subdivision_list_button()
-                subdivisions_page.open_subdivision(0)
+                settings_account_page.open(base_url)
+                # subdivisions_page.click_subdivision_list_button()
+                # subdivisions_page.open_subdivision(0)
                 subdivisions_page.click_addresses_tab()
 
                 old_adress_count = addresses_page.get_address_cards().count()

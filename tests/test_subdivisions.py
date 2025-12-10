@@ -516,6 +516,7 @@ def test_add_user_to_subdivision_and_unbind(base_url, page_fixture, unbind_user_
         mark_user_created()
         page.reload()
 
+        time.sleep(3)
         initial_count = users_page.get_user_cards().count()
 
         users_page.open_user_card(0)
@@ -650,6 +651,7 @@ def test_confirmation_of_adding_a_user_from_another_subdivisions(base_url, page_
         mark_user_created()
         page.reload()
 
+        time.sleep(3)
         initial_count = users_page.get_user_cards().count()
 
         users_page.open_user_card(0)
@@ -701,12 +703,13 @@ def test_create_and_delete_new_address(base_url, page_fixture, delete_adress_fix
     addresses_page = SubdivisionAddressesPage(page)
     address_modal = AddressModal(page)
     autorization_page = AutorizationPage(page)
+    setting_page = UsersSettingsPage(page)
 
     autorization_page.open(base_url)
     autorization_page.admin_buyer_authorize()
-    subdivisions.open(base_url)
-    subdivisions.click_subdivision_list_button()
-    subdivisions.open_subdivision(0)
+    setting_page.open(base_url)
+    # subdivisions.click_subdivision_list_button()
+    # subdivisions.open_subdivision(0)
     subdivisions.click_addresses_tab()
 
     addresses_page.click_add_address()
@@ -741,8 +744,8 @@ def test_create_and_delete_new_address(base_url, page_fixture, delete_adress_fix
     assert old_adress_count > new_adress_count
 
     mark_adress_deleted()
-
-
+#todo нуэно тест выше перенести на страницу настройки
+#todo нужно по аналогии с тестом выше создать тест на добавление адреск в подраздедение
 @allure.title("Отображение экшн меню адреса в подразделении")
 def test_address_action_menu_in_subdivision(base_url, page_fixture):
     page = page_fixture()
