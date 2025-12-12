@@ -346,6 +346,10 @@ def test_purchase_limit_in_cart(base_url, page_fixture):
 
     with allure.step("Устанавливаю лимит"):
         subdivisions.click_change_limit()
+        subdivisions.set_item_price_limit("1000000")
+        subdivisions.click_save()
+
+        subdivisions.click_change_limit()
         subdivisions.set_purchase_limit("300")
         subdivisions.click_save()
 
@@ -362,7 +366,8 @@ def test_purchase_limit_in_cart(base_url, page_fixture):
 
     with allure.step("Устанавливаю лимит выше стоимости добавленого товара"):
         page.goto(f"{base_url}/settings/subdivision/136/general")
-        subdivisions.set_purchase_limit("10000000")
+        subdivisions.click_change_limit()
+        subdivisions.set_purchase_limit("1000000")
         page.mouse.click(0, 0)
 
     cart.open(base_url)
@@ -391,9 +396,16 @@ def test_item_price_limit_in_cart(base_url, page_fixture):
 
     page.goto(f"{base_url}/settings/subdivision/136/general")
 
-    with allure.step("Устанавливаю лимит"):
+    with allure.step("Устанавливаю лимит цены на закупку"):
+        subdivisions.click_change_limit()
+        subdivisions.set_purchase_limit("1000000")
+        subdivisions.click_save()
+
+    with allure.step("Устанавливаю лимит цены на товар"):
         subdivisions.click_change_limit()
         subdivisions.set_item_price_limit("300")
+        subdivisions.click_save()
+
     # page.mouse.click(0, 0)
 
     with allure.step("Добавляю в корзину товар дороже лимита"):
@@ -410,6 +422,7 @@ def test_item_price_limit_in_cart(base_url, page_fixture):
 
     with allure.step("Устанавливаю лимит выше стоимости добавленого товара"):
         page.goto(f"{base_url}/settings/subdivision/136/general")
+        subdivisions.click_change_limit()
         subdivisions.set_item_price_limit("1000000")
         page.mouse.click(0, 0)
 
