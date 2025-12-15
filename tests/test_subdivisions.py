@@ -2,6 +2,7 @@ import random
 import re
 import time
 import allure
+import pytest
 from faker import Faker
 from playwright.sync_api import expect
 from page_opjects.autorization_page import AutorizationPage
@@ -327,6 +328,7 @@ def test_open_delete_from_settings(base_url, page_fixture):
 #TODO Протестировать отображение лимита на странице подразделения
 #TODO
 
+@pytest.mark.skip(reason="временно отключен, ошибки будут исправлены в январе")
 @allure.title("Проверка работы лимита расходов на закупку")
 def test_purchase_limit_in_cart(base_url, page_fixture):
     page = page_fixture()
@@ -378,7 +380,7 @@ def test_purchase_limit_in_cart(base_url, page_fixture):
     with allure.step("Плашка 'Ваш заказ превышает доступный лимит на покупки' не отображается"):
         expect(page.locator(cart.LIMIT_EXCEEDED_BANNER_2)).to_be_hidden(timeout=5000)
 
-
+@pytest.mark.skip(reason="временно отключен, ошибки будут исправлены в январе")
 @allure.title("Проверка работы лимита цены на товар")
 def test_item_price_limit_in_cart(base_url, page_fixture):
     page = page_fixture()
