@@ -21,6 +21,9 @@ class ListingPage:
 
     # Карточка товара
     ADD_TO_CART_BUTTON = ".ant-drawer-body .mb-14 button.ant-btn.css-2nkxv5.ant-btn-default.button-lg"
+    AVAILABILITY_TEXT_LOCATOR_AVAILABLE_ON_REQUEST = ".delivery-badge.available_on_request div"
+    AVAILABILITY_TEXT_LOCATOR_IN_STOCK = ".delivery-badge.in_stock div"
+
 
     # Листинг
 
@@ -134,9 +137,86 @@ class ListingPage:
                 return
         raise AssertionError(f"Не найден товар дороже {min_price}")
 
+    @allure.step('Добавляю в корзину первый товар с текстом доступности "1 неделя"')
+    def add_item_with_one_week(self):
+        # ждём, пока в листинге появятся карточки
+        self.page.wait_for_selector(self.PRODUCT, timeout=10000)
 
+        total = self.page.locator(self.PRODUCT).count()
+        assert total > 0, "Нет карточек товаров в листинге"
 
+        for i in range(total):
+            # каждый раз берём карточку заново
+            card = self.page.locator(self.PRODUCT).nth(i)
+            card.click()
+            time.sleep(2)
 
+            # локаторы внутри карточки
+            available_on_request = self.page.locator(self.AVAILABILITY_TEXT_LOCATOR_AVAILABLE_ON_REQUEST)
+            in_stock = self.page.locator(self.AVAILABILITY_TEXT_LOCATOR_IN_STOCK)
+
+            # если есть "доступно по запросу" — эта карточка нас не интересует
+            if available_on_request.count() > 0:
+                self.page.keyboard.press("Escape")
+                self.page.wait_for_selector(self.PRODUCT, timeout=10000)
+                continue
+
+            # иначе ищем "в наличии"
+            if in_stock.count() == 0:
+                # нет блока "в наличии" — тоже пропускаем
+                self.page.keyboard.press("Escape")
+                self.page.wait_for_selector(self.PRODUCT, timeout=10000)
+                continue
+
+            # берём текст доступности "в наличии"
+            availability_text = in_stock.inner_text().strip()
+            if availability_text == "1 неделя":
+                self.page.locator(self.ADD_TO_CART_BUTTON).click()
+                # нашли нужный товар — прерываем цикл
+                self.page.keyboard.press("Escape")
+                self.page.wait_for_selector(self.PRODUCT, timeout=10000)
+                break
+
+            # если текст не "1 неделя" — закрываем и идём дальше
+            self.page.keyboard.press("Escape")
+            self.page.wait_for_selector(self.PRODUCT, timeout=10000)
+
+    @allure.step('Добавляю в корзину товар с текстом "Доступно под заказ"')
+    def add_item_available_on_request(self):
+        self.page.wait_for_selector(self.PRODUCT, timeout=10000)
+
+        total = self.page.locator(self.PRODUCT).count()
+        assert total > 0, "Нет карточек товаров в листинге"
+
+        for i in range(total):
+            card = self.page.locator(self.PRODUCT).nth(i)
+            card.click()
+            time.sleep(2)
+
+            available_on_request = self.page.locator(self.AVAILABILITY_TEXT_LOCATOR_AVAILABLE_ON_REQUEST)
+            in_stock = self.page.locator(self.AVAILABILITY_TEXT_LOCATOR_IN_STOCK)
+
+            # если есть "в наличии" — эта карточка нас не интересует
+            if in_stock.count() > 0:
+                self.page.keyboard.press("Escape")
+                self.page.wait_for_selector(self.PRODUCT, timeout=10000)
+                continue
+
+            # иначе ищем "доступно под заказ"
+            if available_on_request.count() == 0:
+                self.page.keyboard.press("Escape")
+                self.page.wait_for_selector(self.PRODUCT, timeout=10000)
+                continue
+
+            availability_text = available_on_request.inner_text().strip()
+            if availability_text == "Доступно под заказ":
+                self.page.locator(self.ADD_TO_CART_BUTTON).click()
+                self.page.keyboard.press("Escape")
+                self.page.wait_for_selector(self.PRODUCT, timeout=10000)
+                break
+
+            self.page.keyboard.press("Escape")
+            self.page.wait_for_selector(self.PRODUCT, timeout=10000)
 
     #TODO перевести карточку товара в отдельный класс
 

@@ -481,7 +481,7 @@ def test_copy_inn_kpp(base_url, page_fixture):
     with allure.step("Проверяю, что информация в буфере обмена соотвествует настоящему КПП"):
         # Получаем содержимое clipboard через браузер API (синхронная версия)
         clipboard_content = page.evaluate("() => navigator.clipboard.readText()")
-        expected_kpp = page.locator('.legal-entity-card__details-table-row-container span.text-body').text_content()
+        expected_kpp = page.locator(".text-body:has-text('КПП:') + .legal-entity-card__details-table-row-container span.text-body").text_content()
         assert clipboard_content == expected_kpp
 
 """Страница Пользователь"""
