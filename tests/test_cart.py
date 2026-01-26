@@ -412,144 +412,8 @@ def test_clear_cart_via_menu(base_url, page_fixture):
         assert cart.get_cart_items_count() == 0
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         #TODO роверять изменения суммы в test_quantity_buttons_increment_decrement или в блоке калькуляции
 
-
-
-@allure.title("TC-800: Корректность расчета стоимости с НДС")
-@allure.tag("positive", "regression", "non-automated")
-def test_calculation_with_vat(base_url, page_fixture):
-    """
-    Предусловия:
-    - В корзину добавлены 3 разных товара с разным количеством
-
-    Шаги:
-    1. Посчитать вручную стоимость всех товаров
-    2. Посчитать вручную НДС
-    3. Посчитать вручную Итого с НДС
-    4. Увеличить количество товара в позиции №1 на 1 шт
-
-    Ожидаемый результат:
-    - Все расчеты корректны
-    - После изменения количества стоимость пересчиталась
-    """
-    page = page_fixture(role="buyer_admin")
-    cart = CartPage(page)
-
-    cart.clear_cart(base_url)
-    # ... добавление 3 товаров
-    cart.open(base_url)
-
-    with allure.step("Получаю данные из блока калькуляции"):
-        goods_price = cart.get_calculation_goods_price()
-        vat = cart.get_calculation_vat()
-        total = cart.get_calculation_total()
-
-    with allure.step("Проверяю корректность расчета НДС (20%)"):
-        expected_vat = round(goods_price * 0.2, 2)
-        assert abs(vat - expected_vat) < 0.1
-
-    with allure.step("Проверяю корректность итоговой суммы"):
-        expected_total = goods_price + vat
-        assert abs(total - expected_total) < 0.1
-
-    with allure.step("Увеличиваю количество первого товара на 1"):
-        cart.increase_quantity_by_button(0, 1)
-
-    with allure.step("Проверяю, что все строчки стоимости пересчитались"):
-        new_goods_price = cart.get_calculation_goods_price()
-        new_vat = cart.get_calculation_vat()
-        new_total = cart.get_calculation_total()
-
-        assert new_goods_price > goods_price
-        assert new_vat > vat
-        assert new_total > total
-
-
-@allure.title("TC-812: Отправка заказа")
-@allure.tag("positive", "regression", "smoke", "non-automated")
-@allure.severity(allure.severity_level.CRITICAL)
-def test_send_order(base_url, page_fixture):
-    """
-    Предусловия:
-    - В корзину добавлен товар
-    - Все необходимые поля заполнены
-
-    Шаги:
-    1. Нажать Отправить
-
-    Ожидаемый результат:
-    - Заказ отправлен
-    """
-    page = page_fixture(role="buyer_admin")
-    cart = CartPage(page)
-
-    cart.clear_cart(base_url)
-    # ... добавление товара
-    cart.open(base_url)
-
-    with allure.step("Проверяю, что кнопка Отправить активна"):
-        assert cart.is_send_button_enabled()
-
-    with allure.step("Нажимаю кнопку Отправить"):
-        cart.click_send_button()
-
-    with allure.step("Проверяю успешную отправку заказа"):
-        expect(page.locator(cart.SUCCESS_MESSAGE)).to_be_visible(timeout=10000)
-
-
-
-@allure.title("TC-780: Расчет общей стоимости при увеличении количества товара")
-@allure.tag("positive", "regression", "manual_artefact")
-def test_calculate_total_price_on_quantity_increase(base_url, page_fixture):
-    """
-    Предусловия:
-    - В корзине один товар с ценой, например 471 ₽
-
-    Шаги:
-    1. Увеличить количество товара до 3 штук через кнопку "+"
-
-    Ожидаемый результат:
-    - Общая стоимость товара рассчитывается корректно (471 × 3 = 1413)
-    """
-    page = page_fixture(role="buyer_admin")
-    cart = CartPage(page)
-
-    # Подготовка: добавляем товар в корзину
-    cart.clear_cart(base_url)
-    # ... добавление товара с ценой 471 ₽
-
-    cart.open(base_url)
-
-    with allure.step("Фиксирую начальную цену товара"):
-        initial_price = cart.get_calculation_goods_price()
-        allure.attach(f"Начальная цена: {initial_price} ₽", name="Начальная цена")
-
-    with allure.step("Увеличиваю количество товара до 3 штук"):
-        cart.increase_quantity_by_button(index=0, count=2)
-        time.sleep(1)
-
-    with allure.step("Проверяю корректность расчета общей стоимости"):
-        final_price = cart.get_calculation_goods_price()
-        expected_price = initial_price * 3
-        assert final_price == expected_price, f"Ожидалось {expected_price}, получено {final_price}"
 
 
 """Блок калькуляции"""
@@ -659,7 +523,6 @@ def test_display_available_purchase_limit(base_url, page_fixture):
 
 @allure.title("Корректность расчета стоимости с НДС")
 def test_calculation_with_vat_full(base_url, page_fixture):
-
     page = page_fixture()
     autorization_page = AutorizationPage(page)
     cart = CartPage(page)
