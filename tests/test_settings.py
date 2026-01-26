@@ -446,7 +446,6 @@ def test_inn_kpp_boundaries(base_url, page_fixture):
         modal.add()
         assert page.locator('text=Для ИНН юридического лица КПП обязателен и должен содержать 9 символов').is_visible()
 
-
 @allure.title("Копирование реквизитов ИНН/КПП из карточки юр. лица")
 def test_copy_inn_kpp(base_url, page_fixture):
     page = page_fixture()

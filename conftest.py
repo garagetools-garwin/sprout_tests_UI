@@ -197,7 +197,14 @@ def page_factory(
         context = browser.new_context(storage_state=storage_state_path)
     else:
         context = browser.new_context()
-    
+
+    # Блокируем на уровне КОНТЕКСТА, а не страницы
+    context.route("**/*jivo*", lambda route: route.abort())
+    context.route("**/jivosite.com/**", lambda route: route.abort())
+    context.route("**/*jivosite*", lambda route: route.abort())
+    context.route("**/code.jivo.ru/**", lambda route: route.abort())
+    context.route("**/*.jivo.ru/**", lambda route: route.abort())
+
     page = context.new_page()
     page.set_viewport_size({"width": 1920, "height": 1080})
     

@@ -37,7 +37,7 @@ class CartPage:
     EXPANDED_ROW = ".ant-table-expanded-row.ant-table-expanded-row-level-1"
     BUYER_ARTICLE = ".ant-table-expanded-row.ant-table-expanded-row-level-1 .text-tag-accent.color-bright-green.buyer-code__value"
     # CART_ITEM_NAME = ".cart-item__name"
-    # CART_ITEM_PRICE = ".cart-item__price"
+    CART_ITEM_PRICE = ".mb-2.ff-semibold.fs-m.text-nowrap"
     # CART_ITEM_QUANTITY_INPUT = "input[type='number']"
     # CART_ITEM_QUANTITY_PLUS = "button:has-text('+')"
     # CART_ITEM_QUANTITY_MINUS = "button:has-text('-')"
@@ -100,6 +100,12 @@ class CartPage:
     # COMMENT_INPUT = "textarea#comment"
     # SEND_BUTTON = "button:has-text('Отправить')"
     # SUCCESS_MESSAGE = "text=Заказ успешно отправлен"
+
+    # Локаторы для лимита
+    # LIMIT_BLOCK = ".limit-block"
+    LIMIT_TOTAL_LOCATOR = "span.ff-regular.fs-xs.color-dark-grey:has-text('лимит на закупку')"
+    LIMIT_REMAINING_LOCATOR = ".mb-4.d-flex.align-center.justify-between .ff-medium.fs-m:last-of-type"
+    # ITEM_LINE_TOTAL = ".item-total-price"
 
     # === Методы для шапки корзины === #
 
@@ -257,16 +263,16 @@ class CartPage:
     def get_calculation_goods_price(self):
         text = self.page.locator(self.GOODS_PRICE).inner_text()
         return float(text.replace(" ₽", "").replace(" ", "").strip())
-    #
-    # @allure.step("Получаю сумму НДС из блока калькуляции")
-    # def get_calculation_vat(self):
-    #     text = self.page.locator(self.VAT_AMOUNT).inner_text()
-    #     return float(text.replace(" ₽", "").replace(" ", "").strip())
-    #
-    # @allure.step("Получаю итоговую сумму с НДС из блока калькуляции")
-    # def get_calculation_total(self):
-    #     text = self.page.locator(self.TOTAL_WITH_VAT).inner_text()
-    #     return float(text.replace(" ₽", "").replace(" ", "").strip())
+
+    @allure.step("Получаю сумму НДС из блока калькуляции")
+    def get_calculation_vat(self):
+        text = self.page.locator(self.VAT_AMOUNT).inner_text()
+        return float(text.replace(" ₽", "").replace(" ", "").strip())
+
+    @allure.step("Получаю итоговую сумму с НДС из блока калькуляции")
+    def get_calculation_total(self):
+        text = self.page.locator(self.TOTAL_WITH_VAT).inner_text()
+        return float(text.replace(" ₽", "").replace(" ", "").strip())
     #
     # # === Методы для лимита === #
     #
@@ -386,9 +392,20 @@ class CartPage:
     def click_add_to_cart_button(self):
         self.page.locator(self.ADD_TO_CART_BUTTON).click()
 
+    @allure.step("Получаю общую сумму лимита")
+    def get_limit_total(self):
+        text = self.page.locator(self.LIMIT_TOTAL_LOCATOR).inner_text()
+        return float(text.replace(" ₽", "").replace(" ", "").replace("₽", "").replace("лимитназакупку", "").strip())
 
+    @allure.step("Получаю оставшуюся сумму лимита")
+    def get_limit_remaining(self):
+        text = self.page.locator(self.LIMIT_REMAINING_LOCATOR).inner_text()
+        return float(text.replace(" ₽", "").replace(" ", "").replace("₽", "").strip())
 
-
+    @allure.step("Получаю итоговую стоимость товара {index}")
+    def get_item_line_total(self, index=0):
+        text = self.page.locator(self.CART_ITEM).nth(index).locator(self.CART_ITEM_PRICE).inner_text()
+        return float(text.replace(" ₽", "").replace(" ", "").strip())
 
 
 
