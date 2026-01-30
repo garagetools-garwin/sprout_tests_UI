@@ -1,0 +1,6 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"","24029","Добавление товара в окне Быстрое добавление","tests","Fri Jan 30 14:31:57 UTC 2026","failed","Fri Jan 30 14:32:21 UTC 2026","","test_cart","",""
+"","22161","Открытие окна подтверждения удаления товара и отмена","tests","Fri Jan 30 14:32:22 UTC 2026","failed","Fri Jan 30 14:32:44 UTC 2026","","test_cart","",""
+"","9336","Авторизация","tests","Fri Jan 30 14:31:06 UTC 2026","passed","Fri Jan 30 14:31:15 UTC 2026","","test_autorization","",""
+"","30256","Поиск товара в окне быстрого добавления","tests","Fri Jan 30 14:31:26 UTC 2026","passed","Fri Jan 30 14:31:57 UTC 2026","","test_cart","",""
+"","11250","Открытие модального окна быстрого добавления","tests","Fri Jan 30 14:31:15 UTC 2026","passed","Fri Jan 30 14:31:26 UTC 2026","","test_cart","",""
