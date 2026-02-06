@@ -293,6 +293,7 @@ def test_select_all_items_button(base_url, page_fixture):
     page = page_fixture()
     autorization_page = AutorizationPage(page)
     cart = CartPage(page)
+    listing = ListingPage(page)
 
     autorization_page.open(base_url)
     autorization_page.admin_buyer_authorize()
@@ -301,11 +302,23 @@ def test_select_all_items_button(base_url, page_fixture):
 
     cart.clear_cart(base_url)
 
-    with allure.step("обавляю в корзину 3 товара"):
-        for i in range(3):
-            cart.add_product_from_quick_add_modal()
+    page.goto(base_url + "/catalog/9/3707")
+    listing.click_first_product()
+    listing.click_add_to_cart_button()
+    page.goto(base_url + "/catalog/9/3707")
+    listing.click_second_product()
+    listing.click_add_to_cart_button()
 
-    time.sleep(3)
+
+    cart.open(base_url)
+    current = cart.get_selected_subdivision()
+    if current != cart.TEST_SUBDIVISION_HIGH_LIMIT:
+        cart.select_subdivision(cart.TEST_SUBDIVISION_HIGH_LIMIT)
+        time.sleep(1)
+    # with allure.step("обавляю в корзину 3 товара"):
+    #     for i in range(3):
+    #         listing.add_item_in_stock_and_get_delivery_time()
+    # time.sleep(3)
 
     with allure.step("Снимаю все чекбоксы 'Включить в заказ'"):
         items_count = cart.get_cart_items_count()
@@ -609,7 +622,7 @@ def test_calculation_with_vat_full(base_url, page_fixture):
     cart.clear_cart(base_url)
 
     page.goto(f"{base_url}/catalog/9/3059")
-    listing.add_item_with_one_week()
+    listing.add_item_in_stock_and_get_delivery_time()
     listing.add_item_available_on_request()
 
     cart.open(base_url)
@@ -809,7 +822,7 @@ def test_subdivision_switching(base_url, page_fixture):
     cart.clear_cart(base_url)
 
     page.goto(f"{base_url}/catalog/9/3059")
-    listing.add_item_with_one_week()
+    listing.add_item_in_stock_and_get_delivery_time()
 
     cart.open(base_url)
 
@@ -939,7 +952,7 @@ def test_subdivision_switch_item_price_limit_exceeded(base_url, page_fixture):
     cart.clear_cart(base_url)
 
     page.goto(f"{base_url}/catalog/9/3059")
-    listing.add_item_with_one_week()
+    listing.add_item_in_stock_and_get_delivery_time()
 
     cart.open(base_url)
 
@@ -1021,7 +1034,9 @@ def test_address_list_changes_on_subdivision_switch(base_url, page_fixture):
         with allure.step("Предусловие: Устанавливаю первое тестовое подразделение"):
 
             page.goto(f"{base_url}/catalog/9/3059")
-            listing.add_item_with_one_week()
+            listing.add_item_in_stock_and_get_delivery_time()
+
+            cart.open(base_url)
 
             current = cart.get_selected_subdivision()
             if cart.normalize_address(current) != cart.normalize_address(cart.TEST_SUBDIVISION_HIGH_LIMIT):
@@ -1279,7 +1294,7 @@ def test_order_blocked_when_item_price_exceeds_limit(base_url, page_fixture):
     cart.clear_cart(base_url)
 
     page.goto(f"{base_url}/catalog/9/3059")
-    listing.add_item_with_one_week()
+    listing.add_item_in_stock_and_get_delivery_time()
 
     cart.open(base_url)
 
@@ -1316,7 +1331,7 @@ def test_order_blocked_when_item_price_exceeds_allowed_limit(base_url, page_fixt
     cart.clear_cart(base_url)
 
     page.goto(f"{base_url}/catalog/9/3059")
-    listing.add_item_with_one_week()
+    listing.add_item_in_stock_and_get_delivery_time()
 
     cart.open(base_url)
 

@@ -126,6 +126,10 @@ class ListingPage:
     def click_first_product(self):
         self.page.locator(self.PRODUCT).nth(0).click()
 
+    @allure.step("Выбираю второй товар")
+    def click_second_product(self):
+        self.page.locator(self.PRODUCT).nth(1).click()
+
     @allure.step("Добавляю товар в корзину")
     def add_to_cart(self):
         self.click_first_product()

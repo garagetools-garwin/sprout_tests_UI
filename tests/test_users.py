@@ -100,6 +100,12 @@ def test_critical_way(base_url, page_fixture, delete_user_fixture):
     expect(buyer_page).not_to_have_url(f"{base_url}/login")
     listing_page.add_to_cart()
     cart_page.open(base_url)
+
+    current = cart_page.get_selected_subdivision()
+    if current != cart_page.TEST_SUBDIVISION_HIGH_LIMIT:
+        cart_page.select_subdivision(cart_page.TEST_SUBDIVISION_HIGH_LIMIT)
+        time.sleep(1)
+
     cart_page.write_a_comment()
     cart_page.click_send_button()
     my_orders_page.open(base_url)
