@@ -1,0 +1,3 @@
+Ошибка в постусловии: Page.wait_for_selector: Timeout 10000ms exceeded.
+Call log:
+  - waiting for locator(".grid-two-columns") to be visible
