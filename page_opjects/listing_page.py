@@ -26,6 +26,93 @@ class ListingPage:
 
 
     # Листинг
+    @allure.step('Добавляю товар "В наличии" и возвращаю срок доставки')
+    def add_item_in_stock_and_get_delivery_time(self) -> str:
+        """
+        Находит первый товар с плашкой in_stock, запоминает срок доставки,
+        добавляет в корзину и возвращает текст срока.
+        """
+        self.page.wait_for_selector(self.PRODUCT, timeout=10000)
+
+        total = self.page.locator(self.PRODUCT).count()
+        assert total > 0, "Нет карточек товаров в листинге"
+
+        for i in range(total):
+            card = self.page.locator(self.PRODUCT).nth(i)
+            card.click()
+            time.sleep(2)
+
+            available_on_request = self.page.locator(self.AVAILABILITY_TEXT_LOCATOR_AVAILABLE_ON_REQUEST)
+            in_stock = self.page.locator(self.AVAILABILITY_TEXT_LOCATOR_IN_STOCK)
+
+            # Пропускаем товары "под заказ"
+            if available_on_request.count() > 0:
+                self.page.keyboard.press("Escape")
+                self.page.wait_for_selector(self.PRODUCT, timeout=10000)
+                continue
+
+            # Проверяем наличие плашки "в наличии"
+            if in_stock.count() == 0:
+                self.page.keyboard.press("Escape")
+                self.page.wait_for_selector(self.PRODUCT, timeout=10000)
+                continue
+
+            # Запоминаем срок доставки
+            delivery_time = in_stock.inner_text().strip()
+
+            # Добавляем в корзину
+            self.page.locator(self.ADD_TO_CART_BUTTON).click()
+            time.sleep(1)
+            self.page.keyboard.press("Escape")
+            self.page.wait_for_selector(self.PRODUCT, timeout=10000)
+
+            return delivery_time
+
+        raise AssertionError("Не найден товар с плашкой 'В наличии'")
+
+    @allure.step('Добавляю товар "Под заказ" и возвращаю срок доставки')
+    def add_item_on_request_and_get_delivery_time(self) -> str:
+        """
+        Находит первый товар с плашкой available_on_request, запоминает срок доставки,
+        добавляет в корзину и возвращает текст срока.
+        """
+        self.page.wait_for_selector(self.PRODUCT, timeout=10000)
+
+        total = self.page.locator(self.PRODUCT).count()
+        assert total > 0, "Нет карточек товаров в листинге"
+
+        for i in range(total):
+            card = self.page.locator(self.PRODUCT).nth(i)
+            card.click()
+            time.sleep(2)
+
+            available_on_request = self.page.locator(self.AVAILABILITY_TEXT_LOCATOR_AVAILABLE_ON_REQUEST)
+            in_stock = self.page.locator(self.AVAILABILITY_TEXT_LOCATOR_IN_STOCK)
+
+            # Пропускаем товары "в наличии"
+            if in_stock.count() > 0:
+                self.page.keyboard.press("Escape")
+                self.page.wait_for_selector(self.PRODUCT, timeout=10000)
+                continue
+
+            # Проверяем наличие плашки "под заказ"
+            if available_on_request.count() == 0:
+                self.page.keyboard.press("Escape")
+                self.page.wait_for_selector(self.PRODUCT, timeout=10000)
+                continue
+
+            # Запоминаем срок доставки
+            delivery_time = available_on_request.inner_text().strip()
+
+            # Добавляем в корзину
+            self.page.locator(self.ADD_TO_CART_BUTTON).click()
+            time.sleep(1)
+            self.page.keyboard.press("Escape")
+            self.page.wait_for_selector(self.PRODUCT, timeout=10000)
+
+            return delivery_time
+
+        raise AssertionError("Не найден товар с плашкой 'Доступно под заказ'")
 
     def open(self, base_url):
         with allure.step(f"Открываю {base_url + self.PATH}"):

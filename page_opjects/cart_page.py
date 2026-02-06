@@ -105,6 +105,7 @@ class CartPage:
     # LIMIT_BLOCK = ".limit-block"
     LIMIT_TOTAL_LOCATOR = "span.ff-regular.fs-xs.color-dark-grey:has-text('лимит на закупку')"
     LIMIT_REMAINING_LOCATOR = ".mb-4.d-flex.align-center.justify-between .ff-medium.fs-m:last-of-type"
+    COMMENT_TEXTAREA = "textarea[placeholder='Комментарий к заказу']"
     # ITEM_LINE_TOTAL = ".item-total-price"
 
     # === Методы для шапки корзины === #
@@ -112,6 +113,10 @@ class CartPage:
     @allure.step("Нажимаю кнопку 'Выделить весь товар'")
     def click_select_all_button(self):
         self.page.locator(self.SELECT_ALL_BUTTON).click()
+
+    @allure.step("Пишу комментарий")
+    def write_a_comment(self):
+        self.page.locator(self.COMMENT_TEXTAREA).type("TEST")
     #
     @allure.step("Получаю количество товаров в корзине")
     def get_cart_items_count(self):
@@ -416,11 +421,40 @@ class CartPage:
 
     # ... существующие локаторы ...
 
+    # # Локаторы для блока "Детали доставки" - по порядку селектов
+    # SUBDIVISION_ROW = ".grid-two-columns-row:has-text('Подразделение')"
+    ADDRESS_ROW = ".grid-two-columns-row:has-text('Адрес:')"
+    LEGAL_ENTITY_ROW = ".grid-two-columns-row:has-text('Юридическое лицо:')"
+    #
+    # SELECT_VALUE = ".ant-select-selection-item"
+    SELECT_TRIGGER = ".ant-select"
+    #
+    # # Выпадающий список (появляется в DOM отдельно)
+    # SELECT_DROPDOWN = ".ant-select-dropdown:not(.ant-select-dropdown-hidden)"
+    # SELECT_OPTION = ".ant-select-item-option"
+
+    # Локаторы через индекс селектов внутри блока доставки
+    DELIVERY_BLOCK = ".grid-two-columns"
+
+    SUBDIVISION_SELECT = ".grid-two-columns .basket-request-composition__body-block-select >> nth=0"
+    ADDRESS_SELECT = ".grid-two-columns .basket-request-composition__body-block-select >> nth=2"
+    LEGAL_ENTITY_SELECT = ".grid-two-columns .basket-request-composition__body-block-select >> nth=4"
+
+    SUBDIVISION_SELECT_BUTTON = ".ant-select-arrow"
+
+    SELECT_VALUE = ".ant-select-selection-item"
+    SELECT_DROPDOWN = ".ant-select-dropdown:visible"
+    SELECT_OPTION = "div.ant-select-item-option:not([type='divider'])"
+    TEST_SUBDIVISION_HIGH_LIMIT = "Тестовое подразделение для теста лимитов(не трогать)"
+    TEST_SUBDIVISION_LOW_LIMIT = "Тестовый Покупатель (подразделение)"
+    TEST_SUBDIVISION_LOW_TOTAL_LIMIT = "Тестовое подразделение (минимальный остаток за период)"
+
+
     # Локаторы для блока "Детали доставки"
-    # SUBDIVISION_SELECT = ".ant-select:has(.ant-select-selection-item):near(:text('Подразделение'))"
+    # SUBDIVISION_SELECT = "text=Подразделение (место возникновения затрат): >> .. >> .ant-select-selection-item"
     # SUBDIVISION_DROPDOWN = ".ant-select-dropdown"
     # SUBDIVISION_OPTION = ".ant-select-item-option"
-    SUBDIVISION_SELECTED_VALUE = ".ant-select-selection-item"
+    # SUBDIVISION_SELECTED_VALUE = ".ant-select-selection-item"
     #
     # ADDRESS_SELECT = ".ant-select:has(.ant-select-selection-item):near(:text('Адрес'))"
     # ADDRESS_DROPDOWN = ".ant-select-dropdown"
@@ -437,101 +471,237 @@ class CartPage:
     # SUBDIVISION_FIELD = "text=Подразделение (место возникновения затрат):"
     # ADDRESS_FIELD = "text=Адрес:"
     # LEGAL_ENTITY_FIELD = "text=Юридическое лицо:"
+
+    LIMIT_BAR_ELEMENT = ".ant-progress-steps-item.ant-progress-steps-item-active"  # Уточните селектор
+    LIMIT_BAR_RED = ".limit-progress-bar--exceeded"  # Или класс для красной полоски
+
+    @allure.step("Проверяю, что полоска лимита красная")
+    def is_limit_bar_red(self):
+        """Проверяет, что полоска лимита имеет красный цвет (превышение)"""
+        # Вариант 1: Проверка по классу
+        limit_bar = self.page.locator(self.LIMIT_BAR_ELEMENT).nth(0)
+        classes = limit_bar.get_attribute("class") or ""
+
+        if "red" in classes or "exceeded" in classes or "danger" in classes:
+            return True
+
+        # Вариант 2: Проверка по цвету через CSS
+        color = limit_bar.evaluate("el => getComputedStyle(el).backgroundColor")
+        # Красный цвет в RGB
+        red_colors = ["rgb(255, 0, 0)", "rgb(220, 53, 69)", "rgb(239, 68, 68)", "rgb(236, 102, 101)"]
+
+        return color in red_colors or "red" in color.lower()
     #
     # # === Методы для работы с подразделениями === #
     #
+
+    @allure.step("Выбираю опцию: {option_name}")
+    def select_option(self, option_name: str):
+
+        self.page.locator(self.SELECT_DROPDOWN).locator(self.SELECT_OPTION).filter(has_text=option_name).click()
+        time.sleep(1)
+
+    @allure.step("Выбираю опцию по индексу: {index}")
+    def select_option_by_index(self, index: int):
+        """Выбирает опцию по индексу из уже открытого выпадающего списка"""
+        self.page.locator(self.SELECT_DROPDOWN).locator(self.SELECT_OPTION).nth(index).click()
+        time.sleep(1)
+
     @allure.step("Получаю текущее выбранное подразделение")
     def get_selected_subdivision(self):
-        return self.page.locator(self.SUBDIVISION_SELECT).locator(self.SUBDIVISION_SELECTED_VALUE).inner_text()
+        # Ждём появления блока
+        self.page.wait_for_selector(self.DELIVERY_BLOCK, state="visible", timeout=10000)
+        return self.page.locator(self.SUBDIVISION_SELECT).locator(self.SELECT_VALUE).inner_text()
+
+    @allure.step("Открываю список подразделений")
+    def open_subdivision_dropdown(self):
+        self.page.locator(self.SUBDIVISION_SELECT).click()
+        self.page.wait_for_selector(self.SELECT_DROPDOWN, state="visible")
+
+    @allure.step("Получаю текущий выбранный адрес")
+    def get_selected_address(self):
+        return self.page.locator(self.ADDRESS_SELECT).locator(self.SELECT_VALUE).inner_text()
+
+    @allure.step("Открываю список адресов")
+    def open_address_dropdown(self):
+        self.page.locator(self.ADDRESS_SELECT).click()
+        self.page.wait_for_selector(self.SELECT_DROPDOWN, state="visible")
+
+    @allure.step("Получаю текущее выбранное юридическое лицо")
+    def get_selected_legal_entity(self):
+        return self.page.locator(self.LEGAL_ENTITY_SELECT).locator(self.SELECT_VALUE).inner_text()
+
+    @allure.step("Открываю список юридических лиц")
+    def open_legal_entity_dropdown(self):
+        self.page.locator(self.LEGAL_ENTITY_SELECT).click()
+        self.page.wait_for_selector(self.SELECT_DROPDOWN, state="visible")
+
+
+
+
+
+
+
+
+
+
+    # @allure.step("Получаю текущее выбранное подразделение")
+    # def get_selected_subdivision(self):
+    #     return self.page.locator(self.SUBDIVISION_ROW).locator(self.SELECT_VALUE).inner_text()
+    # #
+    # @allure.step("Получаю текущее выбранное подразделение")
+    # def get_selected_subdivision(self):
+    #     return self.page.locator(self.SUBDIVISION_ROW).locator(self.SELECT_VALUE).inner_text()
     #
     # @allure.step("Открываю список подразделений")
     # def open_subdivision_dropdown(self):
-    #     self.page.locator(self.SUBDIVISION_SELECT).click()
-    #     self.page.wait_for_selector(self.SUBDIVISION_DROPDOWN, state="visible")
+    #     self.page.locator(self.SUBDIVISION_ROW).locator(self.SELECT_TRIGGER).click()
+    #     self.page.wait_for_selector(self.SELECT_DROPDOWN, state="visible")
+
+    SELECT_OPTION_SELECTED = ".ant-select-item-option-selected"
+    SELECT_OPTION_UNSELECTED = ".ant-select-item-option:not(.ant-select-item-option-selected):not(.ant-select-item-option-divider)"
+
+    @staticmethod
+    def normalize_address(address: str) -> str:
+        """Нормализация строки для сравнения"""
+        import unicodedata
+        if not address:
+            return ""
+        normalized = address.replace('\xa0', ' ')
+        normalized = unicodedata.normalize('NFC', normalized)
+        normalized = ' '.join(normalized.split())
+        return normalized.strip()
+
+    @allure.step("Выбираю другую опцию (не текущую)")
+    def select_different_option(self) -> str:
+        """
+        Находит и кликает на первую опцию, которая не выбрана.
+        Возвращает текст выбранной опции.
+        """
+        dropdown = self.page.locator(self.SELECT_DROPDOWN)
+        dropdown.wait_for(state="visible", timeout=5000)
+
+        unselected_option = dropdown.locator(self.SELECT_OPTION_UNSELECTED).first
+        text = unselected_option.inner_text().strip()
+        unselected_option.click()
+        time.sleep(1)
+        return text
+
+    @allure.step("Проверяю, что список подразделений отображается")
+    def is_subdivision_dropdown_visible(self):
+        return self.page.locator(self.SELECT_DROPDOWN).is_visible()
+
+    @allure.step("Получаю список подразделений из выпадающего списка")
+    def get_subdivision_options(self):
+        options = self.page.locator(self.SELECT_DROPDOWN).locator(self.SELECT_OPTION)
+        return [opt.inner_text() for opt in options.all()]
+
+    @allure.step("Выбираю подразделение: {subdivision_name}")
+    def select_subdivision(self, subdivision_name: str):
+        # Проверяем, открыт ли уже dropdown
+        if not self.page.locator(self.SELECT_DROPDOWN).is_visible():
+            self.open_subdivision_dropdown()
+        self.page.locator(self.SELECT_DROPDOWN).locator(self.SELECT_OPTION).filter(has_text=subdivision_name).click()
+        time.sleep(1)
+
+    @allure.step("Выбираю адрес: {address_name}")
+    def select_address(self, address_name: str):
+        if not self.page.locator(self.SELECT_DROPDOWN).is_visible():
+            self.open_address_dropdown()
+        self.page.locator(self.SELECT_DROPDOWN).locator(self.SELECT_OPTION).filter(has_text=address_name).click()
+        time.sleep(1)
+
+    @allure.step("Выбираю юридическое лицо: {entity_name}")
+    def select_legal_entity(self, entity_name: str):
+        if not self.page.locator(self.SELECT_DROPDOWN).is_visible():
+            self.open_legal_entity_dropdown()
+        self.page.locator(self.SELECT_DROPDOWN).locator(self.SELECT_OPTION).filter(has_text=entity_name).click()
+        time.sleep(1)
+
+    @allure.step("Выбираю подразделение по индексу: {index}")
+    def select_subdivision_by_index(self, index: int):
+        self.open_subdivision_dropdown()
+        self.page.locator(self.SELECT_DROPDOWN).locator(self.SELECT_OPTION).nth(index).click()
+        time.sleep(1)
     #
-    # @allure.step("Проверяю, что список подразделений отображается")
-    # def is_subdivision_dropdown_visible(self):
-    #     return self.page.locator(self.SUBDIVISION_DROPDOWN).is_visible()
-    #
-    # @allure.step("Получаю список подразделений из выпадающего списка")
-    # def get_subdivision_options(self):
-    #     options = self.page.locator(f"{self.SUBDIVISION_DROPDOWN} {self.SUBDIVISION_OPTION}")
-    #     return [opt.inner_text() for opt in options.all()]
-    #
-    # @allure.step("Выбираю подразделение: {subdivision_name}")
-    # def select_subdivision(self, subdivision_name: str):
-    #     self.open_subdivision_dropdown()
-    #     self.page.locator(f"{self.SUBDIVISION_DROPDOWN} {self.SUBDIVISION_OPTION}").filter(
-    #         has_text=subdivision_name).click()
-    #     time.sleep(1)
-    #
-    # @allure.step("Выбираю подразделение по индексу: {index}")
-    # def select_subdivision_by_index(self, index: int):
-    #     self.open_subdivision_dropdown()
-    #     self.page.locator(f"{self.SUBDIVISION_DROPDOWN} {self.SUBDIVISION_OPTION}").nth(index).click()
-    #     time.sleep(1)
-    #
-    # # === Методы для работы с адресами === #
-    #
-    # @allure.step("Получаю текущий выбранный адрес")
-    # def get_selected_address(self):
-    #     return self.page.locator(self.ADDRESS_SELECT).locator(self.ADDRESS_SELECTED_VALUE).inner_text()
-    #
-    # @allure.step("Открываю список адресов")
-    # def open_address_dropdown(self):
-    #     self.page.locator(self.ADDRESS_SELECT).click()
-    #     self.page.wait_for_selector(self.ADDRESS_DROPDOWN, state="visible")
-    #
-    # @allure.step("Проверяю, что список адресов отображается")
-    # def is_address_dropdown_visible(self):
-    #     return self.page.locator(self.ADDRESS_DROPDOWN).is_visible()
-    #
-    # @allure.step("Получаю список адресов из выпадающего списка")
-    # def get_address_options(self):
-    #     options = self.page.locator(f"{self.ADDRESS_DROPDOWN} {self.ADDRESS_OPTION}")
-    #     return [opt.inner_text() for opt in options.all()]
-    #
-    # @allure.step("Выбираю адрес: {address_name}")
-    # def select_address(self, address_name: str):
-    #     self.open_address_dropdown()
-    #     self.page.locator(f"{self.ADDRESS_DROPDOWN} {self.ADDRESS_OPTION}").filter(has_text=address_name).click()
-    #     time.sleep(1)
-    #
-    # @allure.step("Выбираю адрес по индексу: {index}")
-    # def select_address_by_index(self, index: int):
-    #     self.open_address_dropdown()
-    #     self.page.locator(f"{self.ADDRESS_DROPDOWN} {self.ADDRESS_OPTION}").nth(index).click()
-    #     time.sleep(1)
-    #
-    # # === Методы для работы с юридическими лицами === #
-    #
-    # @allure.step("Получаю текущее выбранное юридическое лицо")
-    # def get_selected_legal_entity(self):
-    #     return self.page.locator(self.LEGAL_ENTITY_SELECT).locator(self.LEGAL_ENTITY_SELECTED_VALUE).inner_text()
-    #
-    # @allure.step("Открываю список юридических лиц")
-    # def open_legal_entity_dropdown(self):
-    #     self.page.locator(self.LEGAL_ENTITY_SELECT).click()
-    #     self.page.wait_for_selector(self.LEGAL_ENTITY_DROPDOWN, state="visible")
-    #
-    # @allure.step("Проверяю, что список юридических лиц отображается")
-    # def is_legal_entity_dropdown_visible(self):
-    #     return self.page.locator(self.LEGAL_ENTITY_DROPDOWN).is_visible()
-    #
-    # @allure.step("Получаю список юридических лиц из выпадающего списка")
-    # def get_legal_entity_options(self):
-    #     options = self.page.locator(f"{self.LEGAL_ENTITY_DROPDOWN} {self.LEGAL_ENTITY_OPTION}")
-    #     return [opt.inner_text() for opt in options.all()]
-    #
-    # @allure.step("Выбираю юридическое лицо: {entity_name}")
-    # def select_legal_entity(self, entity_name: str):
-    #     self.open_legal_entity_dropdown()
-    #     self.page.locator(f"{self.LEGAL_ENTITY_DROPDOWN} {self.LEGAL_ENTITY_OPTION}").filter(
-    #         has_text=entity_name).click()
-    #     time.sleep(1)
-    #
-    # @allure.step("Выбираю юридическое лицо по индексу: {index}")
-    # def select_legal_entity_by_index(self, index: int):
-    #     self.open_legal_entity_dropdown()
-    #     self.page.locator(f"{self.LEGAL_ENTITY_DROPDOWN} {self.LEGAL_ENTITY_OPTION}").nth(index).click()
-    #     time.sleep(1)
+    # === Методы для работы с адресами === #
+
+    @allure.step("Получаю текущий выбранный адрес")
+    def get_selected_address(self):
+        return self.page.locator(self.ADDRESS_ROW).locator(self.SELECT_VALUE).inner_text()
+
+    @allure.step("Открываю список адресов")
+    def open_address_dropdown(self):
+        self.page.locator(self.ADDRESS_ROW).locator(self.SELECT_TRIGGER).click()
+        self.page.wait_for_selector(self.SELECT_DROPDOWN, state="visible")
+
+    @allure.step("Проверяю, что список адресов отображается")
+    def is_address_dropdown_visible(self):
+        return self.page.locator(self.SELECT_DROPDOWN).is_visible()
+
+    @allure.step("Получаю список адресов из выпадающего списка")
+    def get_address_options(self):
+        options = self.page.locator(self.SELECT_DROPDOWN).locator(self.SELECT_OPTION)
+        return [opt.inner_text() for opt in options.all()]
+
+    @allure.step("Выбираю адрес: {address_name}")
+    def select_address(self, address_name: str):
+        self.open_address_dropdown()
+        self.page.locator(self.SELECT_DROPDOWN).locator(self.SELECT_OPTION).filter(has_text=address_name).click()
+        time.sleep(1)
+
+    @allure.step("Выбираю адрес по индексу: {index}")
+    def select_address_by_index(self, index: int):
+        if not self.page.locator(self.SELECT_DROPDOWN).is_visible():
+            self.open_address_dropdown()
+        self.page.locator(self.SELECT_DROPDOWN).locator(self.SELECT_OPTION).nth(index).click()
+        time.sleep(1)
+
+    # === Методы для работы с юридическими лицами === #
+
+    @allure.step("Получаю список опций из выпадающего списка")
+    def get_dropdown_options(self):
+        options = self.page.locator(self.SELECT_DROPDOWN).locator(self.SELECT_OPTION)
+        return [opt.inner_text() for opt in options.all()]
+
+    @allure.step("Проверяю, что выпадающий список отображается")
+    def is_dropdown_visible(self):
+        return self.page.locator(self.SELECT_DROPDOWN).is_visible()
+
+    @allure.step("Получаю текущее выбранное юридическое лицо")
+    def get_selected_legal_entity(self):
+        return self.page.locator(self.LEGAL_ENTITY_ROW).locator(self.SELECT_VALUE).inner_text()
+
+    @allure.step("Открываю список юридических лиц")
+    def open_legal_entity_dropdown(self):
+        self.page.locator(self.LEGAL_ENTITY_ROW).locator(self.SELECT_TRIGGER).click()
+        self.page.wait_for_selector(self.SELECT_DROPDOWN, state="visible")
+
+    @allure.step("Проверяю, что список юридических лиц отображается")
+    def is_legal_entity_dropdown_visible(self):
+        return self.page.locator(self.SELECT_DROPDOWN).is_visible()
+
+    @allure.step("Получаю список юридических лиц из выпадающего списка")
+    def get_legal_entity_options(self):
+        options = self.page.locator(self.SELECT_DROPDOWN).locator(self.SELECT_OPTION)
+        return [opt.inner_text() for opt in options.all()]
+
+    @allure.step("Выбираю юридическое лицо: {entity_name}")
+    def select_legal_entity(self, entity_name: str):
+        self.open_legal_entity_dropdown()
+        self.page.locator(self.SELECT_DROPDOWN).locator(self.SELECT_OPTION).filter(has_text=entity_name).click()
+        time.sleep(1)
+
+    @allure.step("Выбираю юридическое лицо по индексу: {index}")
+    def select_legal_entity_by_index(self, index: int):
+        if not self.page.locator(self.SELECT_DROPDOWN).is_visible():
+            self.open_legal_entity_dropdown()
+        self.page.locator(self.SELECT_DROPDOWN).locator(self.SELECT_OPTION).nth(index).click()
+        time.sleep(1)
+
+    @allure.step("Выбираю подразделение: {subdivision_name}")
+    def select_subdivision(self, subdivision_name: str):
+        # Проверяем, открыт ли уже dropdown
+        if not self.page.locator(self.SELECT_DROPDOWN).is_visible():
+            self.open_subdivision_dropdown()
+        self.select_option(subdivision_name)

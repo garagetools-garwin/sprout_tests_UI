@@ -240,6 +240,25 @@ class SubdivisionsSettingsPage:
     FIRST_UNSELECTED_MANAGER_SELECT = ".ant-select-item.ant-select-item-option[label][title]:not(.ant-select-item-option-selected)"
     SUCCESS_MESSAGE = "text=Подразделение успешно изменено"
     CHANGE_LIMIT_BUTTON = "text=Изменить лимиты"
+    REMAINING_LIMIT_VALUE = "//span[contains(text(), 'Остаток за период')]/preceding-sibling::div"
+    TOTAL_LIMIT_VALUE = "//span[contains(text(), 'Общий лимит подразделения')]/preceding-sibling::div"
+    LIMIT_FOR_ITEM_VALUE = "//span[contains(text(), 'Лимит цены на товар (включительно)')]/preceding-sibling::div"
+
+    @allure.step("Запоминаю значение остатка лимита текущего подразделения")
+    def get_remaining_limit_value(self):
+        remaining_limit_value = self.page.locator(self.REMAINING_LIMIT_VALUE).inner_text()
+        return float(remaining_limit_value.replace(" ₽", "").replace(" ", "").strip())
+
+    @allure.step("Запоминаю значение всего лимита текущего подразделения")
+    def get_total_limit_value(self):
+        total_limit_value = self.page.locator(self.TOTAL_LIMIT_VALUE).inner_text()
+        return float(total_limit_value.replace(" ₽", "").replace(" ", "").strip())
+
+    @allure.step("Запоминаю значение остатка лимита текущего подразделения")
+    def get_limit_for_item_value(self):
+        limit_for_item_value = self.page.locator(self.LIMIT_FOR_ITEM_VALUE).inner_text()
+        return float(limit_for_item_value.replace(" ₽", "").replace(" ", "").strip())
+
 
     @allure.step("Выбираю юридическое лицо")
     def select_legal_entity(self, index=0):
