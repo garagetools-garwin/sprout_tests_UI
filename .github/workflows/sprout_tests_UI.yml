@@ -9,7 +9,7 @@ on:
   #   branches: [ main, master ]
   schedule:
     # - cron: '0 5 * * *'    
-    - cron: '0 14 * * *'
+    - cron: '0 11 * * *'
 
 # Определение Задачи(job)
 jobs:
@@ -21,7 +21,7 @@ jobs:
     concurrency: sprout_tests_UI_concurrency
 
     # запуск на виртуальной машине
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && (github.event.schedule == '0 5 * * *' || github.event.schedule == '0 14 * * *'))
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && (github.event.schedule == '0 5 * * *' || github.event.schedule == '0 11 * * *'))
     runs-on: ubuntu-latest
     env:
       ADMIN_BUYER_EMAIL: ${{ secrets.ADMIN_BUYER_EMAIL }}
