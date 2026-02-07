@@ -917,6 +917,8 @@ def test_set_primary_address(base_url, page_fixture):
     with allure.step("Проверяю отображение плашки 'Основной адрес'"):
         addresses_page.verify_primary_badge_visible(new_main_index)
 
+        cart.open(base_url)
+
     current = cart.get_selected_subdivision()
     if current != cart.TEST_SUBDIVISION_HIGH_LIMIT:
         cart.select_subdivision(cart.TEST_SUBDIVISION_HIGH_LIMIT)
@@ -924,7 +926,6 @@ def test_set_primary_address(base_url, page_fixture):
 
     # Проверка адреса в корзине
     with allure.step("Проверяю, что основной адрес отображается в корзине"):
-        cart.open(base_url)
         cart.verify_primary_address(updated_main_address)
 
 
