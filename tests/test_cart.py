@@ -1347,6 +1347,10 @@ def test_order_blocked_when_item_price_exceeds_allowed_limit(base_url, page_fixt
 
     cart.open(base_url)
 
+    # Устанавливаем галочку, если её нет
+    cart.check_item_checkbox(index=0)
+    time.sleep(1)
+
     try:
         with allure.step("Предусловие: Устанавливаю подразделение с низким лимитом на закупку"):
             current = cart.get_selected_subdivision()
