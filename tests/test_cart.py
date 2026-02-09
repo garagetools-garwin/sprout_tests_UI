@@ -944,7 +944,7 @@ def test_subdivision_switching(base_url, page_fixture):
             except Exception as e:
                 allure.attach(f"Ошибка восстановления: {e}", name="Ошибка восстановления")
 
-@pytest.skip("При переключении не обновляетя страница, соответственно статус кнопки не меняется")
+@pytest.mark.skip(reason="При переключении не обновляетя страница, соответственно статус кнопки не меняется")
 @allure.title("Блокировка заказа при превышении лимита на цену товара при переключении подразделения")
 def test_subdivision_switch_item_price_limit_exceeded(base_url, page_fixture):
 

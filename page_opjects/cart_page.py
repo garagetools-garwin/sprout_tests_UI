@@ -447,7 +447,7 @@ class CartPage:
     SELECT_OPTION = "div.ant-select-item-option:not([type='divider'])"
     TEST_SUBDIVISION_HIGH_LIMIT = "Тестовое подразделение для теста лимитов(не трогать)"
     TEST_SUBDIVISION_LOW_LIMIT = "Тестовый Покупатель (подразделение)"
-    TEST_SUBDIVISION_LOW_TOTAL_LIMIT = "Тестовое подразделение 1770379124"
+    TEST_SUBDIVISION_LOW_TOTAL_LIMIT = "Тестовое подразделение минимальный остаток за период"
 
 
     # Локаторы для блока "Детали доставки"
