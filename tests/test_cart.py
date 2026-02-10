@@ -127,6 +127,7 @@ def test_open_delete_confirmation_modal(base_url, page_fixture):
     page = page_fixture()
     autorization_page = AutorizationPage(page)
     cart = CartPage(page)
+    listing = ListingPage(page)
 
     autorization_page.open(base_url)
     autorization_page.admin_buyer_authorize()
@@ -135,8 +136,10 @@ def test_open_delete_confirmation_modal(base_url, page_fixture):
 
     cart.clear_cart(base_url)
 
-    cart.open_quick_add_modal()
-    cart.add_product_from_opened_quick_add_modal()
+    page.goto(f"{base_url}/catalog/9/3059")
+    listing.add_item_in_stock_and_get_delivery_time()
+
+    cart.open(base_url)
 
     with allure.step("Нажимаю кнопку удаления товара"):
         cart.click_delete_item_button(0)
@@ -357,6 +360,7 @@ def test_checkbox_toggle_updates_total(base_url, page_fixture):
     page = page_fixture()
     autorization_page = AutorizationPage(page)
     cart = CartPage(page)
+    listing = ListingPage(page)
 
     autorization_page.open(base_url)
     autorization_page.admin_buyer_authorize()
@@ -366,8 +370,10 @@ def test_checkbox_toggle_updates_total(base_url, page_fixture):
     cart.clear_cart(base_url)
 
     with allure.step("обавляю в корзину 2 товара"):
-        for i in range(2):
-            cart.add_product_from_quick_add_modal()
+        page.goto(f"{base_url}/catalog/9/3059")
+        listing.add_item_in_stock_and_get_delivery_time()
+        page.goto(f"{base_url}/catalog/9/3059")
+        listing.add_item_on_request_and_get_delivery_time()
 
     cart.open(base_url)
 
@@ -401,6 +407,7 @@ def test_quantity_buttons_increment_decrement(base_url, page_fixture):
     page = page_fixture()
     autorization_page = AutorizationPage(page)
     cart = CartPage(page)
+    listing = ListingPage(page)
 
     autorization_page.open(base_url)
     autorization_page.admin_buyer_authorize()
@@ -410,12 +417,16 @@ def test_quantity_buttons_increment_decrement(base_url, page_fixture):
     cart.clear_cart(base_url)
 
     with allure.step("обавляю в корзину 2 товара"):
-        for i in range(1):
-            cart.add_product_from_quick_add_modal()
+        page.goto(f"{base_url}/catalog/9/3059")
+        listing.add_item_in_stock_and_get_delivery_time()
+        page.goto(f"{base_url}/catalog/9/3059")
+        listing.add_item_on_request_and_get_delivery_time()
+
+    cart.open(base_url)
 
     with allure.step("Проверяю начальное количество товара"):
         assert cart.get_item_quantity(0) == 1
-        assert cart.get_calculation_quantity() == 1
+        assert cart.get_calculation_quantity() == 2
 
     with allure.step("Нажимаю кнопку '+' три раза"):
         cart.increase_quantity_by_button(index=0, count=3)
@@ -424,7 +435,7 @@ def test_quantity_buttons_increment_decrement(base_url, page_fixture):
 
     with allure.step("Проверяю количество товара = 4"):
         assert cart.get_item_quantity(0) == 4
-        assert cart.get_calculation_quantity() == 4
+        assert cart.get_calculation_quantity() == 5
 
     with allure.step("Нажимаю кнопку '-' два раза"):
         cart.decrease_quantity_by_button(index=0, count=2)
@@ -433,7 +444,7 @@ def test_quantity_buttons_increment_decrement(base_url, page_fixture):
 
     with allure.step("Проверяю количество товара = 2"):
         assert cart.get_item_quantity(0) == 2
-        assert cart.get_calculation_quantity() == 2
+        assert cart.get_calculation_quantity() == 3
 
 
 @allure.title("Ручной ввод количества товара")
@@ -441,6 +452,7 @@ def test_manual_quantity_input(base_url, page_fixture):
     page = page_fixture()
     autorization_page = AutorizationPage(page)
     cart = CartPage(page)
+    listing = ListingPage(page)
 
     autorization_page.open(base_url)
     autorization_page.admin_buyer_authorize()
@@ -449,7 +461,10 @@ def test_manual_quantity_input(base_url, page_fixture):
 
     cart.clear_cart(base_url)
 
-    cart.add_product_from_quick_add_modal()
+    page.goto(f"{base_url}/catalog/9/3059")
+    listing.add_item_in_stock_and_get_delivery_time()
+
+    cart.open(base_url)
 
     with allure.step("Фиксирую начальную стоимость"):
         initial_price = cart.get_calculation_goods_price()
@@ -1346,6 +1361,8 @@ def test_order_blocked_when_item_price_exceeds_allowed_limit(base_url, page_fixt
     listing.add_item_in_stock_and_get_delivery_time()
 
     cart.open(base_url)
+
+    time.sleep(2)
 
     # Устанавливаем галочку, если её нет
     cart.check_item_checkbox(index=0)

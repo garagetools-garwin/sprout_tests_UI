@@ -20,7 +20,9 @@ class CartPage:
     OPTION_BUTTON = ".ant-dropdown-trigger.button-circle.secondary"
     CLEAR_CART_BUTTON = ".ant-dropdown-menu-item.ant-dropdown-menu-item-only-child"
     CONFIRM_CLEAR_CART_BUTTON = ".button-lg.danger"
-    PRODUCT_ROW = ".ant-table-row.ant-table-row-level-0.ant-table-row-selected.expanded"
+    PRODUCT_ROW = ".ant-table-row.ant-table-row-level-0.expanded"
+    PRODUCT_ROW_SELECTED = ".ant-table-row.ant-table-row-level-0.ant-table-row-selected.expanded"
+
 
     ADDRESS_LABEL = "text=Адрес:"
     ADDRESS_CONTAINER = ".."
