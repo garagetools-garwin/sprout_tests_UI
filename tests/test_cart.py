@@ -1340,6 +1340,12 @@ def test_order_blocked_when_item_price_exceeds_limit(base_url, page_fixture):
         expect(page.locator(cart.SEND_BUTTON)).to_be_disabled()
         allure.attach("Плашка отображается, кнопка заблокирована", name="Состояние после переключения на низкий лимит")
 
+    with allure.step("Постусловие: Очищаю корзину и возвращаю тестовое подразделение"):
+        current = cart.get_selected_subdivision()
+        if current != cart.TEST_SUBDIVISION_HIGH_LIMIT:
+            cart.select_subdivision(cart.TEST_SUBDIVISION_HIGH_LIMIT)
+            time.sleep(1)
+
 
 @allure.title("Нельзя отправить товар который дороже разрешённого лимита")
 def test_order_blocked_when_item_price_exceeds_allowed_limit(base_url, page_fixture):
@@ -1362,11 +1368,11 @@ def test_order_blocked_when_item_price_exceeds_allowed_limit(base_url, page_fixt
 
     cart.open(base_url)
 
-    time.sleep(2)
+    time.sleep(3)
 
     # Устанавливаем галочку, если её нет
-    cart.check_item_checkbox(index=0)
-    time.sleep(1)
+    cart.check_item_checkbox(0)
+    time.sleep(2)
 
     try:
         with allure.step("Предусловие: Устанавливаю подразделение с низким лимитом на закупку"):
