@@ -372,8 +372,8 @@ def test_checkbox_toggle_updates_total(base_url, page_fixture):
     with allure.step("обавляю в корзину 2 товара"):
         page.goto(f"{base_url}/catalog/9/3059")
         listing.add_item_in_stock_and_get_delivery_time()
-        page.goto(f"{base_url}/catalog/9/3059")
-        listing.add_item_on_request_and_get_delivery_time()
+        page.goto(base_url + "/catalog/9/3707")
+        listing.add_expensive_item_to_cart(min_price=350)
 
     cart.open(base_url)
 

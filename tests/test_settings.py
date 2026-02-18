@@ -18,6 +18,7 @@ from page_opjects.settings_page.users_settings_page import UsersSettingsPage, Us
 from page_opjects.settings_page.general_settings_page import GeneralSettingsPage
 from page_opjects.settings_page.contracts_settings_page import ContractsSettingsPage
 from page_opjects.settings_page.company_name_modal import CompanyNameModal
+from page_opjects.settings_page.warehouses_settings_page import WarehousesSettingsPage, WarehouseModal
 
 """Страница Контракты"""
 @allure.title("Округление копеек в листинге через настройку в Контрактах")
