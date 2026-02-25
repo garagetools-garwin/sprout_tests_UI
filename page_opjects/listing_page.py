@@ -16,7 +16,7 @@ class ListingPage:
     # Листинг
 
     PRODUCT = "tr.ant-table-row"
-    PRICE_IN_CARD = ".ff-semibold.fs-m"
+    PRICE_IN_CARD = ".ff-medium.fs-s"
     PRICE_IN_CARD_WITH_NDS = ".ff-regular.fs-xs"
 
     # Карточка товара

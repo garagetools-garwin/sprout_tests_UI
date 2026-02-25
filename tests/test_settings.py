@@ -764,3 +764,1145 @@ def test_change_admin_role_flow(base_url, page_fixture):
     with allure.step("Проверяю, что в списке пользователей 'Администратор аккаунта' у юзера отсутствует"):
         assert not users_admin.is_admin_badge_present("testgarwin_yur+2@mail.ru")
 
+
+
+
+"""Страница Склады отгрузки (продавец)"""
+
+
+# ============================================================================
+# ВЫСОКИЙ ПРИОРИТЕТ
+# ============================================================================
+
+
+# @allure.title("Создание нового склада и его удаление")
+# @allure.tag("positive", "regression", "high")
+# @allure.severity(allure.severity_level.CRITICAL)
+# def test_create_and_delete_warehouse(base_url, page_fixture):
+#     """
+#     Объединяет тест-кейсы:
+#     - Создание склада (высокий приоритет)
+#     - Проверка оповещения об успешном добавлении
+#     - Удаление созданного склада (чистка за собой)
+#     """
+#     page = page_fixture()
+#     autorization_page = AutorizationPage(page)
+#     warehouses = WarehousesSettingsPage(page)
+#     modal = WarehouseModal(page)
+#
+#     autorization_page.open(base_url)
+#     autorization_page.admin_seller_authorize()
+#
+#     warehouses.open(base_url)
+#
+#     initial_count = warehouses.get_warehouses_count()
+#
+#     with allure.step("Открываю окно добавления склада"):
+#         warehouses.click_add_warehouse()
+#         assert warehouses.is_modal_visible(), "Окно нового склада не открылось"
+#
+#     with allure.step("Заполняю обязательные поля корректными значениями"):
+#         warehouse_name, address, city = modal.fill_random()
+#
+#         allure.attach(
+#             f"Название: {warehouse_name}\nАдрес: {address}\nГород: {city}",
+#             name="Данные склада"
+#         )
+#
+#     with allure.step("Нажимаю 'Добавить склад'"):
+#         modal.click_add()
+#
+#     with allure.step("Проверяю оповещение об успешном добавлении"):
+#         assert warehouses.is_success_toast_visible(), \
+#             "Оповещение 'Новый склад добавлен' не отображается"
+#
+#     with allure.step("Проверяю, что склад появился в списке"):
+#         page.wait_for_timeout(1000)
+#         new_count = warehouses.get_warehouses_count()
+#         assert new_count == initial_count + 1, \
+#             f"Количество складов не увеличилось. Было: {initial_count}, стало: {new_count}"
+#
+#         assert warehouses.is_warehouse_present(warehouse_name), \
+#             f"Склад '{warehouse_name}' не найден в списке"
+#
+#     # --- Удаление созданного склада ---
+#     with allure.step("Открываю экшн-меню созданного склада и удаляю"):
+#         warehouses.click_warehouse_by_name(warehouse_name)
+#         modal.click_delete()
+#
+#     with allure.step("Проверяю отображение окна подтверждения удаления"):
+#         assert modal.is_delete_confirmation_visible(), \
+#             "Окно подтверждения удаления не появилось"
+#
+#     with allure.step("Подтверждаю удаление"):
+#         modal.confirm_delete()
+#
+#     with allure.step("Проверяю оповещение об удалении"):
+#         assert warehouses.is_delete_success_toast_visible(), \
+#             "Оповещение 'Склад удален' не отображается"
+#
+#     with allure.step("Проверяю, что склад удалён из списка"):
+#         page.wait_for_timeout(1000)
+#         final_count = warehouses.get_warehouses_count()
+#         assert final_count == initial_count, \
+#             f"Количество складов не вернулось к исходному. Было: {initial_count}, стало: {final_count}"
+#
+#         assert not warehouses.is_warehouse_present(warehouse_name), \
+#             f"Склад '{warehouse_name}' всё ещё отображается в списке"
+
+
+import random
+import allure
+import pytest
+from faker import Faker
+from playwright.sync_api import expect
+
+from page_opjects.autorization_page import AutorizationPage
+from page_opjects.settings_page.warehouses_settings_page import WarehousesSettingsPage, WarehouseModal
+
+fake = Faker('ru_RU')
+
+"""Тесты страницы Склады отгрузки (Продавец)"""
+
+
+# ============================================================================
+# ВЫСОКИЙ ПРИОРИТЕТ
+# ============================================================================
+
+
+@allure.title("Создание нового склада и его удаление")
+@allure.tag("positive", "regression", "high")
+@allure.severity(allure.severity_level.CRITICAL)
+def test_create_and_delete_warehouse(base_url, page_fixture):
+    """
+    Объединяет тест-кейсы:
+    - Создание склада
+    - Проверка оповещения об успешном добавлении
+    - Удаление через экшн-меню
+    """
+    page = page_fixture()
+    autorization_page = AutorizationPage(page)
+    warehouses = WarehousesSettingsPage(page)
+    modal = WarehouseModal(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_seller_authorize()
+
+    warehouses.open(base_url)
+
+    initial_count = warehouses.get_warehouses_count()
+
+    with allure.step("Открываю окно добавления склада"):
+        warehouses.click_add_warehouse()
+        assert warehouses.is_modal_visible(), "Окно нового склада не открылось"
+
+    with allure.step("Заполняю обязательные поля корректными значениями"):
+        warehouse_name, address, city = modal.fill_random()
+
+        allure.attach(
+            f"Название: {warehouse_name}\nАдрес: {address}\nГород: {city}",
+            name="Данные склада"
+        )
+
+    with allure.step("Нажимаю 'Добавить склад'"):
+        modal.click_add()
+
+    with allure.step("Проверяю оповещение об успешном добавлении"):
+        assert warehouses.is_success_toast_visible(), \
+            "Оповещение 'Новый склад добавлен' не отображается"
+
+    with allure.step("Проверяю, что склад появился в списке"):
+        page.wait_for_timeout(1000)
+        new_count = warehouses.get_warehouses_count()
+        assert new_count == initial_count + 1, \
+            f"Количество складов не увеличилось. Было: {initial_count}, стало: {new_count}"
+
+        assert warehouses.is_warehouse_present(warehouse_name), \
+            f"Склад '{warehouse_name}' не найден в списке"
+
+    # --- Удаление через экшн-меню (как адреса в subdivisions) ---
+    with allure.step("Навожу на экшн-меню созданного склада и нажимаю Удалить"):
+        warehouses.delete_warehouse_by_name(warehouse_name)
+
+    with allure.step("Проверяю отображение окна подтверждения удаления"):
+        assert page.locator("text=Вы уверены").is_visible(), \
+            "Окно подтверждения удаления не появилось"
+
+    with allure.step("Подтверждаю удаление"):
+        warehouses.confirm_delete()
+
+    with allure.step("Проверяю оповещение об удалении"):
+        assert warehouses.is_delete_success_toast_visible(), \
+            "Оповещение 'Склад удален' не отображается"
+
+    with allure.step("Проверяю, что склад удалён из списка"):
+        page.wait_for_timeout(1000)
+        final_count = warehouses.get_warehouses_count()
+        assert final_count == initial_count, \
+            f"Количество складов не вернулось к исходному. Было: {initial_count}, стало: {final_count}"
+
+        assert not warehouses.is_warehouse_present(warehouse_name), \
+            f"Склад '{warehouse_name}' всё ещё отображается в списке"
+
+
+@allure.title("Редактирование склада через экшн-меню")
+def test_edit_warehouse(base_url, page_fixture):
+    page = page_fixture()
+    autorization_page = AutorizationPage(page)
+    warehouses = WarehousesSettingsPage(page)
+    modal = WarehouseModal(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_seller_authorize()
+
+    warehouses.open(base_url)
+
+    with allure.step("Открываю карточку первого склада через экшн-меню → Редактировать"):
+        warehouses.open_warehouse_card(0)
+        assert warehouses.is_modal_visible(), "Карточка склада не открылась"
+
+    with allure.step("Запоминаю исходные данные"):
+        original_name = modal.get_name_value()
+        original_address = modal.get_address_value()
+        original_city = modal.get_city_value()
+
+        allure.attach(
+            f"Название: {original_name}\nАдрес: {original_address}\nГород: {original_city}",
+            name="Исходные данные"
+        )
+
+    with allure.step("Ввожу новые данные"):
+        new_name = f"Изменённый склад {random.randint(0, 999999)}"
+        new_address = fake.street_address()
+        new_city = fake.city()
+
+        modal.fill(new_name, new_address, new_city)
+
+    with allure.step("Сохраняю изменения"):
+        modal.click_save()
+
+    with allure.step("Проверяю оповещение об успешном редактировании"):
+        assert warehouses.is_edit_success_toast_visible(), \
+            "Оповещение 'Склад успешно изменен' не отображается"
+
+    with allure.step("Проверяю, что данные обновились в списке"):
+        page.wait_for_timeout(1000)
+        assert warehouses.is_warehouse_present(new_name), \
+            f"Склад '{new_name}' не найден в списке после редактирования"
+
+    with allure.step("Постусловие: возвращаю исходные данные"):
+        warehouses.open_warehouse_card_by_name(new_name)
+        modal.fill(original_name, original_address, original_city)
+        modal.click_save()
+        page.wait_for_timeout(1000)
+
+
+@allure.title("Редактирование склада с автозаполнением адреса")
+def test_edit_warehouse_with_address_autocomplete(base_url, page_fixture):
+    page = page_fixture()
+    autorization_page = AutorizationPage(page)
+    warehouses = WarehousesSettingsPage(page)
+    modal = WarehouseModal(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_seller_authorize()
+
+    warehouses.open(base_url)
+
+    with allure.step("Открываю карточку первого склада через экшн-меню → Редактировать"):
+        warehouses.open_warehouse_card(0)
+        assert warehouses.is_modal_visible(), "Карточка склада не открылась"
+
+    with allure.step("Запоминаю исходные данные"):
+        original_name = modal.get_name_value()
+        original_address = modal.get_address_value()
+        original_city = modal.get_city_value()
+
+        allure.attach(
+            f"Название: {original_name}\nАдрес: {original_address}\nГород: {original_city}",
+            name="Исходные данные"
+        )
+
+    with allure.step("Ввожу новые данные"):
+        new_name = f"Изменённый склад {random.randint(0, 999999)}"
+        modal.fill(new_name)
+
+    with allure.step("Ввожу часть адреса в поиск"):
+        modal.search_address("Краснодонцев 13")
+
+    with allure.step("Проверяю отображение подсказок адресов"):
+        assert modal.is_address_suggestions_visible(), \
+            "Подсказки адресов не отображаются"
+
+    with allure.step("Выбираю первую подсказку"):
+        modal.select_first_address_suggestion()
+
+    with allure.step("Проверяю автозаполнение полей"):
+        address_value = modal.get_address_value()
+        city_value = modal.get_city_value()
+
+        assert address_value != "", "Поле 'Адрес' не заполнилось"
+        assert city_value != "", "Поле 'Город' не заполнилось"
+
+        allure.attach(
+            f"Адрес: {address_value}\nГород: {city_value}",
+            name="Автозаполненные данные"
+        )
+
+    with allure.step("Сохраняю изменения"):
+        modal.click_save()
+
+    with allure.step("Проверяю оповещение об успешном редактировании"):
+        assert warehouses.is_edit_success_toast_visible(), \
+            "Оповещение 'Склад успешно изменен' не отображается"
+
+    with allure.step("Проверяю, что данные обновились в списке"):
+        page.wait_for_timeout(1000)
+        assert warehouses.is_warehouse_present(new_name), \
+            f"Склад '{new_name}' не найден в списке после редактирования"
+
+    with allure.step("Постусловие: возвращаю исходные данные"):
+        warehouses.open_warehouse_card_by_name(new_name)
+        modal.fill(original_name, original_address, original_city)
+        modal.click_save()
+        page.wait_for_timeout(1000)
+
+
+# ============================================================================
+# СРЕДНИЙ ПРИОРИТЕТ
+# ============================================================================
+
+
+@allure.title("Открытие окна нового склада")
+@allure.tag("positive", "smoke", "medium")
+@allure.severity(allure.severity_level.NORMAL)
+def test_open_new_warehouse_modal(base_url, page_fixture):
+    """Тест-кейс: Кнопка 'Добавить склад' открывает drawer"""
+    page = page_fixture()
+    autorization_page = AutorizationPage(page)
+    warehouses = WarehousesSettingsPage(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_seller_authorize()
+
+    warehouses.open(base_url)
+
+    with allure.step("Нажимаю на кнопку 'Добавить склад'"):
+        warehouses.click_add_warehouse()
+
+    with allure.step("Проверяю, что окно нового склада отображается"):
+        assert warehouses.is_modal_visible(), "Окно нового склада не открылось"
+
+
+@allure.title("Отображение экшн-меню склада")
+@allure.tag("positive", "smoke", "medium")
+@allure.severity(allure.severity_level.NORMAL)
+def test_warehouse_action_menu_display(base_url, page_fixture):
+    """
+    Тест-кейс: При наведении на строку склада отображается экшн-меню с пунктами
+    (по аналогии с test_address_action_menu_in_settings из subdivisions)
+    """
+    page = page_fixture()
+    autorization_page = AutorizationPage(page)
+    warehouses = WarehousesSettingsPage(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_seller_authorize()
+
+    warehouses.open(base_url)
+
+    with allure.step("Проверяю, что в списке есть склады"):
+        assert warehouses.get_warehouses_count() > 0, "Список складов пуст"
+
+    with allure.step("Навожу на экшн-меню первого склада"):
+        warehouses.hover_action_menu(0)
+
+    with allure.step("Проверяю отображение опций меню"):
+        assert page.locator(warehouses.EDIT_OPTION).is_visible(), \
+            "Опция 'Редактировать' не отображается"
+        assert page.locator(warehouses.DELETE_OPTION).is_visible(), \
+            "Опция 'Удалить' не отображается"
+
+
+@allure.title("Открытие карточки склада через экшн-меню → Редактировать")
+@allure.tag("positive", "smoke", "medium")
+@allure.severity(allure.severity_level.NORMAL)
+def test_open_warehouse_card_via_action_menu(base_url, page_fixture):
+    """
+    Тест-кейс: Открытие drawer'а редактирования через экшн-меню
+    (по аналогии с test_open_edit_address_modal из subdivisions)
+    """
+    page = page_fixture()
+    autorization_page = AutorizationPage(page)
+    warehouses = WarehousesSettingsPage(page)
+    modal = WarehouseModal(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_seller_authorize()
+
+    warehouses.open(base_url)
+
+    with allure.step("Проверяю, что листинг не пустой"):
+        assert warehouses.get_warehouses_count() > 0, "Список складов пуст"
+
+    with allure.step("Открываю карточку через экшн-меню → Редактировать"):
+        warehouses.open_warehouse_card(0)
+
+    with allure.step("Проверяю, что карточка склада открылась"):
+        assert warehouses.is_modal_visible(), "Карточка склада не открылась"
+
+    with allure.step("Проверяю, что поля заполнены данными"):
+        name_value = modal.get_name_value()
+        assert name_value != "", "Поле 'Наименование' пустое в режиме редактирования"
+
+        allure.attach(name_value, name="Наименование склада в карточке")
+
+
+@allure.title("Открытие окна подтверждения удаления склада через экшн-меню")
+@allure.tag("positive", "regression", "medium")
+@allure.severity(allure.severity_level.NORMAL)
+def test_open_delete_warehouse_confirmation(base_url, page_fixture):
+    """
+    Тест-кейс: Экшн-меню → Удалить → окно подтверждения
+    (по аналогии с test_open_delete_address_confirmation_1 из subdivisions)
+    """
+    page = page_fixture()
+    autorization_page = AutorizationPage(page)
+    warehouses = WarehousesSettingsPage(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_seller_authorize()
+
+    warehouses.open(base_url)
+
+    with allure.step("Проверяю, что в списке есть склады"):
+        assert warehouses.get_warehouses_count() > 0, "Список складов пуст"
+
+    with allure.step("Навожу на экшн-меню и нажимаю Удалить"):
+        warehouses.hover_action_menu(0)
+        warehouses.click_delete_option()
+
+    with allure.step("Проверяю, что окно подтверждения удаления открылось"):
+        assert page.locator("text=Вы уверены").is_visible(), \
+            "Окно подтверждения удаления не появилось"
+
+
+@allure.title("Отмена удаления склада")
+@allure.tag("positive", "regression", "medium")
+@allure.severity(allure.severity_level.NORMAL)
+def test_cancel_delete_warehouse(base_url, page_fixture):
+    """Тест-кейс: Отменить удаление — количество складов не меняется"""
+    page = page_fixture()
+    autorization_page = AutorizationPage(page)
+    warehouses = WarehousesSettingsPage(page)
+    modal = WarehouseModal(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_seller_authorize()
+
+    warehouses.open(base_url)
+
+    initial_count = warehouses.get_warehouses_count()
+    assert initial_count > 0, "Нет складов для теста"
+
+    with allure.step("Открываю карточку первого склада через экшн-меню"):
+        warehouses.open_warehouse_card(0)
+
+    with allure.step("Нажимаю кнопку удаления в карточке"):
+        modal.click_delete()
+
+    with allure.step("Проверяю отображение окна подтверждения"):
+        assert modal.is_delete_confirmation_visible()
+
+    with allure.step("Отменяю удаление"):
+        modal.cancel_delete()
+
+    with allure.step("Проверяю, что окно подтверждения закрылось"):
+        assert not modal.is_delete_confirmation_visible(), \
+            "Окно подтверждения удаления не закрылось"
+
+    with allure.step("Проверяю, что карточка склада всё ещё открыта"):
+        assert warehouses.is_modal_visible(), \
+            "Карточка склада закрылась"
+
+    with allure.step("Закрываю карточку и проверяю количество"):
+        modal.close()
+        new_count = warehouses.get_warehouses_count()
+        assert new_count == initial_count, \
+            f"Количество складов изменилось. Было: {initial_count}, стало: {new_count}"
+
+#TODO внести еще один в тест по редактированию.
+@allure.title("Поиск адреса через автозаполнение")
+@allure.tag("positive", "regression", "medium")
+@allure.severity(allure.severity_level.NORMAL)
+def test_address_autocomplete(base_url, page_fixture):
+    """
+    Тест-кейс: Автозаполнение адреса по подсказке
+    (по аналогии с test_address_autocomplete из subdivisions)
+    """
+    page = page_fixture()
+    autorization_page = AutorizationPage(page)
+    warehouses = WarehousesSettingsPage(page)
+    modal = WarehouseModal(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_seller_authorize()
+
+    warehouses.open(base_url)
+    warehouses.click_add_warehouse()
+
+    with allure.step("Ввожу часть адреса в поиск"):
+        modal.search_address("Краснодонцев 13")
+
+    with allure.step("Проверяю отображение подсказок адресов"):
+        assert modal.is_address_suggestions_visible(), \
+            "Подсказки адресов не отображаются"
+
+    with allure.step("Выбираю первую подсказку"):
+        modal.select_first_address_suggestion()
+
+    with allure.step("Проверяю автозаполнение полей"):
+        address_value = modal.get_address_value()
+        city_value = modal.get_city_value()
+
+        assert address_value != "", "Поле 'Адрес' не заполнилось"
+        assert city_value != "", "Поле 'Город' не заполнилось"
+
+        allure.attach(
+            f"Адрес: {address_value}\nГород: {city_value}",
+            name="Автозаполненные данные"
+        )
+
+    warehouses.close_modal()
+
+
+# ============================================================================
+# ВАЛИДАЦИЯ (НЕГАТИВНЫЕ ТЕСТЫ)
+# ============================================================================
+
+
+@allure.title("Нельзя создать склад без обязательных полей")
+@allure.tag("negative", "validation", "medium")
+@allure.severity(allure.severity_level.NORMAL)
+def test_warehouse_mandatory_fields(base_url, page_fixture):
+    """
+    Тест-кейс: Проверка валидации обязательных полей
+    (по аналогии с test_address_required_fields_validation из subdivisions)
+    """
+    page = page_fixture()
+    autorization_page = AutorizationPage(page)
+    warehouses = WarehousesSettingsPage(page)
+    modal = WarehouseModal(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_seller_authorize()
+
+    warehouses.open(base_url)
+    warehouses.click_add_warehouse()
+
+    initial_count = warehouses.get_warehouses_count()
+
+    with allure.step("Проверяю: все поля пустые"):
+        modal.fill("", "", "")
+        modal.click_add()
+
+        assert modal.is_name_error_visible(), "Ошибка для 'Наименование' не отображается"
+        assert modal.is_address_error_visible(), "Ошибка для 'Адрес' не отображается"
+        assert modal.is_city_error_visible(), "Ошибка для 'Город' не отображается"
+
+    with allure.step("Проверяю: заполнено только Наименование"):
+        modal.clear_all()
+        modal.fill("Тестовый склад", "", "")
+        modal.click_add()
+
+        assert not modal.is_name_error_visible(), "Ошибка для 'Наименование' не должна отображаться"
+        assert modal.is_address_error_visible(), "Ошибка для 'Адрес' не отображается"
+        assert modal.is_city_error_visible(), "Ошибка для 'Город' не отображается"
+
+    with allure.step("Проверяю: заполнено Наименование и Адрес"):
+        modal.clear_all()
+        modal.fill("Тестовый склад", "Тестовый адрес", "")
+        modal.click_add()
+
+        assert not modal.is_name_error_visible()
+        assert not modal.is_address_error_visible()
+        assert modal.is_city_error_visible(), "Ошибка для 'Город' не отображается"
+
+    with allure.step("Проверяю: заполнено Наименование и Город"):
+        modal.clear_all()
+        modal.fill("Тестовый склад", "", "Тестовый город")
+        modal.click_add()
+
+        assert not modal.is_name_error_visible()
+        assert modal.is_address_error_visible(), "Ошибка для 'Адрес' не отображается"
+        assert not modal.is_city_error_visible()
+
+    with allure.step("Проверяю: заполнены Адрес и Город, пустое Наименование"):
+        modal.clear_all()
+        modal.fill("", "Тестовый адрес", "Тестовый город")
+        modal.click_add()
+
+        assert modal.is_name_error_visible(), "Ошибка для 'Наименование' не отображается"
+        assert not modal.is_address_error_visible()
+        assert not modal.is_city_error_visible()
+
+    with allure.step("Проверяю, что склад не был создан"):
+        warehouses.close_modal()
+        new_count = warehouses.get_warehouses_count()
+        assert new_count == initial_count, \
+            "Склад был создан несмотря на ошибки валидации"
+
+
+# ============================================================================
+# ЗАКРЫТИЕ ОКОН
+# ============================================================================
+
+
+@allure.title("Закрытие окна нового склада разными способами")
+@allure.tag("positive", "regression", "low")
+@allure.severity(allure.severity_level.MINOR)
+def test_close_new_warehouse_modal(base_url, page_fixture):
+    """
+    Объединяет тест-кейсы:
+    - Закрыть окно нажатием на крестик
+    - Закрыть окно нажатием на пространство вне окна
+    """
+    page = page_fixture()
+    autorization_page = AutorizationPage(page)
+    warehouses = WarehousesSettingsPage(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_seller_authorize()
+
+    warehouses.open(base_url)
+
+    with allure.step("Открываю окно и закрываю крестиком"):
+        warehouses.click_add_warehouse()
+        assert warehouses.is_modal_visible()
+
+        warehouses.close_modal()
+        assert not warehouses.is_modal_visible(), "Окно не закрылось по крестику"
+
+    with allure.step("Открываю окно и закрываю кликом вне окна"):
+        warehouses.click_add_warehouse()
+        assert warehouses.is_modal_visible()
+
+        warehouses.close_modal_by_click_outside()
+        assert not warehouses.is_modal_visible(), "Окно не закрылось по клику вне окна"
+
+
+@allure.title("Окно подтверждения закрытия при несохранённых изменениях")
+@allure.tag("positive", "regression", "low")
+@allure.severity(allure.severity_level.MINOR)
+def test_close_confirmation_on_unsaved_changes(base_url, page_fixture):
+    """Тест-кейс: Открытие окна подтверждения закрытия при несохранённых данных"""
+    page = page_fixture()
+    autorization_page = AutorizationPage(page)
+    warehouses = WarehousesSettingsPage(page)
+    modal = WarehouseModal(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_seller_authorize()
+
+    warehouses.open(base_url)
+
+    with allure.step("Открываю карточку первого склада через экшн-меню"):
+        warehouses.open_warehouse_card(0)
+
+    with allure.step("Вношу изменения в поля"):
+        modal.fill("Изменённое название", None, None)
+
+    with allure.step("Нажимаю на крестик"):
+        modal.close()
+
+    with allure.step("Проверяю появление окна подтверждения"):
+        assert modal.is_close_confirmation_visible(), \
+            "Окно подтверждения закрытия не появилось"
+
+    with allure.step("Нажимаю 'Не сохранять'"):
+        modal.click_dont_save()
+
+    with allure.step("Проверяю, что окно закрылось"):
+        assert not warehouses.is_modal_visible(), \
+            "Окно склада не закрылось"
+
+
+
+
+#
+#
+# import time
+# import allure
+# import pytest
+# from playwright.sync_api import expect
+#
+# from page_opjects.autorization_page import AutorizationPage
+# from page_opjects.settings_page.personal_limits_settings_page import (
+#     PersonalLimitsSettingsPage,
+#     SelectEmployeeModal,
+#     SetLimitModal,
+#     DeleteLimitModal,
+# )
+#
+# """
+# Тесты страницы «Персональные лимиты» (/settings/account/personal-limits)
+#
+# Функциональность:
+#   - Установка лимита на закупку для конкретного пользователя
+#   - Установленный лимит — общий на все подразделения пользователя
+#   - Изменить или снять лимит можно в любой момент
+#   - Поиск по имени, фамилии или email
+# """
+#
+# # Тестовые данные
+# TEST_USER_EMAIL = "testgarwin_yur+3@mail.ru"
+# TEST_USER_NAME = "Агафонова Прохор Ефимовна"
+# HIGH_LIMIT = "99999999.99"
+# LOW_LIMIT = "300"
+# MEDIUM_LIMIT = "5000"
+#
+#
+# # ============================================================================
+# # СТРАНИЦА ПЕРСОНАЛЬНЫХ ЛИМИТОВ — UI ТЕСТЫ
+# # ============================================================================
+#
+#
+# @allure.title("Открытие страницы персональных лимитов")
+# @allure.tag("smoke", "personal-limits")
+# @allure.severity(allure.severity_level.NORMAL)
+# def test_open_personal_limits_page(base_url, page_fixture):
+#     """Проверяю, что страница персональных лимитов открывается корректно"""
+#     page = page_fixture()
+#     autorization_page = AutorizationPage(page)
+#     personal_limits = PersonalLimitsSettingsPage(page)
+#
+#     autorization_page.open(base_url)
+#     autorization_page.admin_buyer_authorize()
+#
+#     personal_limits.open(base_url)
+#
+#     with allure.step("Проверяю, что кнопка 'Установить новый' отображается"):
+#         assert page.locator(personal_limits.ADD_NEW_BUTTON).is_visible(), \
+#             "Кнопка 'Установить новый' не отображается"
+#
+#     with allure.step("Проверяю, что поле поиска отображается"):
+#         assert page.locator(personal_limits.SEARCH_INPUT).is_visible(), \
+#             "Поле поиска не отображается"
+#
+#
+# @allure.title("Открытие модалки выбора сотрудника")
+# @allure.tag("smoke", "personal-limits")
+# @allure.severity(allure.severity_level.NORMAL)
+# def test_open_select_employee_modal(base_url, page_fixture):
+#     """Нажатие '+ Установить новый' открывает модалку выбора сотрудника"""
+#     page = page_fixture()
+#     autorization_page = AutorizationPage(page)
+#     personal_limits = PersonalLimitsSettingsPage(page)
+#     select_modal = SelectEmployeeModal(page)
+#
+#     autorization_page.open(base_url)
+#     autorization_page.admin_buyer_authorize()
+#
+#     personal_limits.open(base_url)
+#
+#     with allure.step("Нажимаю '+ Установить новый'"):
+#         personal_limits.click_add_new()
+#
+#     with allure.step("Проверяю, что модалка выбора сотрудника открылась"):
+#         assert select_modal.is_visible(), \
+#             "Модалка 'Выберите сотрудника' не открылась"
+#
+#     with allure.step("Проверяю, что список сотрудников не пуст"):
+#         assert select_modal.get_employees_count() > 0, \
+#             "Список сотрудников пуст"
+#
+#
+# @allure.title("Поиск сотрудника в модалке выбора")
+# @allure.tag("positive", "personal-limits")
+# @allure.severity(allure.severity_level.NORMAL)
+# def test_search_employee_in_modal(base_url, page_fixture):
+#     """Поиск по имени/email фильтрует список сотрудников"""
+#     page = page_fixture()
+#     autorization_page = AutorizationPage(page)
+#     personal_limits = PersonalLimitsSettingsPage(page)
+#     select_modal = SelectEmployeeModal(page)
+#
+#     autorization_page.open(base_url)
+#     autorization_page.admin_buyer_authorize()
+#
+#     personal_limits.open(base_url)
+#     personal_limits.click_add_new()
+#
+#     with allure.step("Получаю общее количество сотрудников"):
+#         total_count = select_modal.get_employees_count()
+#         allure.attach(str(total_count), name="Всего сотрудников")
+#
+#     with allure.step("Ищу сотрудника по email"):
+#         select_modal.search_employee(TEST_USER_EMAIL)
+#
+#     with allure.step("Проверяю, что список отфильтрован"):
+#         filtered_count = select_modal.get_employees_count()
+#         assert filtered_count > 0, "Поиск не дал результатов"
+#         assert filtered_count <= total_count, "Фильтрация не сработала"
+#
+#         allure.attach(str(filtered_count), name="Найдено сотрудников")
+#
+#
+# @allure.title("Отмена выбора сотрудника")
+# @allure.tag("positive", "personal-limits")
+# @allure.severity(allure.severity_level.MINOR)
+# def test_cancel_select_employee(base_url, page_fixture):
+#     """Отмена в модалке выбора закрывает её без последствий"""
+#     page = page_fixture()
+#     autorization_page = AutorizationPage(page)
+#     personal_limits = PersonalLimitsSettingsPage(page)
+#     select_modal = SelectEmployeeModal(page)
+#
+#     autorization_page.open(base_url)
+#     autorization_page.admin_buyer_authorize()
+#
+#     personal_limits.open(base_url)
+#
+#     initial_count = personal_limits.get_users_count()
+#
+#     personal_limits.click_add_new()
+#     assert select_modal.is_visible()
+#
+#     with allure.step("Нажимаю 'Отмена'"):
+#         select_modal.click_cancel()
+#
+#     with allure.step("Проверяю, что модалка закрылась"):
+#         assert not select_modal.is_visible(), \
+#             "Модалка не закрылась после отмены"
+#
+#     with allure.step("Проверяю, что количество пользователей не изменилось"):
+#         assert personal_limits.get_users_count() == initial_count
+#
+#
+# @allure.title("Переход от выбора сотрудника к установке лимита")
+# @allure.tag("positive", "personal-limits")
+# @allure.severity(allure.severity_level.NORMAL)
+# def test_select_employee_opens_limit_modal(base_url, page_fixture):
+#     """Выбор сотрудника открывает модалку установки лимита"""
+#     page = page_fixture()
+#     autorization_page = AutorizationPage(page)
+#     personal_limits = PersonalLimitsSettingsPage(page)
+#     select_modal = SelectEmployeeModal(page)
+#     limit_modal = SetLimitModal(page)
+#
+#     autorization_page.open(base_url)
+#     autorization_page.admin_buyer_authorize()
+#
+#     personal_limits.open(base_url)
+#     personal_limits.click_add_new()
+#
+#     with allure.step("Выбираю первого сотрудника"):
+#         select_modal.select_and_confirm_by_index(0)
+#
+#     with allure.step("Проверяю, что модалка установки лимита открылась"):
+#         assert limit_modal.is_visible(), \
+#             "Модалка 'Изменение персонального лимита' не открылась"
+#
+#     with allure.step("Проверяю наличие поля 'Остаток за период'"):
+#         assert page.locator(limit_modal.REMAINING_LABEL).is_visible(), \
+#             "Подпись 'Остаток за период' не отображается"
+#
+#     with allure.step("Отменяю, чтобы не сохранять"):
+#         limit_modal.click_cancel()
+#
+#
+# @allure.title("Отмена установки лимита")
+# @allure.tag("positive", "personal-limits")
+# @allure.severity(allure.severity_level.MINOR)
+# def test_cancel_set_limit(base_url, page_fixture):
+#     """Отмена в модалке лимита не создаёт запись"""
+#     page = page_fixture()
+#     autorization_page = AutorizationPage(page)
+#     personal_limits = PersonalLimitsSettingsPage(page)
+#     select_modal = SelectEmployeeModal(page)
+#     limit_modal = SetLimitModal(page)
+#
+#     autorization_page.open(base_url)
+#     autorization_page.admin_buyer_authorize()
+#
+#     personal_limits.open(base_url)
+#
+#     initial_count = personal_limits.get_users_count()
+#
+#     personal_limits.click_add_new()
+#     select_modal.select_and_confirm_by_index(0)
+#
+#     with allure.step("Ввожу лимит, но нажимаю 'Отмена'"):
+#         limit_modal.set_limit("5000")
+#         limit_modal.click_cancel()
+#
+#     with allure.step("Проверяю, что модалка закрылась"):
+#         assert not limit_modal.is_visible()
+#
+#     with allure.step("Проверяю, что количество пользователей не изменилось"):
+#         new_count = personal_limits.get_users_count()
+#         assert new_count == initial_count, \
+#             f"Количество изменилось после отмены. Было: {initial_count}, стало: {new_count}"
+#
+#
+# # ============================================================================
+# # CRUD ОПЕРАЦИИ
+# # ============================================================================
+#
+#
+# @allure.title("Создание и удаление персонального лимита")
+# @allure.tag("positive", "regression", "critical", "personal-limits")
+# @allure.severity(allure.severity_level.CRITICAL)
+# def test_create_and_delete_personal_limit(base_url, page_fixture):
+#     """
+#     1. Создаю персональный лимит для сотрудника
+#     2. Проверяю toast и появление в списке
+#     3. Удаляю лимит
+#     4. Проверяю, что пользователь исчез из списка
+#     """
+#     page = page_fixture()
+#     autorization_page = AutorizationPage(page)
+#     personal_limits = PersonalLimitsSettingsPage(page)
+#     select_modal = SelectEmployeeModal(page)
+#     limit_modal = SetLimitModal(page)
+#     delete_modal = DeleteLimitModal(page)
+#
+#     autorization_page.open(base_url)
+#     autorization_page.admin_buyer_authorize()
+#
+#     personal_limits.open(base_url)
+#
+#     # Если у пользователя уже есть лимит — сначала удаляем
+#     if personal_limits.is_user_present(TEST_USER_EMAIL):
+#         with allure.step("Предусловие: удаляю существующий лимит"):
+#             personal_limits.click_delete_user_limit(TEST_USER_EMAIL)
+#             if delete_modal.is_visible():
+#                 delete_modal.confirm_delete()
+#             page.wait_for_timeout(1000)
+#
+#     initial_count = personal_limits.get_users_count()
+#
+#     # --- Создание ---
+#     with allure.step("Создаю персональный лимит"):
+#         personal_limits.click_add_new()
+#         select_modal.select_and_confirm_by_email(TEST_USER_EMAIL)
+#         limit_modal.set_and_save(MEDIUM_LIMIT)
+#
+#     with allure.step("Проверяю toast об установке лимита"):
+#         assert personal_limits.is_limit_set_toast_visible(), \
+#             "Toast 'Персональный лимит сотрудника ... установлен' не отображается"
+#
+#     with allure.step("Проверяю, что пользователь появился в списке"):
+#         page.wait_for_timeout(1000)
+#         assert personal_limits.is_user_present(TEST_USER_EMAIL), \
+#             f"Пользователь {TEST_USER_EMAIL} не найден в списке"
+#
+#         new_count = personal_limits.get_users_count()
+#         assert new_count == initial_count + 1, \
+#             f"Количество не увеличилось. Было: {initial_count}, стало: {new_count}"
+#
+#     # --- Удаление ---
+#     with allure.step("Удаляю персональный лимит"):
+#         personal_limits.click_delete_user_limit(TEST_USER_EMAIL)
+#
+#     with allure.step("Проверяю окно подтверждения удаления"):
+#         assert delete_modal.is_visible(), \
+#             "Окно подтверждения удаления не появилось"
+#
+#     with allure.step("Подтверждаю удаление"):
+#         delete_modal.confirm_delete()
+#
+#     with allure.step("Проверяю, что пользователь удалён из списка"):
+#         page.wait_for_timeout(1000)
+#         assert not personal_limits.is_user_present(TEST_USER_EMAIL), \
+#             f"Пользователь {TEST_USER_EMAIL} всё ещё в списке после удаления"
+#
+#         final_count = personal_limits.get_users_count()
+#         assert final_count == initial_count, \
+#             f"Количество не вернулось. Было: {initial_count}, стало: {final_count}"
+#
+#
+# @allure.title("Редактирование персонального лимита")
+# @allure.tag("positive", "regression", "personal-limits")
+# @allure.severity(allure.severity_level.CRITICAL)
+# def test_edit_personal_limit(base_url, page_fixture):
+#     """
+#     1. Создаю лимит (если нет)
+#     2. Редактирую значение
+#     3. Проверяю toast и новое значение
+#     4. Возвращаю исходное значение
+#     """
+#     page = page_fixture()
+#     autorization_page = AutorizationPage(page)
+#     personal_limits = PersonalLimitsSettingsPage(page)
+#     select_modal = SelectEmployeeModal(page)
+#     limit_modal = SetLimitModal(page)
+#     delete_modal = DeleteLimitModal(page)
+#
+#     autorization_page.open(base_url)
+#     autorization_page.admin_buyer_authorize()
+#
+#     personal_limits.open(base_url)
+#
+#     # Предусловие: создаём лимит если его нет
+#     if not personal_limits.is_user_present(TEST_USER_EMAIL):
+#         with allure.step("Предусловие: создаю лимит"):
+#             personal_limits.click_add_new()
+#             select_modal.select_and_confirm_by_email(TEST_USER_EMAIL)
+#             limit_modal.set_and_save(HIGH_LIMIT)
+#             page.wait_for_timeout(1000)
+#
+#     with allure.step("Нажимаю кнопку редактирования"):
+#         personal_limits.click_edit_user_limit(TEST_USER_EMAIL)
+#
+#     with allure.step("Проверяю, что модалка редактирования открылась"):
+#         assert limit_modal.is_visible(), \
+#             "Модалка изменения лимита не открылась"
+#
+#     with allure.step("Запоминаю старое значение"):
+#         old_value = limit_modal.get_limit_value()
+#         allure.attach(old_value, name="Старое значение лимита")
+#
+#     with allure.step("Устанавливаю новое значение"):
+#         new_value = MEDIUM_LIMIT
+#         limit_modal.set_and_save(new_value)
+#
+#     with allure.step("Проверяю toast об изменении"):
+#         # Toast может быть как "установлен" так и "изменен"
+#         page.wait_for_timeout(1000)
+#
+#     with allure.step("Проверяю, что значение обновилось на странице"):
+#         user_text = personal_limits.get_user_limit_text(TEST_USER_EMAIL)
+#         allure.attach(user_text, name="Текст строки пользователя")
+#
+#     with allure.step("Постусловие: возвращаю исходное значение"):
+#         personal_limits.click_edit_user_limit(TEST_USER_EMAIL)
+#         limit_modal.set_and_save(HIGH_LIMIT)
+#         page.wait_for_timeout(1000)
+#
+#
+# @allure.title("Отмена удаления персонального лимита")
+# @allure.tag("positive", "regression", "personal-limits")
+# @allure.severity(allure.severity_level.NORMAL)
+# def test_cancel_delete_personal_limit(base_url, page_fixture):
+#     """Отмена удаления не удаляет лимит"""
+#     page = page_fixture()
+#     autorization_page = AutorizationPage(page)
+#     personal_limits = PersonalLimitsSettingsPage(page)
+#     select_modal = SelectEmployeeModal(page)
+#     limit_modal = SetLimitModal(page)
+#     delete_modal = DeleteLimitModal(page)
+#
+#     autorization_page.open(base_url)
+#     autorization_page.admin_buyer_authorize()
+#
+#     personal_limits.open(base_url)
+#
+#     # Предусловие
+#     if not personal_limits.is_user_present(TEST_USER_EMAIL):
+#         personal_limits.click_add_new()
+#         select_modal.select_and_confirm_by_email(TEST_USER_EMAIL)
+#         limit_modal.set_and_save(HIGH_LIMIT)
+#         page.wait_for_timeout(1000)
+#
+#     initial_count = personal_limits.get_users_count()
+#
+#     with allure.step("Нажимаю кнопку удаления"):
+#         personal_limits.click_delete_user_limit(TEST_USER_EMAIL)
+#
+#     with allure.step("Проверяю окно подтверждения"):
+#         assert delete_modal.is_visible()
+#
+#     with allure.step("Отменяю удаление"):
+#         delete_modal.cancel_delete()
+#
+#     with allure.step("Проверяю, что окно закрылось"):
+#         assert not delete_modal.is_visible()
+#
+#     with allure.step("Проверяю, что пользователь остался в списке"):
+#         assert personal_limits.is_user_present(TEST_USER_EMAIL)
+#         assert personal_limits.get_users_count() == initial_count
+#
+#
+# # ============================================================================
+# # ПОИСК НА СТРАНИЦЕ
+# # ============================================================================
+#
+#
+# @allure.title("Поиск пользователя с лимитом на странице")
+# @allure.tag("positive", "personal-limits")
+# @allure.severity(allure.severity_level.MINOR)
+# def test_search_user_on_page(base_url, page_fixture):
+#     """Поиск на странице фильтрует список пользователей с лимитами"""
+#     page = page_fixture()
+#     autorization_page = AutorizationPage(page)
+#     personal_limits = PersonalLimitsSettingsPage(page)
+#     select_modal = SelectEmployeeModal(page)
+#     limit_modal = SetLimitModal(page)
+#
+#     autorization_page.open(base_url)
+#     autorization_page.admin_buyer_authorize()
+#
+#     personal_limits.open(base_url)
+#
+#     # Предусловие: нужны минимум 2 пользователя с лимитами
+#     if not personal_limits.is_user_present(TEST_USER_EMAIL):
+#         personal_limits.click_add_new()
+#         select_modal.select_and_confirm_by_email(TEST_USER_EMAIL)
+#         limit_modal.set_and_save(HIGH_LIMIT)
+#         page.wait_for_timeout(1000)
+#
+#     total_count = personal_limits.get_users_count()
+#
+#     with allure.step("Ищу по email"):
+#         personal_limits.search_user(TEST_USER_EMAIL)
+#
+#     with allure.step("Проверяю, что список отфильтрован"):
+#         filtered_count = personal_limits.get_users_count()
+#         assert filtered_count > 0, "Поиск не дал результатов"
+#         assert personal_limits.is_user_present(TEST_USER_EMAIL), \
+#             "Искомый пользователь не найден в результатах"
+#
+#     with allure.step("Очищаю поиск"):
+#         personal_limits.clear_search()
+#
+#     with allure.step("Проверяю, что полный список вернулся"):
+#         restored_count = personal_limits.get_users_count()
+#         assert restored_count == total_count, \
+#             f"Полный список не вернулся. Было: {total_count}, стало: {restored_count}"
+#
+#
+# # ============================================================================
+# # ВАЛИДАЦИЯ
+# # ============================================================================
+#
+#
+# @allure.title("Закрытие модалки лимита крестиком")
+# @allure.tag("positive", "personal-limits")
+# @allure.severity(allure.severity_level.MINOR)
+# def test_close_limit_modal_by_x(base_url, page_fixture):
+#     """Закрытие модалки крестиком не сохраняет данные"""
+#     page = page_fixture()
+#     autorization_page = AutorizationPage(page)
+#     personal_limits = PersonalLimitsSettingsPage(page)
+#     select_modal = SelectEmployeeModal(page)
+#     limit_modal = SetLimitModal(page)
+#
+#     autorization_page.open(base_url)
+#     autorization_page.admin_buyer_authorize()
+#
+#     personal_limits.open(base_url)
+#
+#     initial_count = personal_limits.get_users_count()
+#
+#     personal_limits.click_add_new()
+#     select_modal.select_and_confirm_by_index(0)
+#
+#     with allure.step("Ввожу лимит и закрываю крестиком"):
+#         limit_modal.set_limit("12345")
+#         limit_modal.click_close()
+#
+#     with allure.step("Проверяю, что лимит не был создан"):
+#         assert not limit_modal.is_visible()
+#         new_count = personal_limits.get_users_count()
+#         assert new_count == initial_count

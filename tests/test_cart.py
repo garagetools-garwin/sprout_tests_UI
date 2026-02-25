@@ -1320,8 +1320,8 @@ def test_order_blocked_when_item_price_exceeds_limit(base_url, page_fixture):
     cart.open(base_url)
     cart.clear_cart(base_url)
 
-    page.goto(f"{base_url}/catalog/9/3059")
-    listing.add_item_in_stock_and_get_delivery_time()
+    page.goto(base_url + "/catalog/9/3707")
+    listing.add_expensive_item_to_cart(min_price=350)
 
     cart.open(base_url)
 
@@ -1330,6 +1330,7 @@ def test_order_blocked_when_item_price_exceeds_limit(base_url, page_fixture):
 
         if current != SUBDIVISION_LOW_LIMIT:
             cart.select_subdivision(SUBDIVISION_LOW_LIMIT)
+            page.reload()
             time.sleep(1)
 
     page.reload()

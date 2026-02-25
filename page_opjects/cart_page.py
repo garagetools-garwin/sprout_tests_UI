@@ -438,7 +438,8 @@ class CartPage:
     # Локаторы через индекс селектов внутри блока доставки
     DELIVERY_BLOCK = ".grid-two-columns"
 
-    SUBDIVISION_SELECT = ".grid-two-columns .basket-request-composition__body-block-select >> nth=0"
+    SUBDIVISION_SELECT = ".grid-two-columns .basket-order-details__body-block-select >> nth=0"
+    # SUBDIVISION_SELECT = ".grid-two-columns .basket-request-composition__body-block-select >> nth=0"
     ADDRESS_SELECT = ".grid-two-columns .basket-request-composition__body-block-select >> nth=2"
     LEGAL_ENTITY_SELECT = ".grid-two-columns .basket-request-composition__body-block-select >> nth=4"
 
