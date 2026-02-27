@@ -213,6 +213,8 @@ def test_delivery_date(base_url, page_fixture):
             name="Листинг - товар 'В наличии'"
         )
 
+    page.goto(f"{base_url}/catalog/9/2373")
+
     with allure.step("Добавляю товар 'Под заказ' и запоминаю срок доставки"):
         listing_time_on_request = listing.add_item_on_request_and_get_delivery_time()
 
@@ -419,7 +421,7 @@ def test_quantity_buttons_increment_decrement(base_url, page_fixture):
     with allure.step("обавляю в корзину 2 товара"):
         page.goto(f"{base_url}/catalog/9/3059")
         listing.add_item_in_stock_and_get_delivery_time()
-        page.goto(f"{base_url}/catalog/9/3059")
+        page.goto(f"{base_url}/catalog/9/2373")
         listing.add_item_on_request_and_get_delivery_time()
 
     cart.open(base_url)

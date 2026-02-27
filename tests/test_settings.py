@@ -1206,10 +1206,11 @@ def test_cancel_delete_warehouse(base_url, page_fixture):
     assert initial_count > 0, "Нет складов для теста"
 
     with allure.step("Открываю карточку первого склада через экшн-меню"):
-        warehouses.open_warehouse_card(0)
+        warehouses.hover_action_menu(0)
+        warehouses.click_delete_option()
 
-    with allure.step("Нажимаю кнопку удаления в карточке"):
-        modal.click_delete()
+    # with allure.step("Нажимаю кнопку удаления в карточке"):
+    #     modal.confirm_delete()
 
     with allure.step("Проверяю отображение окна подтверждения"):
         assert modal.is_delete_confirmation_visible()
@@ -1221,12 +1222,7 @@ def test_cancel_delete_warehouse(base_url, page_fixture):
         assert not modal.is_delete_confirmation_visible(), \
             "Окно подтверждения удаления не закрылось"
 
-    with allure.step("Проверяю, что карточка склада всё ещё открыта"):
-        assert warehouses.is_modal_visible(), \
-            "Карточка склада закрылась"
-
-    with allure.step("Закрываю карточку и проверяю количество"):
-        modal.close()
+    with allure.step("Проверяю количество"):
         new_count = warehouses.get_warehouses_count()
         assert new_count == initial_count, \
             f"Количество складов изменилось. Было: {initial_count}, стало: {new_count}"

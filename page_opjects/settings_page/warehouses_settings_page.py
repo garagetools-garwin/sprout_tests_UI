@@ -231,7 +231,8 @@ class WarehouseModal:
     # Подтверждение удаления (как в SubdivisionAddressesPage)
     DELETE_CONFIRM_TEXT = "text=Вы уверены"
     DELETE_CONFIRM_BUTTON = ".button-lg.danger"
-    CANCEL_DELETE_BUTTON = ".ant-modal-content button:has-text('Отмена')"
+    CANCEL_DELETE_BUTTON = "button:has-text('Отмена')"
+    # CANCEL_DELETE_BUTTON = ".ant-modal-content button:has-text('Отмена')"
 
     # Подтверждение закрытия при несохранённых изменениях
     CONFIRM_CLOSE_MODAL = "text=Не сохранять"
