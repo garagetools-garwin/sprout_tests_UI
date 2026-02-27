@@ -18,11 +18,65 @@ class ListingPage:
     PRODUCT = "tr.ant-table-row"
     PRICE_IN_CARD = ".ff-medium.fs-s"
     PRICE_IN_CARD_WITH_NDS = ".ff-regular.fs-xs"
+    # ".ant-select-selection-search"
+    STOCK_FILTER_SELECT = "span.ant-select-selection-item"
+    STOCK_FILTER_OPTION = ".ant-select-item.ant-select-item-option"
+    ALL_PRODUCTS_TEXT = "Все товары"
+    IN_STOCK_TEXT = "Товары в наличии"
 
     # Карточка товара
     ADD_TO_CART_BUTTON = ".ant-drawer-body .mb-14 button.ant-btn.css-2nkxv5.ant-btn-default.button-lg"
     AVAILABILITY_TEXT_LOCATOR_AVAILABLE_ON_REQUEST = ".delivery-badge.available_on_request div"
     AVAILABILITY_TEXT_LOCATOR_IN_STOCK = ".delivery-badge.in_stock div"
+
+
+
+    @allure.step("Переключаю фильтр на 'Все товары', если выбран 'Товары в наличии'")
+    def ensure_all_products_selected(self):
+        """
+        Ищет span.ant-select-selection-item с текстом фильтра.
+        Если 'Все товары' — ничего не делает.
+        Если 'Товары в наличии' — кликает и выбирает 'Все товары'.
+        """
+        filter_span = self.page.locator(self.STOCK_FILTER_SELECT).filter(
+            has_text=self.ALL_PRODUCTS_TEXT
+        ).or_(
+            self.page.locator(self.STOCK_FILTER_SELECT).filter(has_text=self.IN_STOCK_TEXT)
+        ).first
+
+        current_text = filter_span.inner_text().strip()
+
+        if self.ALL_PRODUCTS_TEXT in current_text:
+            return
+
+        filter_span.click()
+        self.page.locator(self.STOCK_FILTER_OPTION).filter(
+            has_text=self.ALL_PRODUCTS_TEXT
+        ).click()
+        self.page.wait_for_timeout(500)
+
+        @allure.step("Переключаю фильтр на 'Товары в наличии', если выбран 'Все товары'")
+        def ensure_in_stock_selected(self):
+            """
+            Если 'Товары в наличии' — ничего не делает.
+            Если 'Все товары' — кликает и выбирает 'Товары в наличии'.
+            """
+            filter_span = self.page.locator(self.STOCK_FILTER_SELECT).filter(
+                has_text=self.ALL_PRODUCTS_TEXT
+            ).or_(
+                self.page.locator(self.STOCK_FILTER_SELECT).filter(has_text=self.IN_STOCK_TEXT)
+            ).first
+
+            current_text = filter_span.inner_text().strip()
+
+            if self.IN_STOCK_TEXT in current_text:
+                return
+
+            filter_span.click()
+            self.page.locator(self.STOCK_FILTER_OPTION).filter(
+                has_text=self.IN_STOCK_TEXT
+            ).click()
+            self.page.wait_for_timeout(500)
 
 
     # Листинг
@@ -69,6 +123,8 @@ class ListingPage:
             return delivery_time
 
         raise AssertionError("Не найден товар с плашкой 'В наличии'")
+
+
 
     @allure.step('Добавляю товар "Под заказ" и возвращаю срок доставки')
     def add_item_on_request_and_get_delivery_time(self) -> str:
