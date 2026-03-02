@@ -865,21 +865,9 @@ fake = Faker('ru_RU')
 """Тесты страницы Склады отгрузки (Продавец)"""
 
 
-# ============================================================================
-# ВЫСОКИЙ ПРИОРИТЕТ
-# ============================================================================
-
-
 @allure.title("Создание нового склада и его удаление")
-@allure.tag("positive", "regression", "high")
-@allure.severity(allure.severity_level.CRITICAL)
 def test_create_and_delete_warehouse(base_url, page_fixture):
-    """
-    Объединяет тест-кейсы:
-    - Создание склада
-    - Проверка оповещения об успешном добавлении
-    - Удаление через экшн-меню
-    """
+
     page = page_fixture()
     autorization_page = AutorizationPage(page)
     warehouses = WarehousesSettingsPage(page)
@@ -1068,14 +1056,7 @@ def test_edit_warehouse_with_address_autocomplete(base_url, page_fixture):
         page.wait_for_timeout(1000)
 
 
-# ============================================================================
-# СРЕДНИЙ ПРИОРИТЕТ
-# ============================================================================
-
-
 @allure.title("Открытие окна нового склада")
-@allure.tag("positive", "smoke", "medium")
-@allure.severity(allure.severity_level.NORMAL)
 def test_open_new_warehouse_modal(base_url, page_fixture):
     """Тест-кейс: Кнопка 'Добавить склад' открывает drawer"""
     page = page_fixture()
@@ -1095,13 +1076,8 @@ def test_open_new_warehouse_modal(base_url, page_fixture):
 
 
 @allure.title("Отображение экшн-меню склада")
-@allure.tag("positive", "smoke", "medium")
-@allure.severity(allure.severity_level.NORMAL)
 def test_warehouse_action_menu_display(base_url, page_fixture):
-    """
-    Тест-кейс: При наведении на строку склада отображается экшн-меню с пунктами
-    (по аналогии с test_address_action_menu_in_settings из subdivisions)
-    """
+
     page = page_fixture()
     autorization_page = AutorizationPage(page)
     warehouses = WarehousesSettingsPage(page)
@@ -1125,13 +1101,8 @@ def test_warehouse_action_menu_display(base_url, page_fixture):
 
 
 @allure.title("Открытие карточки склада через экшн-меню → Редактировать")
-@allure.tag("positive", "smoke", "medium")
-@allure.severity(allure.severity_level.NORMAL)
 def test_open_warehouse_card_via_action_menu(base_url, page_fixture):
-    """
-    Тест-кейс: Открытие drawer'а редактирования через экшн-меню
-    (по аналогии с test_open_edit_address_modal из subdivisions)
-    """
+
     page = page_fixture()
     autorization_page = AutorizationPage(page)
     warehouses = WarehousesSettingsPage(page)
@@ -1159,13 +1130,8 @@ def test_open_warehouse_card_via_action_menu(base_url, page_fixture):
 
 
 @allure.title("Открытие окна подтверждения удаления склада через экшн-меню")
-@allure.tag("positive", "regression", "medium")
-@allure.severity(allure.severity_level.NORMAL)
 def test_open_delete_warehouse_confirmation(base_url, page_fixture):
-    """
-    Тест-кейс: Экшн-меню → Удалить → окно подтверждения
-    (по аналогии с test_open_delete_address_confirmation_1 из subdivisions)
-    """
+
     page = page_fixture()
     autorization_page = AutorizationPage(page)
     warehouses = WarehousesSettingsPage(page)
@@ -1227,15 +1193,10 @@ def test_cancel_delete_warehouse(base_url, page_fixture):
         assert new_count == initial_count, \
             f"Количество складов изменилось. Было: {initial_count}, стало: {new_count}"
 
-#TODO внести еще один в тест по редактированию.
+
 @allure.title("Поиск адреса через автозаполнение")
-@allure.tag("positive", "regression", "medium")
-@allure.severity(allure.severity_level.NORMAL)
 def test_address_autocomplete(base_url, page_fixture):
-    """
-    Тест-кейс: Автозаполнение адреса по подсказке
-    (по аналогии с test_address_autocomplete из subdivisions)
-    """
+
     page = page_fixture()
     autorization_page = AutorizationPage(page)
     warehouses = WarehousesSettingsPage(page)
@@ -1278,13 +1239,8 @@ def test_address_autocomplete(base_url, page_fixture):
 
 
 @allure.title("Нельзя создать склад без обязательных полей")
-@allure.tag("negative", "validation", "medium")
-@allure.severity(allure.severity_level.NORMAL)
 def test_warehouse_mandatory_fields(base_url, page_fixture):
-    """
-    Тест-кейс: Проверка валидации обязательных полей
-    (по аналогии с test_address_required_fields_validation из subdivisions)
-    """
+
     page = page_fixture()
     autorization_page = AutorizationPage(page)
     warehouses = WarehousesSettingsPage(page)
@@ -1349,20 +1305,12 @@ def test_warehouse_mandatory_fields(base_url, page_fixture):
             "Склад был создан несмотря на ошибки валидации"
 
 
-# ============================================================================
-# ЗАКРЫТИЕ ОКОН
-# ============================================================================
+"""Закрытие окон"""
 
 
 @allure.title("Закрытие окна нового склада разными способами")
-@allure.tag("positive", "regression", "low")
-@allure.severity(allure.severity_level.MINOR)
 def test_close_new_warehouse_modal(base_url, page_fixture):
-    """
-    Объединяет тест-кейсы:
-    - Закрыть окно нажатием на крестик
-    - Закрыть окно нажатием на пространство вне окна
-    """
+
     page = page_fixture()
     autorization_page = AutorizationPage(page)
     warehouses = WarehousesSettingsPage(page)
@@ -1388,10 +1336,7 @@ def test_close_new_warehouse_modal(base_url, page_fixture):
 
 
 @allure.title("Окно подтверждения закрытия при несохранённых изменениях")
-@allure.tag("positive", "regression", "low")
-@allure.severity(allure.severity_level.MINOR)
 def test_close_confirmation_on_unsaved_changes(base_url, page_fixture):
-    """Тест-кейс: Открытие окна подтверждения закрытия при несохранённых данных"""
     page = page_fixture()
     autorization_page = AutorizationPage(page)
     warehouses = WarehousesSettingsPage(page)
@@ -1423,482 +1368,424 @@ def test_close_confirmation_on_unsaved_changes(base_url, page_fixture):
             "Окно склада не закрылось"
 
 
+import time
+import allure
+import pytest
+from playwright.sync_api import expect
+
+from page_opjects.autorization_page import AutorizationPage
+from page_opjects.settings_page.personal_limits_settings_page import (
+    PersonalLimitsSettingsPage,
+    SelectEmployeeModal,
+    SetLimitModal,
+    DeleteLimitModal,
+)
+
+# ============================================================================
+# СТРАНИЦА ПЕРСОНАЛЬНЫХ ЛИМИТОВ
+# ============================================================================
+
+# Тестовые данные
+TEST_USER_EMAIL = "testgarwin_yur+3@mail.ru"
+TEST_USER_NAME = "Агафонова Прохор Ефимовна"
+HIGH_LIMIT = "99999999.99"
+LOW_LIMIT = "300"
+MEDIUM_LIMIT = "5000"
 
 
-#
-#
-# import time
-# import allure
-# import pytest
-# from playwright.sync_api import expect
-#
-# from page_opjects.autorization_page import AutorizationPage
-# from page_opjects.settings_page.personal_limits_settings_page import (
-#     PersonalLimitsSettingsPage,
-#     SelectEmployeeModal,
-#     SetLimitModal,
-#     DeleteLimitModal,
-# )
-#
-# """
-# Тесты страницы «Персональные лимиты» (/settings/account/personal-limits)
-#
-# Функциональность:
-#   - Установка лимита на закупку для конкретного пользователя
-#   - Установленный лимит — общий на все подразделения пользователя
-#   - Изменить или снять лимит можно в любой момент
-#   - Поиск по имени, фамилии или email
-# """
-#
-# # Тестовые данные
-# TEST_USER_EMAIL = "testgarwin_yur+3@mail.ru"
-# TEST_USER_NAME = "Агафонова Прохор Ефимовна"
-# HIGH_LIMIT = "99999999.99"
-# LOW_LIMIT = "300"
-# MEDIUM_LIMIT = "5000"
-#
-#
-# # ============================================================================
-# # СТРАНИЦА ПЕРСОНАЛЬНЫХ ЛИМИТОВ — UI ТЕСТЫ
-# # ============================================================================
-#
-#
-# @allure.title("Открытие страницы персональных лимитов")
-# @allure.tag("smoke", "personal-limits")
-# @allure.severity(allure.severity_level.NORMAL)
-# def test_open_personal_limits_page(base_url, page_fixture):
-#     """Проверяю, что страница персональных лимитов открывается корректно"""
-#     page = page_fixture()
-#     autorization_page = AutorizationPage(page)
-#     personal_limits = PersonalLimitsSettingsPage(page)
-#
-#     autorization_page.open(base_url)
-#     autorization_page.admin_buyer_authorize()
-#
-#     personal_limits.open(base_url)
-#
-#     with allure.step("Проверяю, что кнопка 'Установить новый' отображается"):
-#         assert page.locator(personal_limits.ADD_NEW_BUTTON).is_visible(), \
-#             "Кнопка 'Установить новый' не отображается"
-#
-#     with allure.step("Проверяю, что поле поиска отображается"):
-#         assert page.locator(personal_limits.SEARCH_INPUT).is_visible(), \
-#             "Поле поиска не отображается"
-#
-#
-# @allure.title("Открытие модалки выбора сотрудника")
-# @allure.tag("smoke", "personal-limits")
-# @allure.severity(allure.severity_level.NORMAL)
-# def test_open_select_employee_modal(base_url, page_fixture):
-#     """Нажатие '+ Установить новый' открывает модалку выбора сотрудника"""
-#     page = page_fixture()
-#     autorization_page = AutorizationPage(page)
-#     personal_limits = PersonalLimitsSettingsPage(page)
-#     select_modal = SelectEmployeeModal(page)
-#
-#     autorization_page.open(base_url)
-#     autorization_page.admin_buyer_authorize()
-#
-#     personal_limits.open(base_url)
-#
-#     with allure.step("Нажимаю '+ Установить новый'"):
-#         personal_limits.click_add_new()
-#
-#     with allure.step("Проверяю, что модалка выбора сотрудника открылась"):
-#         assert select_modal.is_visible(), \
-#             "Модалка 'Выберите сотрудника' не открылась"
-#
-#     with allure.step("Проверяю, что список сотрудников не пуст"):
-#         assert select_modal.get_employees_count() > 0, \
-#             "Список сотрудников пуст"
-#
-#
-# @allure.title("Поиск сотрудника в модалке выбора")
-# @allure.tag("positive", "personal-limits")
-# @allure.severity(allure.severity_level.NORMAL)
-# def test_search_employee_in_modal(base_url, page_fixture):
-#     """Поиск по имени/email фильтрует список сотрудников"""
-#     page = page_fixture()
-#     autorization_page = AutorizationPage(page)
-#     personal_limits = PersonalLimitsSettingsPage(page)
-#     select_modal = SelectEmployeeModal(page)
-#
-#     autorization_page.open(base_url)
-#     autorization_page.admin_buyer_authorize()
-#
-#     personal_limits.open(base_url)
-#     personal_limits.click_add_new()
-#
-#     with allure.step("Получаю общее количество сотрудников"):
-#         total_count = select_modal.get_employees_count()
-#         allure.attach(str(total_count), name="Всего сотрудников")
-#
-#     with allure.step("Ищу сотрудника по email"):
-#         select_modal.search_employee(TEST_USER_EMAIL)
-#
-#     with allure.step("Проверяю, что список отфильтрован"):
-#         filtered_count = select_modal.get_employees_count()
-#         assert filtered_count > 0, "Поиск не дал результатов"
-#         assert filtered_count <= total_count, "Фильтрация не сработала"
-#
-#         allure.attach(str(filtered_count), name="Найдено сотрудников")
-#
-#
-# @allure.title("Отмена выбора сотрудника")
-# @allure.tag("positive", "personal-limits")
-# @allure.severity(allure.severity_level.MINOR)
-# def test_cancel_select_employee(base_url, page_fixture):
-#     """Отмена в модалке выбора закрывает её без последствий"""
-#     page = page_fixture()
-#     autorization_page = AutorizationPage(page)
-#     personal_limits = PersonalLimitsSettingsPage(page)
-#     select_modal = SelectEmployeeModal(page)
-#
-#     autorization_page.open(base_url)
-#     autorization_page.admin_buyer_authorize()
-#
-#     personal_limits.open(base_url)
-#
-#     initial_count = personal_limits.get_users_count()
-#
-#     personal_limits.click_add_new()
-#     assert select_modal.is_visible()
-#
-#     with allure.step("Нажимаю 'Отмена'"):
-#         select_modal.click_cancel()
-#
-#     with allure.step("Проверяю, что модалка закрылась"):
-#         assert not select_modal.is_visible(), \
-#             "Модалка не закрылась после отмены"
-#
-#     with allure.step("Проверяю, что количество пользователей не изменилось"):
-#         assert personal_limits.get_users_count() == initial_count
-#
-#
-# @allure.title("Переход от выбора сотрудника к установке лимита")
-# @allure.tag("positive", "personal-limits")
-# @allure.severity(allure.severity_level.NORMAL)
-# def test_select_employee_opens_limit_modal(base_url, page_fixture):
-#     """Выбор сотрудника открывает модалку установки лимита"""
-#     page = page_fixture()
-#     autorization_page = AutorizationPage(page)
-#     personal_limits = PersonalLimitsSettingsPage(page)
-#     select_modal = SelectEmployeeModal(page)
-#     limit_modal = SetLimitModal(page)
-#
-#     autorization_page.open(base_url)
-#     autorization_page.admin_buyer_authorize()
-#
-#     personal_limits.open(base_url)
-#     personal_limits.click_add_new()
-#
-#     with allure.step("Выбираю первого сотрудника"):
-#         select_modal.select_and_confirm_by_index(0)
-#
-#     with allure.step("Проверяю, что модалка установки лимита открылась"):
-#         assert limit_modal.is_visible(), \
-#             "Модалка 'Изменение персонального лимита' не открылась"
-#
-#     with allure.step("Проверяю наличие поля 'Остаток за период'"):
-#         assert page.locator(limit_modal.REMAINING_LABEL).is_visible(), \
-#             "Подпись 'Остаток за период' не отображается"
-#
-#     with allure.step("Отменяю, чтобы не сохранять"):
-#         limit_modal.click_cancel()
-#
-#
-# @allure.title("Отмена установки лимита")
-# @allure.tag("positive", "personal-limits")
-# @allure.severity(allure.severity_level.MINOR)
-# def test_cancel_set_limit(base_url, page_fixture):
-#     """Отмена в модалке лимита не создаёт запись"""
-#     page = page_fixture()
-#     autorization_page = AutorizationPage(page)
-#     personal_limits = PersonalLimitsSettingsPage(page)
-#     select_modal = SelectEmployeeModal(page)
-#     limit_modal = SetLimitModal(page)
-#
-#     autorization_page.open(base_url)
-#     autorization_page.admin_buyer_authorize()
-#
-#     personal_limits.open(base_url)
-#
-#     initial_count = personal_limits.get_users_count()
-#
-#     personal_limits.click_add_new()
-#     select_modal.select_and_confirm_by_index(0)
-#
-#     with allure.step("Ввожу лимит, но нажимаю 'Отмена'"):
-#         limit_modal.set_limit("5000")
-#         limit_modal.click_cancel()
-#
-#     with allure.step("Проверяю, что модалка закрылась"):
-#         assert not limit_modal.is_visible()
-#
-#     with allure.step("Проверяю, что количество пользователей не изменилось"):
-#         new_count = personal_limits.get_users_count()
-#         assert new_count == initial_count, \
-#             f"Количество изменилось после отмены. Было: {initial_count}, стало: {new_count}"
-#
-#
-# # ============================================================================
-# # CRUD ОПЕРАЦИИ
-# # ============================================================================
-#
-#
-# @allure.title("Создание и удаление персонального лимита")
-# @allure.tag("positive", "regression", "critical", "personal-limits")
-# @allure.severity(allure.severity_level.CRITICAL)
-# def test_create_and_delete_personal_limit(base_url, page_fixture):
-#     """
-#     1. Создаю персональный лимит для сотрудника
-#     2. Проверяю toast и появление в списке
-#     3. Удаляю лимит
-#     4. Проверяю, что пользователь исчез из списка
-#     """
-#     page = page_fixture()
-#     autorization_page = AutorizationPage(page)
-#     personal_limits = PersonalLimitsSettingsPage(page)
-#     select_modal = SelectEmployeeModal(page)
-#     limit_modal = SetLimitModal(page)
-#     delete_modal = DeleteLimitModal(page)
-#
-#     autorization_page.open(base_url)
-#     autorization_page.admin_buyer_authorize()
-#
-#     personal_limits.open(base_url)
-#
-#     # Если у пользователя уже есть лимит — сначала удаляем
-#     if personal_limits.is_user_present(TEST_USER_EMAIL):
-#         with allure.step("Предусловие: удаляю существующий лимит"):
-#             personal_limits.click_delete_user_limit(TEST_USER_EMAIL)
-#             if delete_modal.is_visible():
-#                 delete_modal.confirm_delete()
-#             page.wait_for_timeout(1000)
-#
-#     initial_count = personal_limits.get_users_count()
-#
-#     # --- Создание ---
-#     with allure.step("Создаю персональный лимит"):
-#         personal_limits.click_add_new()
-#         select_modal.select_and_confirm_by_email(TEST_USER_EMAIL)
-#         limit_modal.set_and_save(MEDIUM_LIMIT)
-#
-#     with allure.step("Проверяю toast об установке лимита"):
-#         assert personal_limits.is_limit_set_toast_visible(), \
-#             "Toast 'Персональный лимит сотрудника ... установлен' не отображается"
-#
-#     with allure.step("Проверяю, что пользователь появился в списке"):
-#         page.wait_for_timeout(1000)
-#         assert personal_limits.is_user_present(TEST_USER_EMAIL), \
-#             f"Пользователь {TEST_USER_EMAIL} не найден в списке"
-#
-#         new_count = personal_limits.get_users_count()
-#         assert new_count == initial_count + 1, \
-#             f"Количество не увеличилось. Было: {initial_count}, стало: {new_count}"
-#
-#     # --- Удаление ---
-#     with allure.step("Удаляю персональный лимит"):
-#         personal_limits.click_delete_user_limit(TEST_USER_EMAIL)
-#
-#     with allure.step("Проверяю окно подтверждения удаления"):
-#         assert delete_modal.is_visible(), \
-#             "Окно подтверждения удаления не появилось"
-#
-#     with allure.step("Подтверждаю удаление"):
-#         delete_modal.confirm_delete()
-#
-#     with allure.step("Проверяю, что пользователь удалён из списка"):
-#         page.wait_for_timeout(1000)
-#         assert not personal_limits.is_user_present(TEST_USER_EMAIL), \
-#             f"Пользователь {TEST_USER_EMAIL} всё ещё в списке после удаления"
-#
-#         final_count = personal_limits.get_users_count()
-#         assert final_count == initial_count, \
-#             f"Количество не вернулось. Было: {initial_count}, стало: {final_count}"
-#
-#
-# @allure.title("Редактирование персонального лимита")
-# @allure.tag("positive", "regression", "personal-limits")
-# @allure.severity(allure.severity_level.CRITICAL)
-# def test_edit_personal_limit(base_url, page_fixture):
-#     """
-#     1. Создаю лимит (если нет)
-#     2. Редактирую значение
-#     3. Проверяю toast и новое значение
-#     4. Возвращаю исходное значение
-#     """
-#     page = page_fixture()
-#     autorization_page = AutorizationPage(page)
-#     personal_limits = PersonalLimitsSettingsPage(page)
-#     select_modal = SelectEmployeeModal(page)
-#     limit_modal = SetLimitModal(page)
-#     delete_modal = DeleteLimitModal(page)
-#
-#     autorization_page.open(base_url)
-#     autorization_page.admin_buyer_authorize()
-#
-#     personal_limits.open(base_url)
-#
-#     # Предусловие: создаём лимит если его нет
-#     if not personal_limits.is_user_present(TEST_USER_EMAIL):
-#         with allure.step("Предусловие: создаю лимит"):
-#             personal_limits.click_add_new()
-#             select_modal.select_and_confirm_by_email(TEST_USER_EMAIL)
-#             limit_modal.set_and_save(HIGH_LIMIT)
-#             page.wait_for_timeout(1000)
-#
-#     with allure.step("Нажимаю кнопку редактирования"):
-#         personal_limits.click_edit_user_limit(TEST_USER_EMAIL)
-#
-#     with allure.step("Проверяю, что модалка редактирования открылась"):
-#         assert limit_modal.is_visible(), \
-#             "Модалка изменения лимита не открылась"
-#
-#     with allure.step("Запоминаю старое значение"):
-#         old_value = limit_modal.get_limit_value()
-#         allure.attach(old_value, name="Старое значение лимита")
-#
-#     with allure.step("Устанавливаю новое значение"):
-#         new_value = MEDIUM_LIMIT
-#         limit_modal.set_and_save(new_value)
-#
-#     with allure.step("Проверяю toast об изменении"):
-#         # Toast может быть как "установлен" так и "изменен"
-#         page.wait_for_timeout(1000)
-#
-#     with allure.step("Проверяю, что значение обновилось на странице"):
-#         user_text = personal_limits.get_user_limit_text(TEST_USER_EMAIL)
-#         allure.attach(user_text, name="Текст строки пользователя")
-#
-#     with allure.step("Постусловие: возвращаю исходное значение"):
-#         personal_limits.click_edit_user_limit(TEST_USER_EMAIL)
-#         limit_modal.set_and_save(HIGH_LIMIT)
-#         page.wait_for_timeout(1000)
-#
-#
-# @allure.title("Отмена удаления персонального лимита")
-# @allure.tag("positive", "regression", "personal-limits")
-# @allure.severity(allure.severity_level.NORMAL)
-# def test_cancel_delete_personal_limit(base_url, page_fixture):
-#     """Отмена удаления не удаляет лимит"""
-#     page = page_fixture()
-#     autorization_page = AutorizationPage(page)
-#     personal_limits = PersonalLimitsSettingsPage(page)
-#     select_modal = SelectEmployeeModal(page)
-#     limit_modal = SetLimitModal(page)
-#     delete_modal = DeleteLimitModal(page)
-#
-#     autorization_page.open(base_url)
-#     autorization_page.admin_buyer_authorize()
-#
-#     personal_limits.open(base_url)
-#
-#     # Предусловие
-#     if not personal_limits.is_user_present(TEST_USER_EMAIL):
-#         personal_limits.click_add_new()
-#         select_modal.select_and_confirm_by_email(TEST_USER_EMAIL)
-#         limit_modal.set_and_save(HIGH_LIMIT)
-#         page.wait_for_timeout(1000)
-#
-#     initial_count = personal_limits.get_users_count()
-#
-#     with allure.step("Нажимаю кнопку удаления"):
-#         personal_limits.click_delete_user_limit(TEST_USER_EMAIL)
-#
-#     with allure.step("Проверяю окно подтверждения"):
-#         assert delete_modal.is_visible()
-#
-#     with allure.step("Отменяю удаление"):
-#         delete_modal.cancel_delete()
-#
-#     with allure.step("Проверяю, что окно закрылось"):
-#         assert not delete_modal.is_visible()
-#
-#     with allure.step("Проверяю, что пользователь остался в списке"):
-#         assert personal_limits.is_user_present(TEST_USER_EMAIL)
-#         assert personal_limits.get_users_count() == initial_count
-#
-#
-# # ============================================================================
-# # ПОИСК НА СТРАНИЦЕ
-# # ============================================================================
-#
-#
-# @allure.title("Поиск пользователя с лимитом на странице")
-# @allure.tag("positive", "personal-limits")
-# @allure.severity(allure.severity_level.MINOR)
-# def test_search_user_on_page(base_url, page_fixture):
-#     """Поиск на странице фильтрует список пользователей с лимитами"""
-#     page = page_fixture()
-#     autorization_page = AutorizationPage(page)
-#     personal_limits = PersonalLimitsSettingsPage(page)
-#     select_modal = SelectEmployeeModal(page)
-#     limit_modal = SetLimitModal(page)
-#
-#     autorization_page.open(base_url)
-#     autorization_page.admin_buyer_authorize()
-#
-#     personal_limits.open(base_url)
-#
-#     # Предусловие: нужны минимум 2 пользователя с лимитами
-#     if not personal_limits.is_user_present(TEST_USER_EMAIL):
-#         personal_limits.click_add_new()
-#         select_modal.select_and_confirm_by_email(TEST_USER_EMAIL)
-#         limit_modal.set_and_save(HIGH_LIMIT)
-#         page.wait_for_timeout(1000)
-#
-#     total_count = personal_limits.get_users_count()
-#
-#     with allure.step("Ищу по email"):
-#         personal_limits.search_user(TEST_USER_EMAIL)
-#
-#     with allure.step("Проверяю, что список отфильтрован"):
-#         filtered_count = personal_limits.get_users_count()
-#         assert filtered_count > 0, "Поиск не дал результатов"
-#         assert personal_limits.is_user_present(TEST_USER_EMAIL), \
-#             "Искомый пользователь не найден в результатах"
-#
-#     with allure.step("Очищаю поиск"):
-#         personal_limits.clear_search()
-#
-#     with allure.step("Проверяю, что полный список вернулся"):
-#         restored_count = personal_limits.get_users_count()
-#         assert restored_count == total_count, \
-#             f"Полный список не вернулся. Было: {total_count}, стало: {restored_count}"
-#
-#
-# # ============================================================================
-# # ВАЛИДАЦИЯ
-# # ============================================================================
-#
-#
-# @allure.title("Закрытие модалки лимита крестиком")
-# @allure.tag("positive", "personal-limits")
-# @allure.severity(allure.severity_level.MINOR)
-# def test_close_limit_modal_by_x(base_url, page_fixture):
-#     """Закрытие модалки крестиком не сохраняет данные"""
-#     page = page_fixture()
-#     autorization_page = AutorizationPage(page)
-#     personal_limits = PersonalLimitsSettingsPage(page)
-#     select_modal = SelectEmployeeModal(page)
-#     limit_modal = SetLimitModal(page)
-#
-#     autorization_page.open(base_url)
-#     autorization_page.admin_buyer_authorize()
-#
-#     personal_limits.open(base_url)
-#
-#     initial_count = personal_limits.get_users_count()
-#
-#     personal_limits.click_add_new()
-#     select_modal.select_and_confirm_by_index(0)
-#
-#     with allure.step("Ввожу лимит и закрываю крестиком"):
-#         limit_modal.set_limit("12345")
-#         limit_modal.click_close()
-#
-#     with allure.step("Проверяю, что лимит не был создан"):
-#         assert not limit_modal.is_visible()
-#         new_count = personal_limits.get_users_count()
-#         assert new_count == initial_count
+@allure.title("Открытие страницы персональных лимитов")
+def test_open_personal_limits_page(base_url, page_fixture):
+    """Проверяю, что страница персональных лимитов открывается корректно"""
+    page = page_fixture()
+    autorization_page = AutorizationPage(page)
+    personal_limits = PersonalLimitsSettingsPage(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_buyer_authorize()
+
+    personal_limits.open(base_url)
+
+    with allure.step("Проверяю, что кнопка 'Установить новый' отображается"):
+        assert page.locator(personal_limits.ADD_NEW_BUTTON).is_visible(), \
+            "Кнопка 'Установить новый' не отображается"
+
+    with allure.step("Проверяю, что поле поиска отображается"):
+        assert page.locator(personal_limits.SEARCH_INPUT).is_visible(), \
+            "Поле поиска не отображается"
+
+
+@allure.title("Поиск сотрудника в модалке выбора")
+@allure.tag("positive", "personal-limits")
+@allure.severity(allure.severity_level.NORMAL)
+def test_search_employee_in_modal(base_url, page_fixture):
+    """Поиск по имени/email фильтрует список сотрудников"""
+    page = page_fixture()
+    autorization_page = AutorizationPage(page)
+    personal_limits = PersonalLimitsSettingsPage(page)
+    select_modal = SelectEmployeeModal(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_buyer_authorize()
+
+    personal_limits.open(base_url)
+    personal_limits.click_add_new()
+
+    with allure.step("Получаю общее количество сотрудников"):
+        total_count = select_modal.get_employees_count()
+        allure.attach(str(total_count), name="Всего сотрудников")
+
+    with allure.step("Ищу сотрудника по имени"):
+        select_modal.search_employee(TEST_USER_NAME)
+
+    with allure.step("Проверяю, что список отфильтрован"):
+        filtered_count = select_modal.get_employees_count()
+        assert filtered_count > 0, "Поиск не дал результатов"
+        assert filtered_count <= total_count, "Фильтрация не сработала"
+
+        allure.attach(str(filtered_count), name="Найдено сотрудников")
+
+
+@allure.title("Открытие и отмена модалки выбора сотрудника")
+@allure.tag("smoke", "personal-limits")
+@allure.severity(allure.severity_level.NORMAL)
+def test_open_select_employee_modal(base_url, page_fixture):
+    """Нажатие '+ Установить новый' открывает модалку выбора сотрудника"""
+    page = page_fixture()
+    autorization_page = AutorizationPage(page)
+    personal_limits = PersonalLimitsSettingsPage(page)
+    select_modal = SelectEmployeeModal(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_buyer_authorize()
+
+    personal_limits.open(base_url)
+
+    initial_count = personal_limits.get_users_count()
+
+    with allure.step("Нажимаю '+ Установить новый'"):
+        personal_limits.click_add_new()
+
+    with allure.step("Проверяю, что модалка выбора сотрудника открылась"):
+        assert select_modal.is_visible(), \
+            "Модалка 'Выберите сотрудника' не открылась"
+
+    with allure.step("Проверяю, что список сотрудников не пуст"):
+        assert select_modal.get_employees_count() > 0, \
+            "Список сотрудников пуст"
+
+    with allure.step("Нажимаю 'Отмена'"):
+        select_modal.click_cancel()
+
+    with allure.step("Проверяю, что модалка закрылась"):
+        assert not select_modal.is_visible(), \
+            "Модалка не закрылась после отмены"
+
+    with allure.step("Проверяю, что количество пользователей не изменилось"):
+        assert personal_limits.get_users_count() == initial_count
+
+
+@allure.title("Открытие модального окна установки лимита и отмена установки лимита")
+def test_select_employee_opens_limit_modal_and_cancel_set_limit(base_url, page_fixture):
+    """Отмена в модалке лимита не создаёт запись"""
+    page = page_fixture()
+    autorization_page = AutorizationPage(page)
+    personal_limits = PersonalLimitsSettingsPage(page)
+    select_modal = SelectEmployeeModal(page)
+    limit_modal = SetLimitModal(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_buyer_authorize()
+
+    personal_limits.open(base_url)
+
+    initial_count = personal_limits.get_users_count()
+
+    personal_limits.click_add_new()
+
+    with allure.step("Выбираю первого сотрудника"):
+        select_modal.select_and_confirm_by_index(0)
+
+    with allure.step("Проверяю, что модалка установки лимита открылась"):
+        assert limit_modal.is_visible(), \
+            "Модалка 'Изменение персонального лимита' не открылась"
+
+    with allure.step("Ввожу лимит, но нажимаю 'Отмена'"):
+        limit_modal.set_limit("5000")
+        limit_modal.click_cancel()
+
+    with allure.step("Проверяю, что модалка закрылась"):
+        assert not limit_modal.is_visible()
+
+    with allure.step("Проверяю, что количество пользователей не изменилось"):
+        new_count = personal_limits.get_users_count()
+        assert new_count == initial_count, \
+            f"Количество изменилось после отмены. Было: {initial_count}, стало: {new_count}"
+
+
+@allure.title("Создание и удаление персонального лимита")
+def test_create_and_delete_personal_limit(base_url, page_fixture):
+
+    page = page_fixture()
+    autorization_page = AutorizationPage(page)
+    personal_limits = PersonalLimitsSettingsPage(page)
+    select_modal = SelectEmployeeModal(page)
+    limit_modal = SetLimitModal(page)
+    delete_modal = DeleteLimitModal(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_buyer_authorize()
+
+    personal_limits.open(base_url)
+
+    # Если у пользователя уже есть лимит — сначала удаляем
+    if personal_limits.is_user_present(TEST_USER_EMAIL):
+        with allure.step("Предусловие: удаляю существующий лимит"):
+            personal_limits.click_delete_user_limit(TEST_USER_NAME)
+            if delete_modal.is_visible():
+                delete_modal.confirm_delete()
+            page.wait_for_timeout(1000)
+            personal_limits.open(base_url)
+
+    initial_count = personal_limits.get_users_count()
+
+    # --- Создание ---
+    with allure.step("Нажимаю '+ Установить новый'"):
+        personal_limits.click_add_new()
+
+    with allure.step("Проверяю, что модалка выбора сотрудника открылась"):
+        assert select_modal.is_visible(), \
+            "Модалка 'Выберите сотрудника' не открылась"
+
+    with allure.step("Выбираю сотрудника по имени"):
+        select_modal.select_employee_by_email(TEST_USER_NAME)
+
+    with allure.step("Нажимаю 'Выбрать'"):
+        select_modal.click_select()
+
+    with allure.step("Проверяю, что модалка установки лимита открылась"):
+        assert limit_modal.is_visible(), \
+            "Модалка 'Изменение персонального лимита' не открылась"
+
+    with allure.step("Устанавливаю лимит и сохраняю"):
+        limit_modal.set_and_save(MEDIUM_LIMIT)
+
+    with allure.step("Проверяю toast об установке лимита"):
+        assert personal_limits.is_limit_set_toast_visible(), \
+            "Toast 'Персональный лимит сотрудника ... установлен' не отображается"
+
+    with allure.step("Проверяю, что пользователь появился в списке"):
+        page.wait_for_timeout(1000)
+        assert personal_limits.is_user_present(TEST_USER_EMAIL), \
+            f"Пользователь {TEST_USER_EMAIL} не найден в списке"
+
+        new_count = personal_limits.get_users_count()
+        assert new_count == initial_count + 1, \
+            f"Количество не увеличилось. Было: {initial_count}, стало: {new_count}"
+
+    # --- Удаление ---
+    with allure.step("Нажимаю кнопку удаления (вторая иконка в строке)"):
+        personal_limits.click_delete_user_limit(TEST_USER_EMAIL)
+
+    with allure.step("Проверяю окно подтверждения удаления"):
+        assert delete_modal.is_visible(), \
+            "Окно подтверждения удаления не появилось"
+
+    with allure.step("Подтверждаю удаление"):
+        delete_modal.confirm_delete()
+
+    with allure.step("Проверяю, что пользователь удалён из списка"):
+        page.wait_for_timeout(1000)
+        assert not personal_limits.is_user_present(TEST_USER_EMAIL), \
+            f"Пользователь {TEST_USER_EMAIL} всё ещё в списке после удаления"
+
+        final_count = personal_limits.get_users_count()
+        assert final_count == initial_count, \
+            f"Количество не вернулось. Было: {initial_count}, стало: {final_count}"
+
+
+@allure.title("Редактирование персонального лимита")
+def test_edit_personal_limit(base_url, page_fixture):
+
+    page = page_fixture()
+    autorization_page = AutorizationPage(page)
+    personal_limits = PersonalLimitsSettingsPage(page)
+    select_modal = SelectEmployeeModal(page)
+    limit_modal = SetLimitModal(page)
+    delete_modal = DeleteLimitModal(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_buyer_authorize()
+
+    personal_limits.open(base_url)
+
+    # Предусловие: создаём лимит если его нет
+    if not personal_limits.is_user_present(TEST_USER_EMAIL):
+        with allure.step("Предусловие: создаю лимит"):
+            personal_limits.click_add_new()
+            select_modal.select_and_confirm_by_email(TEST_USER_EMAIL)
+            limit_modal.set_and_save(HIGH_LIMIT)
+            page.wait_for_timeout(1000)
+
+    with allure.step("Нажимаю кнопку редактирования"):
+        personal_limits.click_edit_user_limit(TEST_USER_EMAIL)
+
+    with allure.step("Проверяю, что модалка редактирования открылась"):
+        assert limit_modal.is_visible(), \
+            "Модалка изменения лимита не открылась"
+
+    with allure.step("Запоминаю старое значение"):
+        old_value = limit_modal.get_limit_value()
+        allure.attach(old_value, name="Старое значение лимита")
+
+    with allure.step("Устанавливаю новое значение"):
+        new_value = MEDIUM_LIMIT
+        limit_modal.set_and_save(new_value)
+
+    with allure.step("Проверяю toast об изменении"):
+        # Toast может быть как "установлен" так и "изменен"
+        page.wait_for_timeout(1000)
+
+    with allure.step("Проверяю, что значение обновилось на странице"):
+        user_text = personal_limits.get_user_limit_text(TEST_USER_EMAIL)
+        allure.attach(user_text, name="Текст строки пользователя")
+
+    with allure.step("Постусловие: возвращаю исходное значение"):
+        personal_limits.click_edit_user_limit(TEST_USER_EMAIL)
+        limit_modal.set_and_save(HIGH_LIMIT)
+        page.wait_for_timeout(1000)
+
+        # --- Удаление ---
+    with allure.step("Нажимаю кнопку удаления (вторая иконка в строке)"):
+        personal_limits.click_delete_user_limit(TEST_USER_EMAIL)
+
+    with allure.step("Проверяю окно подтверждения удаления"):
+        assert delete_modal.is_visible(), \
+            "Окно подтверждения удаления не появилось"
+
+    with allure.step("Подтверждаю удаление"):
+        delete_modal.confirm_delete()
+
+    with allure.step("Проверяю, что пользователь удалён из списка"):
+        page.wait_for_timeout(1000)
+        assert not personal_limits.is_user_present(TEST_USER_EMAIL), \
+            f"Пользователь {TEST_USER_EMAIL} всё ещё в списке после удаления"
+
+
+@allure.title("Отмена удаления персонального лимита")
+def test_cancel_delete_personal_limit(base_url, page_fixture):
+    """Отмена удаления не удаляет лимит"""
+    page = page_fixture()
+    autorization_page = AutorizationPage(page)
+    personal_limits = PersonalLimitsSettingsPage(page)
+    select_modal = SelectEmployeeModal(page)
+    limit_modal = SetLimitModal(page)
+    delete_modal = DeleteLimitModal(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_buyer_authorize()
+
+    personal_limits.open(base_url)
+
+    # Предусловие
+    if not personal_limits.is_user_present(TEST_USER_EMAIL):
+        personal_limits.click_add_new()
+        select_modal.select_and_confirm_by_email(TEST_USER_EMAIL)
+        limit_modal.set_and_save(HIGH_LIMIT)
+        page.wait_for_timeout(1000)
+
+    initial_count = personal_limits.get_users_count()
+
+    with allure.step("Нажимаю кнопку удаления"):
+        personal_limits.click_delete_user_limit(TEST_USER_EMAIL)
+
+    with allure.step("Проверяю окно подтверждения"):
+        assert delete_modal.is_visible()
+
+    with allure.step("Отменяю удаление"):
+        delete_modal.cancel_delete()
+
+    with allure.step("Проверяю, что окно закрылось"):
+        assert not delete_modal.is_visible()
+
+    with allure.step("Проверяю, что пользователь остался в списке"):
+        assert personal_limits.is_user_present(TEST_USER_EMAIL)
+        assert personal_limits.get_users_count() == initial_count
+
+
+@allure.title("Поиск пользователя с лимитом на странице")
+def test_search_user_on_page(base_url, page_fixture):
+    """Поиск на странице фильтрует список пользователей с лимитами"""
+    page = page_fixture()
+    autorization_page = AutorizationPage(page)
+    personal_limits = PersonalLimitsSettingsPage(page)
+    select_modal = SelectEmployeeModal(page)
+    limit_modal = SetLimitModal(page)
+    delete_modal = DeleteLimitModal(page)
+
+    autorization_page.open(base_url)
+    autorization_page.admin_buyer_authorize()
+
+    personal_limits.open(base_url)
+
+    TEST_USER_NAME = "Агафонова"
+
+    # Предусловие: нужны минимум 2 пользователя с лимитами
+    if not personal_limits.is_user_present(TEST_USER_EMAIL):
+        personal_limits.click_add_new()
+        select_modal.select_and_confirm_by_email(TEST_USER_EMAIL)
+        limit_modal.set_and_save(HIGH_LIMIT)
+        page.wait_for_timeout(1000)
+
+    total_count = personal_limits.get_users_count()
+
+    with allure.step("Ищу по email"):
+        personal_limits.search_user(TEST_USER_EMAIL)
+
+    with allure.step("Проверяю, что список отфильтрован"):
+        filtered_count = personal_limits.get_users_count()
+        assert filtered_count > 0, "Поиск не дал результатов"
+        assert personal_limits.is_user_present(TEST_USER_EMAIL), \
+            "Искомый пользователь не найден в результатах"
+
+    with allure.step("Очищаю поиск"):
+        personal_limits.clear_search()
+
+    with allure.step("Проверяю, что полный список вернулся"):
+        restored_count = personal_limits.get_users_count()
+        assert restored_count == total_count, \
+            f"Полный список не вернулся. Было: {total_count}, стало: {restored_count}"
+
+        total_count = personal_limits.get_users_count()
+
+        with allure.step("Ищу по имени"):
+            personal_limits.search_user(TEST_USER_NAME)
+
+        with allure.step("Проверяю, что список отфильтрован"):
+            filtered_count = personal_limits.get_users_count()
+            assert filtered_count > 0, "Поиск не дал результатов"
+            assert personal_limits.is_user_present(TEST_USER_NAME), \
+                "Искомый пользователь не найден в результатах"
+
+        with allure.step("Очищаю поиск"):
+            personal_limits.clear_search()
+
+        with allure.step("Проверяю, что полный список вернулся"):
+            restored_count = personal_limits.get_users_count()
+            assert restored_count == total_count, \
+                f"Полный список не вернулся. Было: {total_count}, стало: {restored_count}"
+
+        # --- Удаление ---
+    with allure.step("Нажимаю кнопку удаления (вторая иконка в строке)"):
+        personal_limits.click_delete_user_limit(TEST_USER_EMAIL)
+
+    with allure.step("Проверяю окно подтверждения удаления"):
+        assert delete_modal.is_visible(), \
+            "Окно подтверждения удаления не появилось"
+
+    with allure.step("Подтверждаю удаление"):
+        delete_modal.confirm_delete()
+
+    with allure.step("Проверяю, что пользователь удалён из списка"):
+        page.wait_for_timeout(1000)
+        assert not personal_limits.is_user_present(TEST_USER_EMAIL), \
+            f"Пользователь {TEST_USER_EMAIL} всё ещё в списке после удаления"

@@ -24,8 +24,8 @@ class PersonalLimitsSettingsPage:
     USER_LIMIT_VALUE = ".ff-medium, .text-body:has-text('остаток за период')"
 
     # Кнопки действий в строке пользователя
-    EDIT_BUTTON = "button[aria-label='edit'], .ant-btn-icon-only:has(svg), button:has(.anticon-edit)"
-    DELETE_BUTTON = "button[aria-label='delete'], .ant-btn-icon-only:has(.anticon-delete)"
+    # EDIT_BUTTON = "button[aria-label='edit'], .ant-btn-icon-only:has(svg), button:has(.anticon-edit)"
+    # DELETE_BUTTON = "button[aria-label='delete'], .ant-btn-icon-only:has(.anticon-delete)"
 
     # Пустой список
     EMPTY_LIST_TEXT = "text=Список пользователей пуст"
@@ -34,6 +34,34 @@ class PersonalLimitsSettingsPage:
     LIMIT_SET_TOAST = "text=/Персональный лимит сотрудника.*установлен/"
     LIMIT_CHANGED_TOAST = "text=/Персональный лимит сотрудника.*изменен/"
     LIMIT_DELETED_TOAST = "text=/Персональный лимит сотрудника.*удален/"
+
+    # Локаторы кнопок действий в строке пользователя
+    EDIT_BUTTON = ".ant-btn.css-2nkxv5.ant-btn-default.ant-btn-icon-only.button-icon >> nth=0"
+    DELETE_BUTTON = ".ant-btn.css-2nkxv5.ant-btn-default.ant-btn-icon-only.button-icon >> nth=1"
+
+    @allure.step("Нажимаю кнопку редактирования лимита у пользователя с email: {email}")
+    def click_edit_user_limit(self, email: str):
+        row = self.find_user_row_by_email(email)
+        row.locator(".ant-btn.ant-btn-default.ant-btn-icon-only.button-icon").nth(0).click()
+        self.page.wait_for_timeout(500)
+
+    @allure.step("Нажимаю кнопку удаления лимита у пользователя с email: {email}")
+    def click_delete_user_limit(self, email: str):
+        row = self.find_user_row_by_email(email)
+        row.locator(".ant-btn.ant-btn-default.ant-btn-icon-only.button-icon").nth(1).click()
+        self.page.wait_for_timeout(500)
+
+    @allure.step("Нажимаю кнопку редактирования лимита по индексу: {index}")
+    def click_edit_by_index(self, index: int = 0):
+        row = self.get_user_rows().nth(index)
+        row.locator(".ant-btn.ant-btn-default.ant-btn-icon-only.button-icon").nth(0).click()
+        self.page.wait_for_timeout(500)
+
+    @allure.step("Нажимаю кнопку удаления лимита по индексу: {index}")
+    def click_delete_by_index(self, index: int = 0):
+        row = self.get_user_rows().nth(index)
+        row.locator(".ant-btn.ant-btn-default.ant-btn-icon-only.button-icon").nth(1).click()
+        self.page.wait_for_timeout(500)
 
     @allure.step("Открываю страницу персональных лимитов")
     def open(self, base_url: str):
@@ -147,13 +175,15 @@ class SelectEmployeeModal:
         self.page = page
 
     MODAL = ".ant-modal-content"
-    TITLE = "text=Выберите сотрудника"
+    TITLE = "text=1. Выберите сотрудника"
     SEARCH_INPUT = "input[placeholder*='Поиск по сотрудникам']"
     USER_ITEM = ".ant-modal-content .ant-list-item, .ant-modal-content .user-add-modal__list-item"
     USER_NAME = ".ant-list-item-meta-title"
     USER_EMAIL = ".ant-list-item-meta-description"
     SELECT_BUTTON = "button:has-text('Выбрать')"
     CANCEL_BUTTON = "button:has-text('Отмена')"
+
+
 
     @allure.step("Проверяю, что модалка выбора сотрудника открыта")
     def is_visible(self) -> bool:
@@ -260,7 +290,8 @@ class DeleteLimitModal:
         self.page = page
 
     CONFIRM_TEXT = "text=Вы уверены"
-    CONFIRM_DELETE_BUTTON = ".button-lg.danger"
+    # CONFIRM_DELETE_BUTTON = ".button-lg.danger"
+    CONFIRM_DELETE_BUTTON = "button:has-text('Снять лимит')"
     CANCEL_BUTTON = "button:has-text('Отмена')"
 
     @allure.step("Проверяю, что окно подтверждения удаления открыто")

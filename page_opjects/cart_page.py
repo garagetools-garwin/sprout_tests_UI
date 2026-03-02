@@ -542,12 +542,6 @@ class CartPage:
 
 
 
-
-
-
-
-
-
     # @allure.step("Получаю текущее выбранное подразделение")
     # def get_selected_subdivision(self):
     #     return self.page.locator(self.SUBDIVISION_ROW).locator(self.SELECT_VALUE).inner_text()
