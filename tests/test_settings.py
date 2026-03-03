@@ -886,6 +886,7 @@ def test_create_and_delete_warehouse(base_url, page_fixture):
 
     with allure.step("Заполняю обязательные поля корректными значениями"):
         warehouse_name, address, city = modal.fill_random()
+        print(warehouse_name)
 
         allure.attach(
             f"Название: {warehouse_name}\nАдрес: {address}\nГород: {city}",
@@ -1232,10 +1233,7 @@ def test_address_autocomplete(base_url, page_fixture):
 
     warehouses.close_modal()
 
-
-# ============================================================================
-# ВАЛИДАЦИЯ (НЕГАТИВНЫЕ ТЕСТЫ)
-# ============================================================================
+"""Негатвные кейсы"""
 
 
 @allure.title("Нельзя создать склад без обязательных полей")
@@ -1423,11 +1421,22 @@ def test_search_employee_in_modal(base_url, page_fixture):
     autorization_page = AutorizationPage(page)
     personal_limits = PersonalLimitsSettingsPage(page)
     select_modal = SelectEmployeeModal(page)
+    delete_modal = DeleteLimitModal(page)
 
     autorization_page.open(base_url)
     autorization_page.admin_buyer_authorize()
 
     personal_limits.open(base_url)
+
+    # Если у пользователя уже есть лимит — сначала удаляем
+    if personal_limits.is_user_present(TEST_USER_EMAIL):
+        with allure.step("Предусловие: удаляю существующий лимит"):
+            personal_limits.click_delete_user_limit(TEST_USER_NAME)
+            if delete_modal.is_visible():
+                delete_modal.confirm_delete()
+            page.wait_for_timeout(1000)
+            personal_limits.open(base_url)
+
     personal_limits.click_add_new()
 
     with allure.step("Получаю общее количество сотрудников"):
