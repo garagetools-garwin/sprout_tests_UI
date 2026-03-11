@@ -82,6 +82,13 @@ class PersonalLimitsSettingsPage:
         self.page.locator(self.SEARCH_INPUT).fill("")
         self.page.wait_for_timeout(500)
 
+    RESULTS_LOCATOR = ".ant-list-item, tr.ant-table-row.ant-table-row-level-0"
+
+    @allure.step("Ожидаю хотя бы один лимит")
+    def wait_for_any_limit(self, timeout_ms: int = 10_000) -> None:
+        locator = self.page.locator(self.RESULTS_LOCATOR)
+        expect(locator).not_to_have_count(0, timeout=timeout_ms)
+
     @allure.step("Получаю строки пользователей с лимитами")
     def get_user_rows(self):
         return self.page.locator(self.USER_ROW)

@@ -1429,6 +1429,7 @@ def test_search_employee_in_modal(base_url, page_fixture):
     personal_limits.open(base_url)
 
     # Если у пользователя уже есть лимит — сначала удаляем
+    personal_limits.wait_for_any_limit()
     if personal_limits.is_user_present(TEST_USER_EMAIL):
         with allure.step("Предусловие: удаляю существующий лимит"):
             personal_limits.click_delete_user_limit(TEST_USER_NAME)
@@ -1547,6 +1548,7 @@ def test_create_and_delete_personal_limit(base_url, page_fixture):
     personal_limits.open(base_url)
 
     # Если у пользователя уже есть лимит — сначала удаляем
+    personal_limits.wait_for_any_limit()
     if personal_limits.is_user_present(TEST_USER_EMAIL):
         with allure.step("Предусловие: удаляю существующий лимит"):
             personal_limits.click_delete_user_limit(TEST_USER_NAME)
@@ -1628,6 +1630,7 @@ def test_edit_personal_limit(base_url, page_fixture):
     personal_limits.open(base_url)
 
     # Предусловие: создаём лимит если его нет
+    personal_limits.wait_for_any_limit()
     if not personal_limits.is_user_present(TEST_USER_EMAIL):
         with allure.step("Предусловие: создаю лимит"):
             personal_limits.click_add_new()
@@ -1696,6 +1699,7 @@ def test_cancel_delete_personal_limit(base_url, page_fixture):
     personal_limits.open(base_url)
 
     # Предусловие
+    personal_limits.wait_for_any_limit()
     if not personal_limits.is_user_present(TEST_USER_EMAIL):
         personal_limits.click_add_new()
         select_modal.select_and_confirm_by_email(TEST_USER_EMAIL)
@@ -1739,6 +1743,7 @@ def test_search_user_on_page(base_url, page_fixture):
     TEST_USER_NAME = "Агафонова"
 
     # Предусловие: нужны минимум 2 пользователя с лимитами
+    personal_limits.wait_for_any_limit()
     if not personal_limits.is_user_present(TEST_USER_EMAIL):
         personal_limits.click_add_new()
         select_modal.select_and_confirm_by_email(TEST_USER_EMAIL)
@@ -1798,3 +1803,5 @@ def test_search_user_on_page(base_url, page_fixture):
         page.wait_for_timeout(1000)
         assert not personal_limits.is_user_present(TEST_USER_EMAIL), \
             f"Пользователь {TEST_USER_EMAIL} всё ещё в списке после удаления"
+
+#TODO возможно, нужны тесты на карточку лимита
