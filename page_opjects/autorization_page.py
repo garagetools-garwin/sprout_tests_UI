@@ -22,7 +22,10 @@ TESTMAIL_ADRESS_ = os.getenv("TESTMAIL_ADRESS_")
 TEST_BUYER_EMAIL = os.getenv("TEST_BUYER_EMAIL")
 ADMIN_BUYER_LIMIT_EMAIL = os.getenv("ADMIN_BUYER_LIMIT_EMAIL")
 ADMIN_BUYER_LIMIT_PASSWORD = os.getenv("ADMIN_BUYER_LIMIT_PASSWORD")
-
+WITHOUT_ROLE_MANAGER_EMAIL = os.getenv("WITHOUT_ROLE_MANAGER_EMAIL")
+WITHOUT_ROLE_MANAGER_PASSWORD = os.getenv("WITHOUT_ROLE_MANAGER_PASSWORD")
+MANAGER_FOR_CONTRACT_EMAIL = os.getenv("MANAGER_FOR_CONTRACT_EMAIL")
+MANAGER_FOR_CONTRACT_PASSWORD = os.getenv("MANAGER_FOR_CONTRACT_PASSWORD")
 
 class AutorizationPage:
     def __init__(self, page: Page):
@@ -61,6 +64,12 @@ class AutorizationPage:
     def contract_manager_authorize(self):
         self.page.type(self.EMAIL_INPUT, CONTRACT_MANAGER_EMAIL)
         self.page.type(self.PASSWORD_INPUT, CONTRACT_MANAGER_PASSWORD)
+        self.page.locator(self.SUBMIT_BUTTON).click()
+
+    @allure.step("Авторизуюсь (Менеджер для контракта")
+    def for_contract_manager_authorize(self):
+        self.page.type(self.EMAIL_INPUT, MANAGER_FOR_CONTRACT_EMAIL)
+        self.page.type(self.PASSWORD_INPUT, MANAGER_FOR_CONTRACT_PASSWORD)
         self.page.locator(self.SUBMIT_BUTTON).click()
 
     @allure.step("Авторизуюсь на vi")
@@ -145,3 +154,8 @@ class AutorizationPage:
         notification_text = self.page.locator(self.USER_CARD_NOTIFICATION).inner_text()
         return notification_text
 
+    @allure.step("Авторизуюсь (Менеджер контракта)")
+    def without_role_manager_authorize(self):
+        self.page.type(self.EMAIL_INPUT, WITHOUT_ROLE_MANAGER_EMAIL)
+        self.page.type(self.PASSWORD_INPUT, WITHOUT_ROLE_MANAGER_PASSWORD)
+        self.page.locator(self.SUBMIT_BUTTON).click()

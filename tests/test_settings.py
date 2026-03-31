@@ -1,3 +1,4 @@
+import os
 import re
 import time
 from asyncio import wait_for
@@ -764,7 +765,127 @@ def test_change_admin_role_flow(base_url, page_fixture):
     with allure.step("Проверяю, что в списке пользователей 'Администратор аккаунта' у юзера отсутствует"):
         assert not users_admin.is_admin_badge_present("testgarwin_yur+2@mail.ru")
 
+import os
+import allure
+import pytest
+from page_opjects.autorization_page import AutorizationPage
+from page_opjects.settings_page.users_settings_page import UsersSettingsPage, UserModal
 
+ROLE_NAME = "Менеджер контракта"
+ACTIVE_BASKET_URL = "https://sprout-store.ru/active-basket-list"
+WITHOUT_ROLE_MANAGER_EMAIL = os.getenv("WITHOUT_ROLE_MANAGER_EMAIL")
+WITHOUT_ROLE_MANAGER_PASSWORD = os.getenv("WITHOUT_ROLE_MANAGER_PASSWORD")
+
+@allure.title("Назначение роли «Менеджер контракта» и проверка доступа к активным корзинам")
+def test_assign_contract_manager_role_and_verify_access(base_url, page_fixture):
+
+    # Часть 1: Админ-продавец назначает роль
+    page_admin = page_fixture()
+    auth_admin = AutorizationPage(page_admin)
+    users_page = UsersSettingsPage(page_admin)
+
+    with allure.step("Авторизация как администратор-продавец"):
+        auth_admin.open(base_url)
+        auth_admin.admin_seller_authorize()
+        page_admin.wait_for_load_state("networkidle")
+
+    with allure.step("Открыть страницу управления пользователями"):
+        users_page.open(base_url)
+        page_admin.wait_for_load_state("networkidle")
+
+    with allure.step(f"Найти пользователя {WITHOUT_ROLE_MANAGER_EMAIL}"):
+        users_page.search_user(WITHOUT_ROLE_MANAGER_EMAIL)
+        page_admin.wait_for_timeout(1000)
+        assert users_page.is_user_visible(WITHOUT_ROLE_MANAGER_EMAIL), (
+            f"Пользователь {WITHOUT_ROLE_MANAGER_EMAIL} не найден в списке"
+        )
+
+    with allure.step("Открыть карточку пользователя"):
+        users_page.open_user_card(WITHOUT_ROLE_MANAGER_EMAIL)
+        page_admin.wait_for_timeout(1000)
+
+    with allure.step(f"Назначить роль «{ROLE_NAME}»"):
+        modal = UserModal(page_admin)
+        modal.set_role(ROLE_NAME)
+        page_admin.wait_for_timeout(1500)
+
+    # Часть 2: С ролью — доступ есть
+    page_user = page_fixture()
+    auth_user = AutorizationPage(page_user)
+
+    with allure.step("Авторизоваться как менеджер контракта"):
+        auth_user.open(base_url)
+        auth_user.without_role_manager_authorize()
+        page_user.wait_for_load_state("networkidle")
+
+    with allure.step("Проверить, что страница активных корзин доступна (нет 403)"):
+        forbidden_responses = []
+
+        def capture_403(response):
+            if response.status == 403:
+                forbidden_responses.append(response.url)
+
+        page_user.on("response", capture_403)
+
+        page_user.goto(ACTIVE_BASKET_URL)
+        page_user.wait_for_load_state("networkidle")
+        page_user.wait_for_timeout(2000)
+
+        page_user.remove_listener("response", capture_403)
+
+        # Проверяем: нет 403 в network
+        assert len(forbidden_responses) == 0, (
+            f"Получены 403 ответы при наличии роли: {forbidden_responses}"
+        )
+
+        # Проверяем: нет нотификации "forbidden resource"
+        forbidden_toast = page_user.locator("text=/forbidden resource/i")
+        assert not forbidden_toast.is_visible(), (
+            "Отображается нотификация 'forbidden resource' при наличии роли"
+        )
+
+    allure.attach(
+        page_user.screenshot(full_page=True),
+        name="with-role-active-basket-list",
+        attachment_type=allure.attachment_type.PNG,
+    )
+
+    # ── Часть 3: Снять роль и проверить, что доступ пропал ──
+    with allure.step("Постусловие: снять роль менеджера контракта"):
+        users_page.open(base_url)
+        page_admin.wait_for_load_state("networkidle")
+        users_page.search_user(WITHOUT_ROLE_MANAGER_EMAIL)
+        page_admin.wait_for_timeout(1000)
+        users_page.open_user_card(WITHOUT_ROLE_MANAGER_EMAIL)
+        page_admin.wait_for_timeout(1000)
+        modal.unset_role(ROLE_NAME)
+        page_admin.wait_for_timeout(1500)
+
+    with allure.step("Проверить, что без роли страница возвращает 403"):
+        forbidden_responses_after = []
+
+        def capture_403_after(response):
+            if response.status == 403:
+                forbidden_responses_after.append(response.url)
+
+        page_user.on("response", capture_403_after)
+
+        page_user.goto(ACTIVE_BASKET_URL)
+        page_user.wait_for_load_state("networkidle")
+        page_user.wait_for_timeout(2000)
+
+        page_user.remove_listener("response", capture_403_after)
+
+        # Проверяем: ЕСТЬ 403 в network
+        assert len(forbidden_responses_after) > 0, (
+            "Ожидались 403 ответы после снятия роли, но их нет"
+        )
+
+    allure.attach(
+        page_user.screenshot(full_page=True),
+        name="without-role-active-basket-list",
+        attachment_type=allure.attachment_type.PNG,
+    )
 
 
 """Страница Склады отгрузки (продавец)"""

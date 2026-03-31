@@ -1132,7 +1132,7 @@ def test_only_personal_purchase_limit(base_url, page_fixture):
             limits.set_subdivision_limits(base_url, SUBDIVISION_ID, purchase=HIGH, item_price=HIGH)
 
 
-@allure.title("Оба лимита заданы, подразделение меньше — применяется подразделение")
+@allure.title("Оба лимита заданы, подразделение меньше — применяется лимит подразделения")
 def test_both_limits_subdivision_is_stricter(base_url, page_fixture):
     page = page_fixture()
     auth, cart, listing, limits = init_all(page)
@@ -1272,7 +1272,7 @@ def test_subdivision_item_price_priority_softer(base_url, page_fixture):
             limits.set_subdivision_limits(base_url, SUBDIVISION_ID, purchase=HIGH, item_price=HIGH)
 
 
-@allure.title("Нет лимита цены подразделения — берётся лимит компании")
+@allure.title("Нет лимита цены подразделения - берётся лимит компании")
 def test_no_subdivision_item_price_fallback_to_company(base_url, page_fixture):
     page = page_fixture()
     auth, cart, listing, limits = init_all(page)
@@ -1295,30 +1295,7 @@ def test_no_subdivision_item_price_fallback_to_company(base_url, page_fixture):
             limits.set_subdivision_limits(base_url, SUBDIVISION_ID, purchase=HIGH, item_price=HIGH)
 
 
-@allure.title("L-09: Нет лимита цены ни в подразделении ни в компании — ограничений нет")
-def test_no_item_price_limits_at_all(base_url, page_fixture):
-    page = page_fixture()
-    auth, cart, listing, limits = init_all(page)
-    auth_and_clear(base_url, page, auth, cart)
-
-    try:
-        with allure.step("Убираю все лимиты цены на товар"):
-            limits.set_subdivision_limits(base_url, SUBDIVISION_ID, purchase=HIGH, item_price="")
-            limits.clear_company_item_price_limit(base_url)
-            limits.delete_personal_limit(base_url, TEST_USER_EMAIL)
-
-        add_item(page, base_url, listing, min_price=350)
-        open_cart_and_select_subdivision(base_url, cart, page)
-
-        with allure.step("Проверяю: заказ не заблокирован"):
-            limits.assert_not_blocked(cart)
-
-    finally:
-        with allure.step("Постусловие: возвращаю высокие лимиты подразделения"):
-            limits.set_subdivision_limits(base_url, SUBDIVISION_ID, purchase=HIGH, item_price=HIGH)
-
-
-@allure.title("Только лимит цены подразделения задан, компании нет — работает подразделение")
+@allure.title("Нет лимита цены компании нет - берётся лимит подразделения")
 def test_only_subdivision_item_price_limit(base_url, page_fixture):
     page = page_fixture()
     auth, cart, listing, limits = init_all(page)
@@ -1335,6 +1312,29 @@ def test_only_subdivision_item_price_limit(base_url, page_fixture):
 
         with allure.step("Проверяю: заказ заблокирован лимитом подразделения"):
             limits.assert_blocked_by_item_price_limit(cart)
+
+    finally:
+        with allure.step("Постусловие: возвращаю высокие лимиты подразделения"):
+            limits.set_subdivision_limits(base_url, SUBDIVISION_ID, purchase=HIGH, item_price=HIGH)
+
+
+@allure.title("Нет лимита цены ни в подразделении ни в компании — ограничений нет")
+def test_no_item_price_limits_at_all(base_url, page_fixture):
+    page = page_fixture()
+    auth, cart, listing, limits = init_all(page)
+    auth_and_clear(base_url, page, auth, cart)
+
+    try:
+        with allure.step("Убираю все лимиты цены на товар"):
+            limits.set_subdivision_limits(base_url, SUBDIVISION_ID, purchase=HIGH, item_price="")
+            limits.clear_company_item_price_limit(base_url)
+            limits.delete_personal_limit(base_url, TEST_USER_EMAIL)
+
+        add_item(page, base_url, listing, min_price=350)
+        open_cart_and_select_subdivision(base_url, cart, page)
+
+        with allure.step("Проверяю: заказ не заблокирован"):
+            limits.assert_not_blocked(cart)
 
     finally:
         with allure.step("Постусловие: возвращаю высокие лимиты подразделения"):

@@ -16,6 +16,7 @@ class GeneralSettingsPage:
     def __init__(self, page: Page):
         self.page = page
 
+
     @allure.step("Открываю страницу настроек аккаунта")
     def open(self, base_url: str):
         return self.page.goto(base_url + self.PATH)

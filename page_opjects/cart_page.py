@@ -48,8 +48,8 @@ class CartPage:
     #
     # # Локаторы счетчика количества
     QUANTITY_INPUT = "input.ant-input-number-input"
-    QUANTITY_PLUS_BUTTON = ".ant-btn.css-2nkxv5.ant-btn-default.ant-btn-icon-only.counter__btn"
-    QUANTITY_MINUS_BUTTON = ".ant-btn.css-2nkxv5.ant-btn-default.ant-btn-icon-only.counter__btn"
+    QUANTITY_PLUS_BUTTON = ".counter-btn"
+    QUANTITY_MINUS_BUTTON = ".counter-btn"
     #
     # Локаторы удаления товара
     DELETE_BUTTON = "button.ant-btn.css-2nkxv5.ant-btn-default.button-text.dark-green"
@@ -65,7 +65,8 @@ class CartPage:
     QUICK_ADD_ITEM_NAME = ".text-controls-accent.color-black.mb-5"
     QUICK_ADD_ITEM_ADD_BUTTON = "button.add-goods-card__goods"
     DROPDOWN_MENU = ".custom-dropdown"
-    QUICK_ADD_ITEM_BUYER_ARTICLE = "div.ant-drawer-wrapper-body .text-tag-accent.color-bright-green.buyer-code__value"
+    # QUICK_ADD_ITEM_BUYER_ARTICLE = "div.ant-drawer-wrapper-body .text-tag-accent.color-bright-green.buyer-code__value"
+    QUICK_ADD_ITEM_BUYER_ARTICLE = "button.add-goods-card__goods"
     # QUICK_ADD_ITEM = ".product-list__item"
     #
     # # Локаторы меню корзины (три точки)

@@ -774,7 +774,7 @@ def test_calculation_with_vat_full(base_url, page_fixture):
         print(f"old_goods_price: {old_goods_price} ₽")
         print(f"old_vat: {old_vat} ₽")
         print(f"old_total: {old_total} ₽")
-
+#TODO сменить локатор уменьшения количества
         cart.increase_quantity_by_button(index=0, count=1)
         time.sleep(2)
 

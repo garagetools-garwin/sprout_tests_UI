@@ -36,6 +36,40 @@ class UsersSettingsPage:
     MODAL = 'div.ant-drawer-content-wrapper'
     ADMIN_BADGE = ".user-role-chip__name:has-text('Администратор аккаунта')"
 
+    SAVE_BUTTON = "button:has-text('Сохранить')"
+
+    # PATH = "/settings/account/users"
+    # SEARCH_INPUT = "input[placeholder*='Поиск']"
+    USER_ROW = "tr.ant-table-row"  # строка в таблице пользователей
+    SUCCESS_TOAST = "text=/успешно|изменен|сохранен/i"
+
+    @allure.step("Поиск пользователя: {email}")
+    def search_user(self, email: str):
+        search = self.page.locator(self.SEARCH_INPUT)
+        search.fill("")
+        search.fill(email)
+        self.page.wait_for_timeout(1000)
+
+    @allure.step("Проверить, что пользователь {email} виден в списке")
+    def is_user_visible(self, email: str) -> bool:
+        return self.page.locator(f"{self.USER_ROW}:has-text('{email}')").is_visible()
+
+    @allure.step("Открыть карточку пользователя {email}")
+    def open_user_card(self, email: str):
+        self.page.locator(f"{self.USER_ROW}:has-text('{email}')").click()
+        self.page.wait_for_timeout(500)
+
+    def get_user_modal(self):
+        return UserModal(self.page)
+
+    @allure.step("Проверить отображение тоста об успешном изменении")
+    def is_success_toast_visible(self) -> bool:
+        try:
+            self.page.wait_for_selector(self.SUCCESS_TOAST, state="visible", timeout=5000)
+            return True
+        except Exception:
+            return False
+
     def open(self, base_url):
         with allure.step(f"Открываю {base_url + self.PATH}"):
             return self.page.goto(base_url + self.PATH)
@@ -125,6 +159,35 @@ class UserModal:
     HEAD_ROLE_LABEL = "label:has-text('Руководитель подразделения')"
     HEAD_ROLE_INPUT = ".ant-select-selection-search-input"
     DELETE_BUTTON = "button.deleting"
+
+    """Модальное окно (drawer) редактирования пользователя."""
+
+    # Локаторы
+    DRAWER = "div.ant-drawer-content-wrapper"
+    ROLE_SELECT = ".ant-select"  # селект роли внутри drawer
+    ROLE_OPTION = ".ant-select-item.ant-select-item-option"
+
+    CONTRACT_MANAGER_CHECKBOX = "label:has-text('Менеджер контракта') input[type='checkbox']"
+
+    @allure.step("Выбрать роль «{role_name}»")
+    def set_role(self, role_name: str):
+        """Назначить роль через кнопку 'Назначить роль' → чекбокс."""
+        self.click_main_role_button()
+        self.page.wait_for_timeout(500)
+        cb = self.page.locator(f"label:has-text('{role_name}') input[type='checkbox']")
+        if not cb.is_checked():
+            cb.click()
+        self.page.wait_for_timeout(300)
+
+    @allure.step("Снять роль «{role_name}»")
+    def unset_role(self, role_name: str):
+        """Снять роль через кнопку 'Назначить роль' → чекбокс."""
+        self.click_main_role_button()
+        self.page.wait_for_timeout(500)
+        cb = self.page.locator(f"label:has-text('{role_name}') input[type='checkbox']")
+        if cb.is_checked():
+            cb.click()
+        self.page.wait_for_timeout(300)
 
 
     @allure.step("Удаляю последнего созданного пользователя")

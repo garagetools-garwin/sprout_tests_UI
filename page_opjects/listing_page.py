@@ -29,6 +29,62 @@ class ListingPage:
     AVAILABILITY_TEXT_LOCATOR_AVAILABLE_ON_REQUEST = ".delivery-badge.available_on_request div"
     AVAILABILITY_TEXT_LOCATOR_IN_STOCK = ".delivery-badge.in_stock div"
 
+    BRAND_FILTER_BUTTON = ".catalog-goods-list-filters-property:has-text('Бренд')"
+    BRAND_FILTER_SEARCH = ".ant-popover-inner input[placeholder='Поиск'], .ant-dropdown input[placeholder='Поиск']"
+    BRAND_FILTER_CHECKBOX = ".ant-checkbox-wrapper"
+    BRAND_FILTER_APPLY = "button:has-text('Применить')"
+    PRODUCT_ROW = "tr.ant-table-row.ant-table-row-level-0"
+    BRAND_CELL = "td:nth-last-child(2) span.ff-regular.fs-m"
+    PRICE_CELL = "td:last-child div:first-child span.ff-medium.fs-s"
+    SHOW_ALL_LINK = "text=/Показать все/"
+
+    RESET_FILTERS_LINK = "text=/Сбросить фильтры/"
+    BRAND_TAG_CLOSE = ".icon-close-green"  # зелёный крестик на теге «Бренд: 1»
+
+    @allure.step("Сбрасываю фильтр бренда")
+    def clear_brand_filter(self):
+        """Сбрасывает фильтр через крестик на теге или ссылку 'Сбросить фильтры'."""
+        tag_close = self.page.locator(self.BRAND_TAG_CLOSE)
+        reset_link = self.page.locator(self.RESET_FILTERS_LINK)
+
+        if tag_close.is_visible():
+            tag_close.click()
+        elif reset_link.is_visible():
+            reset_link.click()
+
+        self.page.wait_for_timeout(1000)
+
+    @allure.step("Фильтрую по бренду «{brand}»")
+    def filter_by_brand(self, brand: str):
+        """Открыть фильтр Бренд → найти → отметить → Применить."""
+        self.page.locator(self.BRAND_FILTER_BUTTON).click()
+        self.page.wait_for_timeout(500)
+        search = self.page.locator(self.BRAND_FILTER_SEARCH)
+        search.fill(brand)
+        self.page.wait_for_timeout(500)
+        self.page.locator(f"{self.BRAND_FILTER_CHECKBOX}:has-text('{brand}')").click()
+        self.page.wait_for_timeout(300)
+        self.page.locator(self.BRAND_FILTER_APPLY).click()
+        self.page.wait_for_timeout(1000)
+
+    @allure.step("Получаю цену первого товара на странице")
+    def get_first_product_price(self) -> str:
+        """Возвращает текст цены первого товара в таблице."""
+        return self.page.locator(self.PRODUCT_ROW).first.locator(
+            self.PRICE_CELL
+        ).text_content().strip()
+
+    @allure.step("Получаю цену первого товара бренда «{brand}»")
+    def get_first_price_by_brand(self, brand: str) -> str:
+        """Ищет строку где в колонке Бренд содержится нужный текст."""
+        rows = self.page.locator(self.PRODUCT_ROW)
+        for i in range(rows.count()):
+            row = rows.nth(i)
+            brand_text = row.locator(self.BRAND_CELL).text_content().strip()
+            if brand.lower() in brand_text.lower():
+                return row.locator(self.PRICE_CELL).text_content().strip()
+        raise ValueError(f"Товар бренда «{brand}» не найден")
+
 
 
     @allure.step("Переключаю фильтр на 'Все товары', если выбран 'Товары в наличии'")
