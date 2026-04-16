@@ -4,6 +4,7 @@ import time
 
 import allure
 import pytest
+import requests
 from playwright.sync_api import expect
 
 from page_opjects.autorization_page import AutorizationPage
@@ -31,15 +32,7 @@ TEST_BRAND_DISCOUNT = "10"
 
 @allure.title("Переключение вкладок контракта")
 def test_switch_tabs(base_url, page_fixture):
-    """
-    Тест-кейс:
-    1. Открыть контракт — по умолчанию «Управление контрактом»
-    2. Проверить кнопку «+ Добавить менеджера»
-    3. Переключиться на «Ассортимент» — видны кнопки настройки
-    4. Переключиться на «Скидки» — видно поле скидки
-    5. Переключиться на «Сроки доставки» — видны склады
-    6. Вернуться на «Управление контрактом»
-    """
+
     page = page_fixture()
     auth = AutorizationPage(page)
     contract = ContractDetailPage(page)
@@ -54,23 +47,33 @@ def test_switch_tabs(base_url, page_fixture):
 
     with allure.step("Переключаюсь на «Ассортимент»"):
         contract.go_to_assortment_tab()
+        response = requests.get(f"{base_url}/settings/contract/6/assortment")
         assert page.locator("text=Ручная настройка ассортимента").is_visible()
         assert page.locator("text=Настроить категории товаров").is_visible()
         assert page.locator("text=Настроить бренды").is_visible()
+        assert response.status_code == 200, f"Ожидался код 200, получен {response.status_code}"
 
     with allure.step("Переключаюсь на «Скидки»"):
         contract.go_to_discounts_tab()
+        response = requests.get(f"{base_url}/settings/contract/6/discount-list")
         assert page.locator("text=Базовая скидка на ассортимент").is_visible()
         assert page.locator("text=Скидка на бренд").is_visible()
+        assert response.status_code == 200, f"Ожидался код 200, получен {response.status_code}"
 
     with allure.step("Переключаюсь на «Сроки доставки»"):
         contract.go_to_delivery_tab()
+        response = requests.get(f"{base_url}/settings/contract/6/delivery-time-list")
         delivery = ContractDeliveryTab(page)
-        assert delivery.get_warehouses_count() > 0
+        assert page.locator("text=Магазин на Софийской").is_visible()
+        assert response.status_code == 200, f"Ожидался код 200, получен {response.status_code}"
+        # assert delivery.get_warehouses_count() > 0
 
     with allure.step("Возвращаюсь на «Управление контрактом»"):
         contract.go_to_management_tab()
+        response = requests.get(f"{base_url}/settings/contract/6/general")
         assert page.locator("text=Менеджер по контракту").is_visible()
+        assert response.status_code == 200, f"Ожидался код 200, получен {response.status_code}"
+
 
 
 @allure.title("Добавление и удаление менеджера контракта с проверкой доступа к корзинам")
@@ -204,17 +207,7 @@ def test_add_and_delete_contract_manager(base_url, page_fixture):
 
 @allure.title("Настройка категорий — модалка, поиск, дерево, переключение чекбокса")
 def test_categories_modal_search_and_toggle(base_url, page_fixture):
-    """
-    Тест-кейс:
-    1. Открыть «Ассортимент» → «Настроить категории товаров» — модалка открылась
-    2. Видны «Все категории» и поле поиска
-    3. Поиск «Автотовары» — фильтрация работает
-    4. Очистка поиска — полный список вернулся
-    5. Раскрыть «Автотовары» — дочерние видны (Автосвет, Автоэлектроника)
-    6. Снять чекбокс с «Автосвет» → Сохранить
-    7. Снова открыть категории → «Автосвет» не отмечен
-    8. Вернуть чекбокс → Сохранить (постусловие)
-    """
+
     page = page_fixture()
     auth = AutorizationPage(page)
     contract = ContractDetailPage(page)
@@ -289,17 +282,7 @@ def test_categories_modal_search_and_toggle(base_url, page_fixture):
 
 @allure.title("Настройка брендов — модалка, поиск, переключение чекбокса")
 def test_brands_modal_search_and_toggle(base_url, page_fixture):
-    """
-    Тест-кейс:
-    1. Открыть «Ассортимент» → «Настроить бренды» — модалка открылась
-    2. Видны «Все бренды» и поле поиска
-    3. Поиск «3M» — найден
-    4. Поиск несуществующего бренда — нет результатов
-    5. Очистка — список вернулся
-    6. Снять чекбокс «2Hands» → Сохранить
-    7. Повторно открыть → «2Hands» не отмечен
-    8. Вернуть → Сохранить (постусловие)
-    """
+
     page = page_fixture()
     auth = AutorizationPage(page)
     contract = ContractDetailPage(page)
@@ -314,7 +297,7 @@ def test_brands_modal_search_and_toggle(base_url, page_fixture):
 
     with allure.step("Открываю модалку брендов"):
         assortment.click_brands()
-        time.sleep(3)
+        time.sleep(5)
         assert assortment.is_modal_visible(), "Модалка брендов не открылась"
         assert page.locator("text=Все бренды").is_visible()
 

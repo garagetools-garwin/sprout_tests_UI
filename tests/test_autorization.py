@@ -13,13 +13,9 @@ def test_autorization(page_fixture, base_url):
     autorization_page.admin_buyer_authorize()
     with allure.step("Проверяю, что пользователь перешел на страницу настроек профиля"):
         expect(page).to_have_url(f"{base_url}/profile")
-
-
-
-
-
-
-
+        # page.goto("https://api.ipify.org?format=json")
+        # data = page.text_content("body")
+        # print("Текущий IP:", data)
 
     # Проверить "с возвращением"
     # проверить что введенная почта соответствует той, что была введена #email to have value=USER_EMAIL

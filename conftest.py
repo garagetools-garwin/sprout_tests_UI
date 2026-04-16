@@ -22,7 +22,23 @@ load_dotenv()  # Загружаем переменные из .env
 AUTH_USERNAME = os.getenv("AUTH_USERNAME")
 AUTH_PASSWORD = os.getenv("AUTH_PASSWORD")
 
+PROXY_HOST = os.getenv("PROXY_HOST")
+PROXY_PORT = os.getenv("PROXY_PORT")
+PROXY_USER = os.getenv("PROXY_USER")
+PROXY_PASS = os.getenv("PROXY_PASS")
 
+proxy_settings = {
+    "server": f"http://{PROXY_HOST}:{PROXY_PORT}",
+    "username": PROXY_USER,
+    "password": PROXY_PASS
+}
+
+@pytest.fixture(scope="session")
+def browser_type_launch_args(browser_type_launch_args):
+    return {
+        **browser_type_launch_args,
+        "proxy": proxy_settings,
+    }
 
 
 
