@@ -42,8 +42,11 @@ jobs:
       WITHOUT_ROLE_MANAGER_PASSWORD: ${{ secrets.WITHOUT_ROLE_MANAGER_PASSWORD }}
       MANAGER_FOR_CONTRACT_EMAIL: ${{ secrets.MANAGER_FOR_CONTRACT_EMAIL }}
       MANAGER_FOR_CONTRACT_PASSWORD: ${{ secrets.MANAGER_FOR_CONTRACT_PASSWORD }}
-      
-      
+
+      PROXY_HOST: ${{ secrets.PROXY_HOST}}
+      PROXY_PORT: ${{ secrets.PROXY_PORT}}
+      PROXY_USER: ${{ secrets.PROXY_USER}}
+      PROXY_PASS: ${{ secrets.PROXY_PASS}}
 
     steps:
 
