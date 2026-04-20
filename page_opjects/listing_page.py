@@ -157,13 +157,13 @@ class ListingPage:
 
             # Пропускаем товары "под заказ"
             if available_on_request.count() > 0:
-                self.page.keyboard.press("Escape")
+                self.page.go_back()
                 self.page.wait_for_selector(self.PRODUCT, timeout=10000)
                 continue
 
             # Проверяем наличие плашки "в наличии"
             if in_stock.count() == 0:
-                self.page.keyboard.press("Escape")
+                self.page.go_back()
                 self.page.wait_for_selector(self.PRODUCT, timeout=10000)
                 continue
 
@@ -173,7 +173,7 @@ class ListingPage:
             # Добавляем в корзину
             self.page.locator(self.ADD_TO_CART_BUTTON).click()
             time.sleep(1)
-            self.page.keyboard.press("Escape")
+            self.page.go_back()
             self.page.wait_for_selector(self.PRODUCT, timeout=10000)
 
             return delivery_time
@@ -203,13 +203,13 @@ class ListingPage:
 
             # Пропускаем товары "в наличии"
             if in_stock.count() > 0:
-                self.page.keyboard.press("Escape")
+                self.page.go_back()
                 self.page.wait_for_selector(self.PRODUCT, timeout=10000)
                 continue
 
             # Проверяем наличие плашки "под заказ"
             if available_on_request.count() == 0:
-                self.page.keyboard.press("Escape")
+                self.page.go_back()
                 self.page.wait_for_selector(self.PRODUCT, timeout=10000)
                 continue
 
@@ -219,7 +219,7 @@ class ListingPage:
             # Добавляем в корзину
             self.page.locator(self.ADD_TO_CART_BUTTON).click()
             time.sleep(1)
-            self.page.keyboard.press("Escape")
+            self.page.go_back()
             self.page.wait_for_selector(self.PRODUCT, timeout=10000)
 
             return delivery_time
@@ -360,14 +360,14 @@ class ListingPage:
 
             # если есть "доступно по запросу" — эта карточка нас не интересует
             if available_on_request.count() > 0:
-                self.page.keyboard.press("Escape")
+                self.page.go_back()
                 self.page.wait_for_selector(self.PRODUCT, timeout=10000)
                 continue
 
             # иначе ищем "в наличии"
             if in_stock.count() == 0:
                 # нет блока "в наличии" — тоже пропускаем
-                self.page.keyboard.press("Escape")
+                self.page.go_back()
                 self.page.wait_for_selector(self.PRODUCT, timeout=10000)
                 continue
 
@@ -376,12 +376,12 @@ class ListingPage:
             if availability_text == "1 неделя":
                 self.page.locator(self.ADD_TO_CART_BUTTON).click()
                 # нашли нужный товар — прерываем цикл
-                self.page.keyboard.press("Escape")
+                self.page.go_back()
                 self.page.wait_for_selector(self.PRODUCT, timeout=10000)
                 break
 
             # если текст не "1 неделя" — закрываем и идём дальше
-            self.page.keyboard.press("Escape")
+            self.page.go_back()
             self.page.wait_for_selector(self.PRODUCT, timeout=10000)
 
     @allure.step('Добавляю в корзину товар с текстом "Доступно под заказ"')
@@ -401,24 +401,24 @@ class ListingPage:
 
             # если есть "в наличии" — эта карточка нас не интересует
             if in_stock.count() > 0:
-                self.page.keyboard.press("Escape")
+                self.page.go_back()
                 self.page.wait_for_selector(self.PRODUCT, timeout=10000)
                 continue
 
             # иначе ищем "доступно под заказ"
             if available_on_request.count() == 0:
-                self.page.keyboard.press("Escape")
+                self.page.go_back()
                 self.page.wait_for_selector(self.PRODUCT, timeout=10000)
                 continue
 
             availability_text = available_on_request.inner_text().strip()
             if availability_text == "Доступно под заказ":
                 self.page.locator(self.ADD_TO_CART_BUTTON).click()
-                self.page.keyboard.press("Escape")
+                self.page.go_back()
                 self.page.wait_for_selector(self.PRODUCT, timeout=10000)
                 break
 
-            self.page.keyboard.press("Escape")
+            self.page.go_back()
             self.page.wait_for_selector(self.PRODUCT, timeout=10000)
 
     #TODO перевести карточку товара в отдельный класс
