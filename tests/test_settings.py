@@ -1525,6 +1525,7 @@ def test_open_personal_limits_page(base_url, page_fixture):
     personal_limits.open(base_url)
 
     with allure.step("Проверяю, что кнопка 'Установить новый' отображается"):
+        time.sleep(3)
         assert page.locator(personal_limits.ADD_NEW_BUTTON).is_visible(), \
             "Кнопка 'Установить новый' не отображается"
 
