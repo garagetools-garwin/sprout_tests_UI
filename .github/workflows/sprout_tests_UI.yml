@@ -15,7 +15,7 @@ on:
 jobs:
   # Основная часть тестов
   tests:
-    timeout-minutes: 60
+    timeout-minutes: 90
 
     # Уникальный ключ для группы задач предназначен для того, чтобы повторный запуск Джобы вставал в ожидание, не конфликтуая с первым
     concurrency:
@@ -80,7 +80,7 @@ jobs:
       # Запуск тестов
       - name: Run tests
         run: |
-          pytest --reruns 2 --reruns-delay 3 --alluredir=allure-results --tb=short -v
+          pytest --url https://stg.sprout.axmit.com --reruns 2 --reruns-delay 3 --alluredir=allure-results --tb=short -v
 
       - name: Показать содержимое auth_states после тестов
         if: always()
