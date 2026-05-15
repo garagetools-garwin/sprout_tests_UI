@@ -6,6 +6,8 @@ from importlib import reload
 import allure
 import pytest
 from playwright.sync_api import expect
+
+from conftest import get_category_url_by_key
 from page_opjects.autorization_page import AutorizationPage
 from page_opjects.cart_page import CartPage
 from page_opjects.listing_page import ListingPage
@@ -136,8 +138,8 @@ def test_open_delete_confirmation_modal(base_url, page_fixture):
 
     cart.clear_cart(base_url)
 
-    page.goto(f"{base_url}/catalog/9/3059")
-    listing.add_item_in_stock_and_get_delivery_time()
+    page.goto(get_category_url_by_key(base_url, "/catalog/9/3059"))
+    listing.add_expensive_item_to_cart(1)
 
     cart.open(base_url)
 
@@ -203,7 +205,7 @@ def test_delivery_date(base_url, page_fixture):
     cart.open(base_url)
     cart.clear_cart(base_url)
 
-    page.goto(f"{base_url}/catalog/9/3059")
+    page.goto(get_category_url_by_key(base_url, "/catalog/9/3059"))
 
     with allure.step("Добавляю товар 'В наличии' и запоминаю срок доставки"):
         listing_time_in_stock = listing.add_item_in_stock_and_get_delivery_time()
@@ -213,7 +215,8 @@ def test_delivery_date(base_url, page_fixture):
             name="Листинг - товар 'В наличии'"
         )
 
-    page.goto(f"{base_url}/catalog/9/2980")
+    page.goto(get_category_url_by_key(base_url, "/catalog/9/2980"))
+
     listing.ensure_all_products_selected()
     with allure.step("Добавляю товар 'Под заказ' и запоминаю срок доставки"):
         listing_time_on_request = listing.add_item_on_request_and_get_delivery_time()
@@ -312,10 +315,10 @@ def test_select_all_items_button(base_url, page_fixture):
 
     cart.clear_cart(base_url)
 
-    page.goto(base_url + "/catalog/9/3707")
+    page.goto(get_category_url_by_key(base_url, "/catalog/9/3707"))
     listing.click_first_product()
     listing.click_add_to_cart_button()
-    page.goto(base_url + "/catalog/9/3707")
+    page.goto(get_category_url_by_key(base_url, "/catalog/9/3707"))
     listing.click_second_product()
     listing.click_add_to_cart_button()
 
@@ -372,9 +375,9 @@ def test_checkbox_toggle_updates_total(base_url, page_fixture):
     cart.clear_cart(base_url)
 
     with allure.step("обавляю в корзину 2 товара"):
-        page.goto(f"{base_url}/catalog/9/3059")
-        listing.add_item_in_stock_and_get_delivery_time()
-        page.goto(base_url + "/catalog/9/3707")
+        page.goto(get_category_url_by_key(base_url, "/catalog/9/3059"))
+        listing.add_expensive_item_to_cart(1)
+        page.goto(get_category_url_by_key(base_url, "/catalog/9/3707"))
         listing.add_expensive_item_to_cart(min_price=350)
 
     cart.open(base_url)
@@ -419,9 +422,9 @@ def test_quantity_buttons_increment_decrement(base_url, page_fixture):
     cart.clear_cart(base_url)
 
     with allure.step("обавляю в корзину 2 товара"):
-        page.goto(f"{base_url}/catalog/9/3059")
-        listing.add_item_in_stock_and_get_delivery_time()
-        page.goto(f"{base_url}/catalog/9/2980")
+        page.goto(get_category_url_by_key(base_url, "/catalog/9/3059"))
+        listing.add_expensive_item_to_cart(1)
+        page.goto(get_category_url_by_key(base_url, "/catalog/9/2980"))
         listing.ensure_all_products_selected()
         listing.add_item_on_request_and_get_delivery_time()
 
@@ -464,8 +467,8 @@ def test_manual_quantity_input(base_url, page_fixture):
 
     cart.clear_cart(base_url)
 
-    page.goto(f"{base_url}/catalog/9/3059")
-    listing.add_item_in_stock_and_get_delivery_time()
+    page.goto(get_category_url_by_key(base_url, "/catalog/9/3059"))
+    listing.add_expensive_item_to_cart(1)
 
     cart.open(base_url)
 
@@ -546,7 +549,7 @@ def test_display_available_purchase_limit(base_url, page_fixture):
     cart.clear_cart(base_url)
 
     with allure.step("Добавляю в корзину"):
-        page.goto(base_url + "/catalog/9/3707")
+        page.goto(get_category_url_by_key(base_url, "/catalog/9/3707"))
         listing.add_expensive_item_to_cart(min_price=350)
         cart.open(base_url)
         time.sleep(2)
@@ -650,8 +653,8 @@ def test_calculation_with_vat_full(base_url, page_fixture):
     cart.open(base_url)
     cart.clear_cart(base_url)
 
-    page.goto(f"{base_url}/catalog/9/3059")
-    listing.add_item_in_stock_and_get_delivery_time()
+    page.goto(get_category_url_by_key(base_url, "/catalog/9/3059"))
+    listing.add_expensive_item_to_cart(1)
     listing.add_item_available_on_request()
 
     cart.open(base_url)
@@ -850,8 +853,8 @@ def test_subdivision_switching(base_url, page_fixture):
     cart.open(base_url)
     cart.clear_cart(base_url)
 
-    page.goto(f"{base_url}/catalog/9/3059")
-    listing.add_item_in_stock_and_get_delivery_time()
+    page.goto(get_category_url_by_key(base_url, "/catalog/9/3059"))
+    listing.add_expensive_item_to_cart(1)
 
     cart.open(base_url)
 
@@ -981,8 +984,8 @@ def test_subdivision_switch_item_price_limit_exceeded(base_url, page_fixture):
     cart.open(base_url)
     cart.clear_cart(base_url)
 
-    page.goto(f"{base_url}/catalog/9/3059")
-    listing.add_item_in_stock_and_get_delivery_time()
+    page.goto(get_category_url_by_key(base_url, "/catalog/9/3059"))
+    listing.add_expensive_item_to_cart(1)
 
     cart.open(base_url)
 
@@ -1063,8 +1066,8 @@ def test_address_list_changes_on_subdivision_switch(base_url, page_fixture):
     try:
         with allure.step("Предусловие: Устанавливаю первое тестовое подразделение"):
 
-            page.goto(f"{base_url}/catalog/9/3059")
-            listing.add_item_in_stock_and_get_delivery_time()
+            page.goto(get_category_url_by_key(base_url, "/catalog/9/3059"))
+            listing.add_expensive_item_to_cart(1)
 
             cart.open(base_url)
 
@@ -1323,7 +1326,7 @@ def test_order_blocked_when_item_price_exceeds_limit(base_url, page_fixture):
     cart.open(base_url)
     cart.clear_cart(base_url)
 
-    page.goto(base_url + "/catalog/9/3707")
+    page.goto(get_category_url_by_key(base_url, "/catalog/9/3707"))
     listing.add_expensive_item_to_cart(min_price=350)
 
     cart.open(base_url)
@@ -1367,8 +1370,8 @@ def test_order_blocked_when_item_price_exceeds_allowed_limit(base_url, page_fixt
     cart.open(base_url)
     cart.clear_cart(base_url)
 
-    page.goto(f"{base_url}/catalog/9/3059")
-    listing.add_item_in_stock_and_get_delivery_time()
+    page.goto(get_category_url_by_key(base_url, "/catalog/9/3059"))
+    listing.add_expensive_item_to_cart(1)
 
     cart.open(base_url)
 

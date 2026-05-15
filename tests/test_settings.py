@@ -7,6 +7,7 @@ import allure
 import pytest
 from playwright.sync_api import expect
 
+from conftest import get_category_url_by_key
 from page_opjects.autorization_page import AutorizationPage
 from page_opjects.home_page import HomePage
 from page_opjects.listing_page import ListingPage
@@ -41,7 +42,7 @@ def test_rounding_toggle_affects_listing_prices(base_url, page_fixture):
         assert not contracts.is_total_rounding_enabled(), "Тумблер округления должен быть выключен перед проверкой листинга"
 
     with allure.step("Проверяю, что цены содержат ненулевые копейки"):
-        listing.open_url(f"{base_url}/catalog/9/3707")
+        page.goto(get_category_url_by_key(base_url, "/catalog/9/3707"))
         assert listing.has_non_zero_kopecks(), "В листинге не найдено цен с ненулевыми копейками"
         original_prices = listing.get_price_data()
         # allure.attach(
@@ -57,7 +58,7 @@ def test_rounding_toggle_affects_listing_prices(base_url, page_fixture):
         assert contracts.is_total_rounding_enabled(), "Тумблер округления не включился"
 
     with allure.step("Возвращаюсь в листинг и проверяю правильность округления"):
-        listing.open_url(f"{base_url}/catalog/9/3707")
+        page.goto(get_category_url_by_key(base_url, "/catalog/9/3707"))
 
         is_rounded, message = listing.are_prices_rounded_up(original_prices)
 
@@ -104,7 +105,7 @@ def test_purchase_limits_banner_and_cart_behavior(base_url, page_fixture):
     #     expect(page.locator(contracts_settings.ALERT_LIMIT_CHANGED)).to_be_visible()
 
     with allure.step("Добавляю в корзину товар дороже лимита"):
-        page.goto(base_url + "/catalog/9/3707")
+        page.goto(get_category_url_by_key(base_url, "/catalog/9/3707"))
         listing.add_expensive_item_to_cart(min_price=350)  # подбирает 1 товар с ценой > 300
 
     # with allure.step("Товар успешно добавлен в корзину"):

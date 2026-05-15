@@ -665,6 +665,8 @@ from page_opjects.autorization_page import AutorizationPage
 from page_opjects.cart_page import CartPage
 from page_opjects.listing_page import ListingPage
 from page_opjects.settings_page.limits_page import LimitsPage
+from conftest import get_category_url_by_key
+
 
 """
 Тесты лимитов на закупку.
@@ -677,7 +679,7 @@ from page_opjects.settings_page.limits_page import LimitsPage
 """
 
 SUBDIVISION_ID = 136
-CATALOG_PATH = "/catalog/9/3707"
+# CATALOG_PATH = "/catalog/9/3707"
 TEST_SUBDIVISION = "Тестовое подразделение для теста лимитов(не трогать)"
 TEST_USER_EMAIL = "testgarwin_yur@mail.ru"
 
@@ -702,8 +704,13 @@ def auth_and_clear(base_url, page, auth, cart):
 
 def add_item(page, base_url, listing, min_price):
     with allure.step(f"Добавляю товар с ценой > {min_price}₽"):
-        page.goto(base_url + CATALOG_PATH)
+        page.goto(get_category_url_by_key(base_url, "limits"))
         listing.add_expensive_item_to_cart(min_price=min_price)
+
+# def add_item(page, base_url, listing, min_price):
+#     with allure.step(f"Добавляю товар с ценой > {min_price}₽"):
+#         page.goto(base_url + CATALOG_PATH)
+#         listing.add_expensive_item_to_cart(min_price=min_price)
 
 
 def open_cart_and_select_subdivision(base_url, cart, page):

@@ -5,6 +5,8 @@ import allure
 import pytest
 from faker import Faker
 from playwright.sync_api import expect
+
+from conftest import get_category_url_by_key
 from page_opjects.autorization_page import AutorizationPage
 from page_opjects.cart_page import CartPage
 from page_opjects.listing_page import ListingPage
@@ -356,7 +358,7 @@ def test_purchase_limit_in_cart(base_url, page_fixture):
         subdivisions.click_save()
 
     with allure.step("Добавляю в корзину товар дороже лимита"):
-        page.goto(base_url + "/catalog/9/3707")
+        page.goto(get_category_url_by_key(base_url, "/catalog/9/3707"))
         listing.add_expensive_item_to_cart(min_price=350)  # подбирает 1 товар с ценой > 300
 
     cart.open(base_url)
@@ -411,7 +413,7 @@ def test_item_price_limit_in_cart(base_url, page_fixture):
     # page.mouse.click(0, 0)
 
     with allure.step("Добавляю в корзину товар дороже лимита"):
-        page.goto(base_url + "/catalog/9/3707")
+        page.goto(get_category_url_by_key(base_url, "/catalog/9/3707"))
         listing.add_expensive_item_to_cart(min_price=350)  # подбирает 1 товар с ценой > 300
 
     cart.open(base_url)
@@ -886,7 +888,7 @@ def test_set_primary_address(base_url, page_fixture):
 
     # Добавление товара в корзину
     with allure.step("Добавляю товар в корзину"):
-        listing.open_url(f"{base_url}/catalog/9/3707")
+        page.goto(get_category_url_by_key(base_url, "/catalog/9/3707"))
         listing.add_expensive_item_to_cart(min_price=100)
 
     # Переход на страницу настроек подразделения

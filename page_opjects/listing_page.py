@@ -6,12 +6,24 @@ from asyncio import wait_for
 import allure
 from playwright.sync_api import Page, expect
 
+from conftest import get_category_url_by_key, PROD_PATH_TO_KEY
 
 class ListingPage:
-    def __init__(self, page: Page):
-        self.page = page
+    PATH = "/catalog/9/3052"  # значение по умолчанию (prod-путь)
 
-    PATH = "/catalog/9/3052"
+    def __init__(self, page, category_key=None):
+        self.page = page
+        # Автоматически определяем ключ по значению PATH, если он не передан явно
+        self.category_key = category_key or PROD_PATH_TO_KEY.get(self.PATH)
+
+    def open(self, base_url):
+        if self.category_key:
+            url = get_category_url_by_key(base_url, self.category_key)
+        else:
+            url = f"{base_url.rstrip('/')}{self.PATH}"
+        with allure.step(f"Открываю {url}"):
+            return self.page.goto(url)
+
 
     # Листинг
 
@@ -226,9 +238,9 @@ class ListingPage:
 
         raise AssertionError("Не найден товар с плашкой 'Доступно под заказ'")
 
-    def open(self, base_url):
-        with allure.step(f"Открываю {base_url + self.PATH}"):
-            return self.page.goto(base_url + self.PATH)
+    # def open(self, base_url):
+    #     with allure.step(f"Открываю {base_url + self.PATH}"):
+    #         return self.page.goto(base_url + self.PATH)
 
     @allure.step("Открываю указанный URL листинга")
     def open_url(self, url: str):

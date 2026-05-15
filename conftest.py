@@ -40,6 +40,27 @@ def browser_type_launch_args(browser_type_launch_args):
         "proxy": proxy_settings,
     }
 
+CATEGORY_KEYS = {
+    "in_stock(Screwdrivers)":      {"prod": "/catalog/9/3059", "stage": "/catalog/4/3074"},
+    "on_request(Air-powered syringes(пневмошприцы))":    {"prod": "/catalog/9/2980", "stage": "/catalog/4/2118"},
+    "Адаптеры для биметаллических коронок RUNTEC":    {"prod": "/catalog/9/3707", "stage": "/catalog/4/2343"},
+    "bits": {"prod": "/catalog/9/3052", "stage": "/catalog//4/3070"}
+}
+
+# Обратный словарь: prod-путь → ключ
+PROD_PATH_TO_KEY = {paths["prod"]: key for key, paths in CATEGORY_KEYS.items()}
+
+def get_category_url_by_key(base_url: str, key: str) -> str:
+    """
+    Возвращает полный URL категории по логическому ключу ИЛИ prod-пути.
+    Если передан prod-путь, автоматически находит соответствующий ключ.
+    """
+    env = get_env_from_url(base_url)
+    # Если передан prod-путь (начинается с "/catalog/"), преобразуем в ключ
+    if key.startswith("/catalog/"):
+        key = PROD_PATH_TO_KEY.get(key, key)  # если не найден, вернётся как есть
+    return f"{base_url.rstrip('/')}{CATEGORY_KEYS[key][env]}"
+
 
 
 # @pytest.fixture(scope="function")
@@ -180,7 +201,7 @@ def ensure_auth_states_dir_exists() -> str:
 
 # Получаем инфу об окружении исходя из указаного URL
 def get_env_from_url(base_url: str) -> str:
-    if "stage" in base_url or "review-site" in base_url:
+    if any(x in base_url for x in ["stage", "stg", "review-site"]):
         return "stage"
     return "prod"
 
