@@ -349,6 +349,7 @@ class ListingPage:
             if value > min_price:
                 cards.nth(i).click()
                 self.page.locator(self.ADD_TO_CART_BUTTON).click()
+                self.page.go_back()
                 return
         raise AssertionError(f"Не найден товар дороже {min_price}")
 

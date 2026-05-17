@@ -63,7 +63,8 @@ class CartPage:
     QUICK_ADD_MODAL = "div.ant-drawer-wrapper-body"
     QUICK_ADD_SEARCH_INPUT = "input.ant-input.css-2nkxv5"
     QUICK_ADD_ITEM_NAME = ".text-controls-accent.color-black.mb-5"
-    QUICK_ADD_ITEM_ADD_BUTTON = "button.add-goods-card__goods"
+    # QUICK_ADD_ITEM_ADD_BUTTON = "button.add-goods-card__goods"
+    QUICK_ADD_ITEM_ADD_BUTTON = "button.select-good-card__goods"
     DROPDOWN_MENU = ".custom-dropdown"
     # QUICK_ADD_ITEM_BUYER_ARTICLE = "div.ant-drawer-wrapper-body .text-tag-accent.color-bright-green.buyer-code__value"
     QUICK_ADD_ITEM_BUYER_ARTICLE = "button.add-goods-card__goods"
@@ -75,13 +76,29 @@ class CartPage:
     # COPY_CODE_BUTTON = "button:has-text('Копировать')"
     # CLEAR_CART_BUTTON = "button:has-text('Очистить корзину')"
     # CLEAR_CART_CONFIRM_BUTTON = "button:has-text('Очистить')"
-    #
+
+
+
+    # # Используются на проде!!!
+    # # Локаторы блока калькуляции
+    # CALCULATION_BLOCK = "mb-6.ff-medium.fs-m:has-text('Общая информация')"
+    # GOODS_QUANTITY = ".ff-regular.fs-s:has-text('Товаров в заказе:') + .ff-regular.fs-s"
+    # GOODS_PRICE = ".ff-regular.fs-s:has-text('Стоимость товаров:') + .ff-regular.fs-s"
+    # VAT_AMOUNT = ".ff-regular.fs-s:has-text('Сумма НДС:') + .ff-regular.fs-s"
+    # TOTAL_WITH_VAT = ".ff-regular.fs-s:has-text('Итого с НДС:') + .ff-regular.fs-s"
+
     # Локаторы блока калькуляции
     CALCULATION_BLOCK = "mb-6.ff-medium.fs-m:has-text('Общая информация')"
-    GOODS_QUANTITY = ".ff-regular.fs-s:has-text('Товаров в заказе:') + .ff-regular.fs-s"
-    GOODS_PRICE = ".ff-regular.fs-s:has-text('Стоимость товаров:') + .ff-regular.fs-s"
-    VAT_AMOUNT = ".ff-regular.fs-s:has-text('Сумма НДС:') + .ff-regular.fs-s"
-    TOTAL_WITH_VAT = ".ff-regular.fs-s:has-text('Итого с НДС:') + .ff-regular.fs-s"
+    GOODS_QUANTITY = ".ff-regular.fs-s:has-text('Товаров в заказе') + .ff-regular.fs-s"
+    GOODS_PRICE = ".ff-regular.fs-s:has-text('Стоимость товаров') + .ff-regular.fs-s"
+    VAT_AMOUNT = ".ff-regular.fs-s:has-text('Сумма НДС') + .ff-regular.fs-s"
+    TOTAL_WITH_VAT = ".ff-regular.fs-s:has-text('Итого с НДС') + .ff-regular.fs-s"
+
+
+
+
+
+
     #
     # # Локаторы лимита
     # LIMIT_BLOCK = ".cart-limit"
@@ -426,8 +443,14 @@ class CartPage:
 
     # # Локаторы для блока "Детали доставки" - по порядку селектов
     # SUBDIVISION_ROW = ".grid-two-columns-row:has-text('Подразделение')"
-    ADDRESS_ROW = ".grid-two-columns-row:has-text('Адрес:')"
-    LEGAL_ENTITY_ROW = ".grid-two-columns-row:has-text('Юридическое лицо:')"
+
+    # СЕЙЧАС НА ПРОДЕ
+    # ADDRESS_ROW = ".grid-two-columns-row:has-text('Адрес:')"
+    # LEGAL_ENTITY_ROW = ".grid-two-columns-row:has-text('Юридическое лицо:')"
+
+    ADDRESS_ROW = ".descriptions-row:has-text('Адрес')"
+    LEGAL_ENTITY_ROW = ".descriptions-row:has-text('Юридическое лицо')"
+
     #
     # SELECT_VALUE = ".ant-select-selection-item"
     SELECT_TRIGGER = ".ant-select"
@@ -437,12 +460,20 @@ class CartPage:
     # SELECT_OPTION = ".ant-select-item-option"
 
     # Локаторы через индекс селектов внутри блока доставки
-    DELIVERY_BLOCK = ".grid-two-columns"
 
-    SUBDIVISION_SELECT = ".grid-two-columns .basket-order-details__body-block-select >> nth=0"
+    # DELIVERY_BLOCK = ".grid-two-columns" #сейчас на проде
+    DELIVERY_BLOCK = ".descriptions"
+
+    # То что сейчас на проде
+    # SUBDIVISION_SELECT = ".grid-two-columns .basket-order-details__body-block-select >> nth=0"
+    # # SUBDIVISION_SELECT = ".grid-two-columns .basket-request-composition__body-block-select >> nth=0"
+    # ADDRESS_SELECT = ".grid-two-columns .basket-request-composition__body-block-select >> nth=2"
+    # LEGAL_ENTITY_SELECT = ".grid-two-columns .basket-request-composition__body-block-select >> nth=4"
+
+    SUBDIVISION_SELECT = ".descriptions .basket-order-details__body-block-select >> nth=0"
     # SUBDIVISION_SELECT = ".grid-two-columns .basket-request-composition__body-block-select >> nth=0"
-    ADDRESS_SELECT = ".grid-two-columns .basket-request-composition__body-block-select >> nth=2"
-    LEGAL_ENTITY_SELECT = ".grid-two-columns .basket-request-composition__body-block-select >> nth=4"
+    ADDRESS_SELECT = ".descriptions .basket-request-composition__body-block-select >> nth=2"
+    LEGAL_ENTITY_SELECT = ".descriptions .basket-request-composition__body-block-select >> nth=4"
 
     SUBDIVISION_SELECT_BUTTON = ".ant-select-arrow"
 
