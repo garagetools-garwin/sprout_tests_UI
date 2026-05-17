@@ -704,7 +704,7 @@ def auth_and_clear(base_url, page, auth, cart):
 
 def add_item(page, base_url, listing, min_price):
     with allure.step(f"Добавляю товар с ценой > {min_price}₽"):
-        page.goto(get_category_url_by_key(base_url, "limits"))
+        page.goto(get_category_url_by_key(base_url, "/catalog/9/3707"))
         listing.add_expensive_item_to_cart(min_price=min_price)
 
 # def add_item(page, base_url, listing, min_price):
