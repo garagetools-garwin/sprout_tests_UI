@@ -654,8 +654,9 @@ def test_calculation_with_vat_full(base_url, page_fixture):
     cart.clear_cart(base_url)
 
     page.goto(get_category_url_by_key(base_url, "/catalog/9/3059"))
-    listing.add_expensive_item_to_cart(1)
-    listing.add_item_available_on_request()
+    listing.add_first_item()
+    page.goto(get_category_url_by_key(base_url, "/catalog/9/3059"))
+    listing.add_second_item()
 
     cart.open(base_url)
     time.sleep(2)
@@ -1371,7 +1372,7 @@ def test_order_blocked_when_item_price_exceeds_allowed_limit(base_url, page_fixt
     cart.clear_cart(base_url)
 
     page.goto(get_category_url_by_key(base_url, "/catalog/9/3059"))
-    listing.add_expensive_item_to_cart(1)
+    listing.add_expensive_item_to_cart(300)
 
     cart.open(base_url)
 
@@ -1416,7 +1417,7 @@ def test_order_blocked_when_item_price_exceeds_allowed_limit(base_url, page_fixt
         #     allure.attach("Полоска лимита красная", name="Цвет полоски")
 
         with allure.step("Проверяю, что кнопка 'Отправить' заблокирована"):
-            expect(page.locator(cart.SEND_BUTTON)).not_to_be_visible()
+            expect(page.locator(cart.SEND_BUTTON)).to_be_disabled()
             allure.attach("Кнопка 'Отправить' заблокирована", name="Состояние кнопки")
 
         with allure.step("Проверяю, что отображается плашка 'Ваш заказ превышает доступный лимит на покупки'"):

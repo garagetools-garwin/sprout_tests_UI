@@ -62,12 +62,14 @@ class CartPage:
     QUICK_ADD_BUTTON = "button.button-circle.primary"
     QUICK_ADD_MODAL = "div.ant-drawer-wrapper-body"
     QUICK_ADD_SEARCH_INPUT = "input.ant-input.css-2nkxv5"
-    QUICK_ADD_ITEM_NAME = ".text-controls-accent.color-black.mb-5"
+    # QUICK_ADD_ITEM_NAME = ".text-controls-accent.color-black.mb-5"
+    QUICK_ADD_ITEM_NAME = ".mb-5.ff-medium.fs-s.color-black"
     # QUICK_ADD_ITEM_ADD_BUTTON = "button.add-goods-card__goods"
     QUICK_ADD_ITEM_ADD_BUTTON = "button.select-good-card__goods"
     DROPDOWN_MENU = ".custom-dropdown"
     # QUICK_ADD_ITEM_BUYER_ARTICLE = "div.ant-drawer-wrapper-body .text-tag-accent.color-bright-green.buyer-code__value"
-    QUICK_ADD_ITEM_BUYER_ARTICLE = "button.add-goods-card__goods"
+    # QUICK_ADD_ITEM_BUYER_ARTICLE = "button.add-goods-card__goods"
+    QUICK_ADD_ITEM_BUYER_ARTICLE = ".ff-medium.fs-xs.color-bright-green"
     # QUICK_ADD_ITEM = ".product-list__item"
     #
     # # Локаторы меню корзины (три точки)
@@ -369,6 +371,7 @@ class CartPage:
     @allure.step("Очищаю корзину")
     def clear_cart(self, base_url):
         self.open(base_url)
+        self.page.wait_for_load_state("networkidle")
         self.click_option_button()
         if self.page.locator(self.CLEAR_CART_BUTTON).is_enabled():
             self.click_clear_cart_button()

@@ -434,5 +434,24 @@ class ListingPage:
             self.page.go_back()
             self.page.wait_for_selector(self.PRODUCT, timeout=10000)
 
+
+    @allure.step('Добавляю в корзину первый товар')
+    def add_first_item(self):
+        # ждём, пока в листинге появятся карточки
+        self.page.wait_for_selector(self.PRODUCT, timeout=10000)
+
+        card = self.page.locator(self.PRODUCT).nth(0)
+        card.click()
+        self.page.locator(self.ADD_TO_CART_BUTTON).click()
+
+    @allure.step('Добавляю в корзину второй товар')
+    def add_second_item(self):
+        # ждём, пока в листинге появятся карточки
+        self.page.wait_for_selector(self.PRODUCT, timeout=10000)
+
+        card = self.page.locator(self.PRODUCT).nth(1)
+        card.click()
+        self.page.locator(self.ADD_TO_CART_BUTTON).click()
+
     #TODO перевести карточку товара в отдельный класс
 
