@@ -165,7 +165,7 @@ jobs:
 
       # Публикация отчета Allure  
       - name: Publish Allure report
-        uses: peaceiris/actions-gh-pages@v2
+        uses: peaceiris/actions-gh-pages@v4
         if: always() && steps.check_allure.outputs.allure_results_exist == 'true'
         env:
           PERSONAL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
