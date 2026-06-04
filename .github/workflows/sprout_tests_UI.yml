@@ -168,11 +168,12 @@ jobs:
       - name: Publish Allure report
         uses: peaceiris/actions-gh-pages@v4
         if: always() && steps.check_allure.outputs.allure_results_exist == 'true'
-        env:
-          PERSONAL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PUBLISH_BRANCH: gh-pages
-          PUBLISH_DIR: allure-history
-
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: allure-history
+          force_orphan: true
+          
   notify-on-failure:
     if: |
       failure() ||
