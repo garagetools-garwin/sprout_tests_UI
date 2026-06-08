@@ -89,6 +89,7 @@ def test_quick_add_search(base_url, page_fixture):
 
 
 @allure.title("Добавление товара в окне Быстрое добавление")
+@pytest.mark.test
 def test_add_product_in_quick_add_modal(base_url, page_fixture):
     page = page_fixture()
     autorization_page = AutorizationPage(page)
