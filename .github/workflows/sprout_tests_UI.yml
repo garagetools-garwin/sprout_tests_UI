@@ -20,7 +20,7 @@ jobs:
     # Уникальный ключ для группы задач предназначен для того, чтобы повторный запуск Джобы вставал в ожидание, не конфликтуая с первым
     concurrency:
       group: sprout_tests_UI_concurrency
-      cancel-in-progress: true
+      cancel-in-progress: false
 
     # запуск на виртуальной машине
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && (github.event.schedule == '0 5 * * *' || github.event.schedule == '0 6 * * *'))
