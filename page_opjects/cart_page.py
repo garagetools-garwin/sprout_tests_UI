@@ -221,6 +221,7 @@ class CartPage:
 
     @allure.step("Проверяю отображение модального окна быстрого добавления")
     def is_quick_add_modal_visible(self):
+        time.sleep(2)
         return self.page.locator(self.QUICK_ADD_MODAL).is_visible()
 
     @allure.step("Проверяю что товар отображается в корзине")

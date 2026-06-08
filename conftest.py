@@ -293,7 +293,7 @@ def page_fixture(browser: Browser, request, base_url):
         trace_path = os.path.join(os.getcwd(), f'traces/{safe_name}_{current_time}_{len(pages)}.zip')
         os.makedirs(os.path.dirname(trace_path), exist_ok=True)
 
-        page.context.tracing.start(screenshots=True, snapshots=True)
+        page.context.tracing.start(screenshots=True, snapshots=False)
         page._trace_path = trace_path
         return page
 
