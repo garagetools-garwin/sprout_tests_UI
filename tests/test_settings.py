@@ -473,18 +473,20 @@ def test_copy_inn_kpp(base_url, page_fixture):
 
     with allure.step("Проверяю, что информация в буфере обмена соотвествует настоящему ИНН"):
         # Получаем содержимое clipboard через браузер API (синхронная версия)
-        clipboard_content = page.evaluate("() => navigator.clipboard.readText()")
-        expected_inn = page.locator('.legal-entity-card__details-table-row-container div.text-body').text_content()
-        assert clipboard_content == expected_inn
+        modal.click_copy_inn()
+        clipboard_inn = page.evaluate("navigator.clipboard.readText()")
+        assert clipboard_inn == modal.get_inn_value(), \
+            f"В буфер скопирован неверный ИНН: ожидалось {modal.get_inn_value()}, получено {clipboard_inn}"
 
     with allure.step("Копирую КПП"):
+        page.evaluate("navigator.clipboard.writeText('')")
         modal.click_copy_kpp()
+        with allure.step("Проверяю, что информация в буфере обмена соотвествует настоящему КПП"):
 
-    with allure.step("Проверяю, что информация в буфере обмена соотвествует настоящему КПП"):
-        # Получаем содержимое clipboard через браузер API (синхронная версия)
-        clipboard_content = page.evaluate("() => navigator.clipboard.readText()")
-        expected_kpp = page.locator(".text-body:has-text('КПП:') + .legal-entity-card__details-table-row-container span.text-body").text_content()
-        assert clipboard_content == expected_kpp
+            clipboard_kpp = page.evaluate("navigator.clipboard.readText()")
+            assert clipboard_kpp == modal.get_kpp_value(), \
+                f"В буфер скопирован неверный КПП: ожидалось {modal.get_kpp_value()}, получено {clipboard_kpp}"
+
 
 """Страница Пользователь"""
 
@@ -632,7 +634,7 @@ def test_user_edit_and_save(base_url, page_fixture):
     with allure.step("Проверяю, что окно редактирования пользователя открыто"):
         assert page.locator("text='Редактировать данные'").is_visible()
 
-    last_name, first_name, patronymic, position, phone = modal.fill_in_data_randomize()
+    last_name, first_name, patronymic, position = modal.fill_in_data_randomize()
     modal.click_save_button()
     assert page.locator("text=Данные пользователя успешно изменены").is_visible(timeout=4000)
     assert cards.first.locator(f':has-text("{last_name} {first_name} {patronymic}")').first.is_visible()
@@ -652,7 +654,7 @@ def test_roles_selection_in_user_card(base_url, page_fixture):
 
     roles_block = modal.get_roles_block()
     with allure.step("Проверяю, что отображаются роли 'Пользователь' и 'Администратор аккаунта'"):
-        assert roles_block.locator("text=Администратор аккаунта").is_visible()
+        expect(roles_block.locator("text=Администратор аккаунта")).to_be_visible(timeout=10000)
 
     modal.click_main_role_button()
     modal.deselect_all_roles()

@@ -467,7 +467,7 @@ class LimitsPage:
 
     @allure.step("Проверяю: заказ заблокирован лимитом на сумму заказа")
     def assert_blocked_by_purchase_limit(self, cart):
-        expect(self.page.locator(cart.SEND_BUTTON)).not_to_be_visible()
+        expect(self.page.locator(cart.SEND_BUTTON)).to_be_disabled()
         expect(self.page.locator(cart.LIMIT_EXCEEDED_BANNER_2)).not_to_be_hidden(timeout=5000)
 
     @allure.step("Проверяю: заказ заблокирован лимитом цены на товар")

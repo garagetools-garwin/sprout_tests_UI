@@ -10,8 +10,8 @@ class MyOrdersPage:
     PATH = "/request-list/user"
 
     # NEW_ORDER_IDENTIFICATOR = ".new-indicator"
-    NEW_ORDER_IDENTIFICATOR = ".new-indicator + .text-controls-accent.ellipsis"
-    ORDER_NUMBER = ".text-controls-accent.ellipsis"
+    NEW_ORDER_IDENTIFICATOR = ".new-indicator + .ff-medium.fs-s.ellipsis"
+    ORDER_NUMBER = ".ff-medium.fs-s.ellipsis"
 
     def open(self, base_url):
         with allure.step(f"Открываю {base_url + self.PATH}"):

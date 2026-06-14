@@ -12,13 +12,13 @@ class PurchaseOrdersPage:
 
     MOVE_TO_ORDER_BUTTON = ".button-circle.secondary"
     SELECT_ALL_PRODUCTS_CHECKBOX = ".request-supply-list__table-group-row .ant-checkbox-input"
-    APPROVE_BUTTON_IN_MODAL = ".request-actions__container .ant-btn.request-actions__btn:has-text('Согласовать')"
-    REJECT_BUTTON_IN_MODAL = ".request-actions__container .ant-btn.request-actions__btn:has-text('Отклонить')"
+    APPROVE_BUTTON_IN_MODAL = ".floating-action-bar__btn:not(.red)"
+    REJECT_BUTTON_IN_MODAL = ".floating-action-bar__btn.red"
     APPROVE_BUTTON_IN_ROW = ""
-    ORDER_NUMBER_CELL = ".ant-table-row.ant-table-row-level-0:has(.ant-table-cell .text-controls-accent.ellipsis)"
+    ORDER_NUMBER_CELL = ".ant-table-row.ant-table-row-level-0:has(.ant-table-cell .ff-medium.fs-s.ellipsis)"
     ORDERS_LIST_LOCATOR = "tbody.ant-table-tbody"
     ORDER_ROW = "tr.ant-table-row.ant-table-row-level-0"
-    NUM_CELL = ".ant-table-cell .text-controls-accent.ellipsis"
+    NUM_CELL = ".ant-table-cell .ff-medium.fs-s.ellipsis"
 
     def open(self, base_url):
         with allure.step(f"Открываю {base_url + self.PATH}"):

@@ -110,6 +110,11 @@ class LegalEntityModal:
     DELETE_BUTTON = 'button:has-text("Удалить")'
     CANCEL_DELETE_BUTTON = 'button:has-text("Отмена")'
     COPY_BUTTON = 'button .icon-copy-dark-grey'
+    INN_ROW = "div.legal-entity-card__details-table-row:has(span:has-text('ИНН'))"
+    KPP_ROW = "div.legal-entity-card__details-table-row:has(span:has-text('КПП'))"
+
+    INN_COPY_ICON = f"{INN_ROW} svg.cursor-pointer"
+    KPP_COPY_ICON = f"{KPP_ROW} svg.cursor-pointer"
 
 
     with allure.step("Заполняю поля заданными значениями"):
@@ -138,10 +143,20 @@ class LegalEntityModal:
     def close(self):
         self.page.locator(self.CLOSE_BUTTON).click()
 
-    @allure.step("Нажимаю на Скопировать ИНН")
+    @allure.step("Копирую ИНН")
     def click_copy_inn(self):
-        self.page.locator(self.COPY_BUTTON).nth(0).click()
+        self.page.locator(self.INN_COPY_ICON).click()
 
-    @allure.step("Нажимаю на Скопировать КПП")
+    @allure.step("Копирую КПП")
     def click_copy_kpp(self):
-        self.page.locator(self.COPY_BUTTON).nth(1).click()
+        self.page.locator(self.KPP_COPY_ICON).click()
+
+    @allure.step("Получаю отображаемое значение ИНН")
+    def get_inn_value(self):
+        return self.page.locator(
+            f"{self.INN_ROW} .legal-entity-card__details-table-row-container .text-body").inner_text()
+
+    @allure.step("Получаю отображаемое значение КПП")
+    def get_kpp_value(self):
+        return self.page.locator(
+            f"{self.KPP_ROW} .legal-entity-card__details-table-row-container .text-body").inner_text()

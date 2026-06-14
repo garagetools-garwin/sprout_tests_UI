@@ -7,7 +7,7 @@ import re
 import json
 import pyperclip
 from datetime import datetime
-from playwright.sync_api import Browser, Page
+from playwright.sync_api import Browser, Page, expect, TimeoutError as PlaywrightTimeoutError
 
 from page_opjects.autorization_page import AutorizationPage
 from page_opjects.home_page import HomePage
@@ -278,6 +278,21 @@ def page_factory(
 
 
 
+
+def _dismiss_city_modal(page, timeout: int = 1500):
+    """Если есть модалка выбора города — выбирает первый город и сохраняет."""
+    title = page.locator(".ant-modal-title:has-text('Выберите свой город')")
+    try:
+        title.wait_for(state="visible", timeout=timeout)
+    except PlaywrightTimeoutError:
+        return  # окна нет — обычный случай
+
+    page.locator(".select-city-modal-list-item").first.click()
+    save = page.locator(".ant-modal-footer button:has-text('Сохранить')")
+    expect(save).to_be_enabled(timeout=3000)
+    save.click()
+    title.wait_for(state="hidden", timeout=5000)
+
 # === ЕДИНАЯ ФИКСТУРА С ТРАССИРОВКОЙ === #
 # Фикстура оборачивает кастомный page и управляет окружением, трассировкой и прочим.
 @pytest.fixture()
@@ -295,6 +310,10 @@ def page_fixture(browser: Browser, request, base_url):
 
         page.context.tracing.start(screenshots=True, snapshots=False)
         page._trace_path = trace_path
+
+        # Снимаем модалку выбора города, если она появилась
+        _dismiss_city_modal(page)
+
         return page
 
     yield create_page

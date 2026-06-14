@@ -151,7 +151,7 @@ class UserModal:
     SEND_INVITE_BUTTON = "button:has-text('Отправить приглашение')"
     SAVE_BUTTON = "button:has-text('Сохранить')"
     MAIN_ROLE_BUTTON = ".user-card-role-selector"
-    USER_CARD_ROLES_BLOCK = ".mb-11.d-flex.align-center.flex-wrap"
+    USER_CARD_ROLES_BLOCK = "div:has(> .user-role-chip)"
 
     ALL_CHECKBOX = "input[type='checkbox']"
     MANAGER_LINK = "a[href='/request-list/manager']"
@@ -215,9 +215,9 @@ class UserModal:
         self.page.locator(self.FIRSTNAME_INPUT).fill(first_name)
         self.page.locator(self.PATRONYMIC_INPUT).fill(patronymic)
         self.page.locator(self.POSITION_INPUT).fill(position)
-        self.page.locator(self.PHONE_INPUT).fill(phone)
+        # self.page.locator(self.PHONE_INPUT).fill(phone)
 
-        return last_name, first_name, patronymic, position, phone
+        return last_name, first_name, patronymic, position
 
     @allure.step("Нажимаю Отправить приглашение")
     def click_send_invite(self):

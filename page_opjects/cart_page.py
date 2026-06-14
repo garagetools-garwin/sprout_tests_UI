@@ -23,7 +23,7 @@ class CartPage:
     PRODUCT_ROW = ".ant-table-row.ant-table-row-level-0.expanded"
     PRODUCT_ROW_SELECTED = ".ant-table-row.ant-table-row-level-0.ant-table-row-selected.expanded"
 
-
+    ADDRESS_PLACEHOLDER = ".ant-select-selection-placeholder"
     ADDRESS_LABEL = "text=Адрес:"
     ADDRESS_CONTAINER = ".."
     ADDRESS_VALUE = ".ant-select-selection-item"
@@ -126,7 +126,7 @@ class CartPage:
     # Локаторы для лимита
     # LIMIT_BLOCK = ".limit-block"
     LIMIT_TOTAL_LOCATOR = "span.ff-regular.fs-xs.color-dark-grey:has-text('лимит на закупку')"
-    LIMIT_REMAINING_LOCATOR = ".mb-4.d-flex.align-center.justify-between .ff-medium.fs-m:last-of-type"
+    LIMIT_REMAINING_LOCATOR = ".mb-4.flex.align-center.justify-between .ff-medium.fs-m:last-of-type"
     COMMENT_TEXTAREA = "textarea[placeholder='Комментарий к заказу']"
     # ITEM_LINE_TOTAL = ".item-total-price"
 
@@ -392,10 +392,16 @@ class CartPage:
     def clear_confirm__clear_cart_button(self):
         self.page.locator(self.CONFIRM_CLEAR_CART_BUTTON).click()
 
+    @allure.step("Получаю текст основного адреса из корзины")
     def get_primary_address_text(self):
-        """Получить текст основного адреса из корзины"""
-        container = self.page.locator(self.ADDRESS_LABEL).locator(self.ADDRESS_CONTAINER)
-        return container.locator(self.ADDRESS_VALUE).inner_text()
+        row = self.page.locator(self.ADDRESS_ROW)
+        value = row.locator(self.ADDRESS_VALUE)
+        if value.count() == 0:
+            placeholder = row.locator(self.ADDRESS_PLACEHOLDER).inner_text()
+            raise AssertionError(
+                f"Адрес в корзине не выбран, отображается placeholder: {placeholder!r}"
+            )
+        return value.inner_text()
 
     def verify_primary_address(self, expected_address):
         """Проверить, что в корзине отображается ожидаемый основной адрес"""
@@ -428,8 +434,16 @@ class CartPage:
 
     @allure.step("Получаю оставшуюся сумму лимита")
     def get_limit_remaining(self):
+        import re
+
         text = self.page.locator(self.LIMIT_REMAINING_LOCATOR).inner_text()
-        return float(text.replace(" ₽", "").replace(" ", "").replace("₽", "").strip())
+        match = re.search(r"-?\d[\d\s\u00a0]*[.,]?\d*", text)
+        if match is None:
+            raise ValueError(f"Не найдено число в тексте лимита: {text!r}")
+        value = float(match.group().replace("\u00a0", "").replace(" ", "").replace(",", "."))
+        if "превышен" in text.lower():
+            value = -value
+        return value
 
     @allure.step("Получаю итоговую стоимость товара {index}")
     def get_item_line_total(self, index=0):
@@ -452,7 +466,7 @@ class CartPage:
     # ADDRESS_ROW = ".grid-two-columns-row:has-text('Адрес:')"
     # LEGAL_ENTITY_ROW = ".grid-two-columns-row:has-text('Юридическое лицо:')"
 
-    ADDRESS_ROW = ".descriptions-row:has-text('Адрес')"
+    ADDRESS_ROW = ".descriptions-row:has(div:text-is('Адрес'))"
     LEGAL_ENTITY_ROW = ".descriptions-row:has-text('Юридическое лицо')"
 
     #
