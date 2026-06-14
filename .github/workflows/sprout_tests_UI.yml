@@ -20,7 +20,7 @@ jobs:
     # Уникальный ключ для группы задач предназначен для того, чтобы повторный запуск Джобы вставал в ожидание, не конфликтуая с первым
     concurrency:
       group: sprout_tests_UI_concurrency
-      cancel-in-progress: true
+      cancel-in-progress: false
 
     # запуск на виртуальной машине
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && (github.event.schedule == '0 5 * * *' || github.event.schedule == '0 6 * * *'))
@@ -81,7 +81,7 @@ jobs:
       - name: Run tests
         run: |
           # pytest --reruns 2 --reruns-delay 3 --alluredir=allure-results --tb=short -v
-          pytest -m test --reruns 2 --reruns-delay 3 --alluredir=allure-results --tb=short -v
+          pytest --reruns 1 --reruns-delay 3 --alluredir=allure-results --tb=short -v
 
       - name: Показать содержимое auth_states после тестов
         if: always()
