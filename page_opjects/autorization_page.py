@@ -44,12 +44,27 @@ class AutorizationPage:
         with allure.step(f"Открываю {base_url + self.PATH}"):
             return self.page.goto(base_url + self.PATH)
 
+    @allure.step("Жду завершения входа")
+    def wait_for_login_complete(self, timeout: int = 15000):
+        """
+        Ждёт, пока вход реально завершится.
+
+        Без этого ожидания тест уходит на следующую страницу раньше, чем приложение
+        сохранит токен, и его выкидывает обратно на /login. Внешне это выглядит
+        как «сломался локатор на целевой странице», хотя локатор ни при чём.
+        """
+        self.page.wait_for_function(
+            "() => window.localStorage.getItem('creds') !== null",
+            timeout=timeout,
+        )
+        self.page.wait_for_load_state("domcontentloaded")
 
     @allure.step("Авторизуюсь (Покупатель Администратор)")
     def admin_buyer_authorize(self):
         self.page.type(self.EMAIL_INPUT, ADMIN_BUYER_EMAIL)
         self.page.type(self.PASSWORD_INPUT, ADMIN_BUYER_PASSWORD)
         self.page.locator(self.SUBMIT_BUTTON).click()
+        self.wait_for_login_complete()
         return ADMIN_BUYER_EMAIL
 
     # Не готов Подтя нуть мыло с паролем из .env
@@ -58,6 +73,7 @@ class AutorizationPage:
         self.page.type(self.EMAIL_INPUT, PURCHASER_EMAIL)
         self.page.type(self.PASSWORD_INPUT, PURCHASER_PASSWORD)
         self.page.locator(self.SUBMIT_BUTTON).click()
+        self.wait_for_login_complete()
 
     # Не готов
     @allure.step("Авторизуюсь (Менеджер контракта")
@@ -65,12 +81,14 @@ class AutorizationPage:
         self.page.type(self.EMAIL_INPUT, CONTRACT_MANAGER_EMAIL)
         self.page.type(self.PASSWORD_INPUT, CONTRACT_MANAGER_PASSWORD)
         self.page.locator(self.SUBMIT_BUTTON).click()
+        self.wait_for_login_complete()
 
     @allure.step("Авторизуюсь (Менеджер для контракта")
     def for_contract_manager_authorize(self):
         self.page.type(self.EMAIL_INPUT, MANAGER_FOR_CONTRACT_EMAIL)
         self.page.type(self.PASSWORD_INPUT, MANAGER_FOR_CONTRACT_PASSWORD)
         self.page.locator(self.SUBMIT_BUTTON).click()
+        self.wait_for_login_complete()
 
     @allure.step("Авторизуюсь на vi")
     def vi_test_authorize(self):
@@ -83,24 +101,28 @@ class AutorizationPage:
         self.page.type(self.EMAIL_INPUT, ADMIN_SELLER_EMAIL)
         self.page.type(self.PASSWORD_INPUT, ADMIN_SELLER_PASSWORD)
         self.page.locator(self.SUBMIT_BUTTON).click()
+        self.wait_for_login_complete()
 
     @allure.step("Авторизуюсь (Тестовый покупатель)")
     def test_buyer_authorize(self):
         self.page.type(self.EMAIL_INPUT, TESTMAIL_ADRESS_)
         self.page.type(self.PASSWORD_INPUT, TEST_BUYER_PASSWORD)
         self.page.locator(self.SUBMIT_BUTTON).click()
+        self.wait_for_login_complete()
 
     @allure.step("Авторизуюсь (Тестовый покупатель для роли админа)")
     def test_buyer_for_admin_role_authorize(self):
         self.page.type(self.EMAIL_INPUT, TEST_BUYER_EMAIL)
         self.page.type(self.PASSWORD_INPUT, TEST_BUYER_PASSWORD)
         self.page.locator(self.SUBMIT_BUTTON).click()
+        self.wait_for_login_complete()
 
     @allure.step("Авторизуюсь (Тестовый покупатель для проверки лимитов в настройках)")
     def buyer_admin_for_limit_authorize(self):
         self.page.type(self.EMAIL_INPUT, ADMIN_BUYER_LIMIT_EMAIL)
         self.page.type(self.PASSWORD_INPUT, ADMIN_BUYER_LIMIT_PASSWORD)
         self.page.locator(self.SUBMIT_BUTTON).click()
+        self.wait_for_login_complete()
 
     @allure.step("Получаю ссылку для активации аккаунта")
     def get_activation_link_testmail_app(self):
@@ -159,3 +181,4 @@ class AutorizationPage:
         self.page.type(self.EMAIL_INPUT, WITHOUT_ROLE_MANAGER_EMAIL)
         self.page.type(self.PASSWORD_INPUT, WITHOUT_ROLE_MANAGER_PASSWORD)
         self.page.locator(self.SUBMIT_BUTTON).click()
+        self.wait_for_login_complete()

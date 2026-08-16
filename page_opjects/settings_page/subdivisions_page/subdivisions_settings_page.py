@@ -99,7 +99,7 @@ class SubdivisionsSettingsPage:
     CHILD_SUBDIVISION_LIST_BUTTON = ".ant-tree-switcher.ant-tree-switcher_close"
     SUBDIVISION_CARD = "span .ant-tree-title"
     ACTION_MENU_BUTTON = ".ant-btn-icon-only.ant-dropdown-trigger"
-    DELETE_OPTION = ".ant-dropdown-menu-title-content:has-text('Удалить подразделение')"
+    DELETE_OPTION = ".button-sm.deleting"
     SUBDIVISION_NAME_INPUT = ".ant-modal input"
     SAVE_BUTTON = ".ant-modal-content .button-sm.primary"
     SUBDIVISION_NAME = ".subdivision-settings-name__value"

@@ -1087,7 +1087,7 @@ def test_edit_warehouse(base_url, page_fixture):
     with allure.step("Ввожу новые данные"):
         new_name = f"Изменённый склад {random.randint(0, 999999)}"
         new_address = fake.street_address()
-        new_city = fake.city()
+        new_city = "Москва"  # реальный город из справочника (поле стало выпадающим списком)
 
         modal.fill(new_name, new_address, new_city)
 
@@ -1404,7 +1404,7 @@ def test_warehouse_mandatory_fields(base_url, page_fixture):
 
     with allure.step("Проверяю: заполнено Наименование и Город"):
         modal.clear_all()
-        modal.fill("Тестовый склад", "", "Тестовый город")
+        modal.fill("Тестовый склад", "", "Москва")
         modal.click_add()
 
         assert not modal.is_name_error_visible()
@@ -1413,7 +1413,7 @@ def test_warehouse_mandatory_fields(base_url, page_fixture):
 
     with allure.step("Проверяю: заполнены Адрес и Город, пустое Наименование"):
         modal.clear_all()
-        modal.fill("", "Тестовый адрес", "Тестовый город")
+        modal.fill("", "Тестовый адрес", "Москва")
         modal.click_add()
 
         assert modal.is_name_error_visible(), "Ошибка для 'Наименование' не отображается"

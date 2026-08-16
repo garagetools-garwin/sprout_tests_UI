@@ -63,8 +63,8 @@ def test_quick_add_search(base_url, page_fixture):
         product_name = cart.get_first_product_name()
         allure.attach(product_name, name="Найденный товар", attachment_type=allure.attachment_type.TEXT)
 
-    with allure.step("Очищаю строку поиска и ввожу артикул"):
-        cart.search_in_quick_add("")
+    with allure.step("Ввожу артикул"):
+        # fill сам заменяет всю строку — отдельная очистка "" создавала гонку выборок
         cart.search_in_quick_add("RT-SD1PH2x100")
 
     with allure.step("Проверяю, что найден товар с артикулом 'RT-SD1PH2x100'"):
@@ -75,8 +75,7 @@ def test_quick_add_search(base_url, page_fixture):
         product_name = cart.get_first_product_name()
         allure.attach(product_name, name="Товар по артикулу", attachment_type=allure.attachment_type.TEXT)
 
-    with allure.step("Очищаю строку поиска и ввожу артикул покупателя"):
-        cart.search_in_quick_add("")
+    with allure.step("Ввожу артикул покупателя"):
         cart.search_in_quick_add("GAR-776631")
 
     with allure.step("Проверяю, что найден товар с артикулом клиента'GAR-776631'"):

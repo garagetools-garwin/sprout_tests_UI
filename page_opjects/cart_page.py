@@ -228,9 +228,17 @@ class CartPage:
     def is_product_row_visible(self):
         return self.page.locator(self.PRODUCT_ROW).is_visible()
 
+    SEARCH_API = "**/api/good/list"
+
     @allure.step("Ищу товар в модальном окне быстрого добавления: {query}")
     def search_in_quick_add(self, query):
-        self.page.locator(self.QUICK_ADD_SEARCH_INPUT).fill(query)
+        # Поиск идёт запросом /api/good/list с debounce. Без ожидания его ответа
+        # тест читает ещё старую (дефолтную) выдачу — отсюда флак. Ждём именно
+        # ответ поиска, затем даём списку перерисоваться.
+        with self.page.expect_response(self.SEARCH_API, timeout=15000):
+            self.page.locator(self.QUICK_ADD_SEARCH_INPUT).fill(query)
+        self.page.wait_for_load_state("networkidle")
+        self.page.wait_for_timeout(300)
 
     @allure.step("Получаю название первого товара в результатах поиска")
     def get_first_product_name(self):

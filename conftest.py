@@ -22,6 +22,10 @@ load_dotenv()  # Загружаем переменные из .env
 AUTH_USERNAME = os.getenv("AUTH_USERNAME")
 AUTH_PASSWORD = os.getenv("AUTH_PASSWORD")
 
+# Прокси включён. Адрес и учётка — в .env (PROXY_*).
+# Если прокси не отвечает, ниже сработает авто-фолбэк на прямой запуск с предупреждением.
+PROXY_ENABLED = True
+
 PROXY_HOST = os.getenv("PROXY_HOST")
 PROXY_PORT = os.getenv("PROXY_PORT")
 PROXY_USER = os.getenv("PROXY_USER")
@@ -33,8 +37,54 @@ proxy_settings = {
     "password": PROXY_PASS
 }
 
+
+def _proxy_is_reachable(host: str, port: str, timeout: float = 5.0) -> bool:
+    """Проверяет, отвечает ли прокси по TCP."""
+    if not host or not port:
+        return False
+    import socket
+    sock = socket.socket()
+    sock.settimeout(timeout)
+    try:
+        sock.connect((str(host).strip(), int(str(port).strip())))
+        return True
+    except Exception:
+        return False
+    finally:
+        sock.close()
+
+
 @pytest.fixture(scope="session")
-def browser_type_launch_args(browser_type_launch_args):
+def browser_type_launch_args(browser_type_launch_args, request):
+    """
+    Подключает прокси к браузеру.
+
+    Если прокси не отвечает, тесты запускаются напрямую: иначе КАЖДЫЙ тест
+    падает с net::ERR_TIMED_OUT ещё на page.goto, и разобрать настоящие
+    причины падений невозможно.
+
+    Отключить прокси принудительно: pytest --no-proxy
+    """
+    if not PROXY_ENABLED:
+        print("[PROXY] отключён временно (PROXY_ENABLED = False в conftest.py), идём напрямую")
+        return browser_type_launch_args
+
+    if request.config.getoption("--no-proxy"):
+        print("[PROXY] отключён ключом --no-proxy, идём напрямую")
+        return browser_type_launch_args
+
+    if not PROXY_HOST:
+        print("[PROXY] PROXY_HOST не задан в .env, идём напрямую")
+        return browser_type_launch_args
+
+    if not _proxy_is_reachable(PROXY_HOST, PROXY_PORT):
+        print(
+            f"[PROXY] ВНИМАНИЕ: прокси {PROXY_HOST}:{PROXY_PORT} не отвечает. "
+            f"Запускаюсь напрямую. Если тесты требуют прокси, поднимите его или "
+            f"обновите PROXY_HOST/PROXY_PORT в .env"
+        )
+        return browser_type_launch_args
+
     return {
         **browser_type_launch_args,
         "proxy": proxy_settings,
@@ -752,6 +802,9 @@ def delete_adress_fixture(base_url, page_fixture):
 def pytest_addoption(parser):
     # Добавляет опцию --url для выбора окружения
     parser.addoption("--url", default="https://sprout-store.ru")
+    # Позволяет принудительно запуститься без прокси
+    parser.addoption("--no-proxy", action="store_true", default=False,
+                     help="Запустить браузер без прокси, даже если он задан в .env")
 
 """Возвращает базовый URL из параметров командной строки через --url"""
 @pytest.fixture(scope="session")

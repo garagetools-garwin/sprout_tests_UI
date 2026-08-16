@@ -208,18 +208,24 @@ class WarehouseModal:
 
     # Поля формы
     NAME_INPUT = "input#name"
-    CITY_INPUT = "input#city"
-    POSTAL_CODE_INPUT = "input#postalCode"
     ADDRESS_INPUT = "textarea#address"
 
-    # Автозаполнение адреса (как в AddressModal из subdivisions)
-    ADDRESS_SEARCH_INPUT = ".ant-input.css-2nkxv5.ant-select-selection-search-input"
+    # Город — теперь выпадающий список (ant-select), раньше было текстовое поле input#city.
+    # Поле "Почтовый индекс" (input#postalCode) из формы убрано.
+    CITY_SELECT_WRAPPER = ".ant-select:has(input#cityId) .ant-select-selector"
+    CITY_SEARCH_INPUT = "input#cityId"
+    CITY_SELECTION_ITEM = ".ant-select:has(input#cityId) .ant-select-selection-item"
+    CITY_OPTION = ".ant-select-item-option"
+
+    # Автозаполнение адреса (отдельное поле поиска над ручным адресом)
+    ADDRESS_SEARCH_INPUT = "textarea[placeholder='Начните вводить ваш адрес']"
     SUGGESTION_ITEM = ".ant-select-item.ant-select-item-option"
 
     # Подсказки валидации
     NAME_HELP = "#name_help"
     ADDRESS_HELP = "#address_help"
-    CITY_HELP = "#city_help"
+    # ошибка города — по её form-item (id справки завязан на cityId и может отличаться)
+    CITY_HELP = ".ant-form-item:has(input#cityId) .ant-form-item-explain-error"
     REQUIRED_FIELD_TEXT = "Обязательное поле при сохранении"
 
     # Кнопки
@@ -247,22 +253,68 @@ class WarehouseModal:
         if address is not None:
             self.page.locator(self.ADDRESS_INPUT).fill(address)
         if city is not None:
-            self.page.locator(self.CITY_INPUT).fill(city)
+            # город — выпадающий список: пустая строка = очистить, иначе выбрать пункт
+            if city == "":
+                self.clear_city()
+            else:
+                self.select_city(city)
+
+    @allure.step("Выбираю город из выпадающего списка: {query}")
+    def select_city(self, query: str) -> str:
+        """Открывает список города, вводит запрос и выбирает точное совпадение
+        (или первый пункт). Город привязан к справочнику — произвольный текст
+        (как раньше) больше не подходит. Возвращает выбранное значение."""
+        # в режиме редактирования город уже выбран, и его span перехватывает клик по
+        # обёртке — список не открывается. Сначала снимаем прежнее значение.
+        self.clear_city()
+        options = self.page.locator(self.CITY_OPTION)
+        # список может не открыться с первого клика — делаем до 2 попыток
+        for attempt in range(2):
+            self.page.locator(self.CITY_SELECT_WRAPPER).click()
+            self.page.locator(self.CITY_SEARCH_INPUT).fill(query)
+            self.page.wait_for_timeout(1500)
+            try:
+                options.first.wait_for(state="visible", timeout=12000)
+                break
+            except Exception:
+                if attempt == 1:
+                    raise
+                self.page.keyboard.press("Escape")
+                self.page.wait_for_timeout(500)
+        target = None
+        for i in range(options.count()):
+            if options.nth(i).inner_text().strip() == query:
+                target = options.nth(i)
+                break
+        (target or options.first).click()
+        self.page.wait_for_timeout(500)
+        return self.get_city_value()
+
+    CITY_CLEAR_ICON = ".ant-select:has(input#cityId) .ant-select-clear"
+
+    @allure.step("Очищаю поле 'Город'")
+    def clear_city(self):
+        if self.page.locator(self.CITY_SELECTION_ITEM).count() == 0:
+            return
+        # крестик очистки появляется при наведении на селект
+        self.page.locator(self.CITY_SELECT_WRAPPER).hover()
+        self.page.locator(self.CITY_CLEAR_ICON).click(force=True)
+        self.page.wait_for_timeout(300)
 
     @allure.step("Заполняю поля склада случайными данными")
     def fill_random(self) -> tuple:
         name = f"Тестовый склад {fake.random_number(digits=5)}"
         address = fake.street_address()
-        city = fake.city()
 
-        self.fill(name, address, city)
+        self.fill(name, address, None)
+        city = self.select_city("Москва")  # реальный город из справочника
         return name, address, city
 
     @allure.step("Очищаю все поля")
     def clear_all(self):
         self.page.locator(self.NAME_INPUT).fill("")
         self.page.locator(self.ADDRESS_INPUT).fill("")
-        self.page.locator(self.CITY_INPUT).fill("")
+        self.clear_city()
 
     # === Автозаполнение адреса (как в AddressModal) === #
 
@@ -351,8 +403,5 @@ class WarehouseModal:
 
     @allure.step("Получаю значение поля 'Город'")
     def get_city_value(self) -> str:
-        return self.page.locator(self.CITY_INPUT).input_value()
-
-    @allure.step("Получаю значение поля 'Почтовый индекс'")
-    def get_postal_code_value(self) -> str:
-        return self.page.locator(self.POSTAL_CODE_INPUT).input_value()
+        item = self.page.locator(self.CITY_SELECTION_ITEM)
+        return item.inner_text().strip() if item.count() else ""
