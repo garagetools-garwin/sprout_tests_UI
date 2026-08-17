@@ -73,7 +73,8 @@ def test_user_invitation(base_url, page_fixture, delete_user_fixture):
         temp_page = page_fixture()
         temp_auth = AutorizationPage(temp_page)
         temp_auth.open(base_url)
-        temp_auth.test_buyer_authorize()
+        # вход ДОЛЖЕН быть отклонён (пользователь удалён) — не ждём завершения входа
+        temp_auth.test_buyer_authorize(wait_login=False)
         with allure.step("Проверяю, что пользователь остался на странице логина и не перешел на странцу настроек"):
             expect(temp_page).to_have_url(f"{base_url}/login")
 

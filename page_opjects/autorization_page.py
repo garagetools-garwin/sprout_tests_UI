@@ -104,11 +104,14 @@ class AutorizationPage:
         self.wait_for_login_complete()
 
     @allure.step("Авторизуюсь (Тестовый покупатель)")
-    def test_buyer_authorize(self):
+    def test_buyer_authorize(self, wait_login: bool = True):
+        # wait_login=False для НЕГАТИВНЫХ проверок (вход должен быть отклонён):
+        # тогда creds не появится, и ждать его завершения нельзя — иначе таймаут.
         self.page.type(self.EMAIL_INPUT, TESTMAIL_ADRESS_)
         self.page.type(self.PASSWORD_INPUT, TEST_BUYER_PASSWORD)
         self.page.locator(self.SUBMIT_BUTTON).click()
-        self.wait_for_login_complete()
+        if wait_login:
+            self.wait_for_login_complete()
 
     @allure.step("Авторизуюсь (Тестовый покупатель для роли админа)")
     def test_buyer_for_admin_role_authorize(self):
