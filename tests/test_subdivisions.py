@@ -729,26 +729,40 @@ def test_create_and_delete_new_address(base_url, page_fixture, delete_adress_fix
     # subdivisions.open_subdivision(0)
     subdivisions.click_addresses_tab()
 
-    addresses_page.click_add_address()
-    address = fake.address()
-    city = fake.city()
-    postcode = fake.postcode()
+    # Адрес добавляется ТОЛЬКО через автоподсказку-справочник (DaData) — ручной ввод
+    # полей форма не принимает (by design). Поэтому: поиск -> выбор подсказки ->
+    # поля заполняются сами -> Добавить.
+    ADDRESS_QUERY = "Краснодонцев 13"
+    STREET_TOKEN = "Краснодонцев"
 
-    with allure.step("Заполняю все поля адреса"):
-        address_modal.fill_all_fields(f"{address}", f"{city}", f"{postcode}")
+    before_count = addresses_page.get_address_cards().count()
+    addresses_page.click_add_address()
+
+    with allure.step("Ввожу адрес в поиск и выбираю подсказку из справочника"):
+        address_modal.fill_address_search(ADDRESS_QUERY)
+        page.wait_for_timeout(3000)
+        assert page.locator(address_modal.SUGGESTION_ITEM).count() > 0, \
+            "Подсказки адреса не появились"
+        address_modal.select_first_suggestion()
+        page.wait_for_timeout(1000)
 
     with allure.step("Добавляю адрес"):
         address_modal.click_add()
+        page.wait_for_timeout(2000)
 
-    with allure.step("Проверяю, что адрес добавлен"):
-        assert page.locator(f"text={address}").is_visible()
+    with allure.step("Проверяю, что адрес добавлен в список"):
+        after_count = addresses_page.get_address_cards().count()
+        assert after_count == before_count + 1, \
+            f"Адрес не добавился: было {before_count}, стало {after_count}"
 
     mark_adress_created()
 
-    old_adress_count = addresses_page.get_address_cards().count()
-
-    with allure.step("Открываю меню и выбираю Удалить"):
-        addresses_page.hover_address_action_menu(0)
+    with allure.step("Нахожу созданный адрес и выбираю Удалить"):
+        cards = addresses_page.get_address_cards()
+        target = next((i for i in range(cards.count())
+                       if STREET_TOKEN in cards.nth(i).inner_text()), None)
+        assert target is not None, "Созданный адрес не найден в списке"
+        addresses_page.hover_address_action_menu(target)
         addresses_page.click_delete_option()
 
     with allure.step("Проверяю, что окно подтверждения удаления открыто"):
@@ -756,9 +770,12 @@ def test_create_and_delete_new_address(base_url, page_fixture, delete_adress_fix
 
     with allure.step("Подтверждаю удаление"):
         addresses_page.confirm_delete()
+        page.wait_for_timeout(2000)
 
-    new_adress_count = addresses_page.get_address_cards().count()
-    assert old_adress_count > new_adress_count
+    with allure.step("Проверяю, что адрес удалён"):
+        final_count = addresses_page.get_address_cards().count()
+        assert final_count == before_count, \
+            f"Адрес не удалился: было {after_count}, стало {final_count} (ожидалось {before_count})"
 
     mark_adress_deleted()
 #todo нуэно тест выше перенести на страницу настройки
