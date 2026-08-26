@@ -221,8 +221,13 @@ class CartPage:
 
     @allure.step("Проверяю отображение модального окна быстрого добавления")
     def is_quick_add_modal_visible(self):
-        time.sleep(2)
-        return self.page.locator(self.QUICK_ADD_MODAL).is_visible()
+        # Окно быстрого добавления подгружается: фиксированный sleep(2) иногда
+        # проверял его раньше появления (флак). Ждём появления с таймаутом.
+        try:
+            self.page.wait_for_selector(self.QUICK_ADD_MODAL, state="visible", timeout=10000)
+            return True
+        except Exception:
+            return False
 
     @allure.step("Проверяю что товар отображается в корзине")
     def is_product_row_visible(self):
