@@ -217,7 +217,23 @@ class CartPage:
 
     @allure.step("Открываю модальное окно быстрого добавления")
     def open_quick_add_modal(self):
-        self.page.locator(self.QUICK_ADD_BUTTON).click()
+        # На «холодной» /basket клик уходит до навешивания JS-обработчика и теряется —
+        # окно не открывается. Ждём готовности страницы и кнопки, потом кликаем и ждём
+        # окно; если не появилось — повторяем клик (до 4 попыток).
+        try:
+            self.page.wait_for_load_state("networkidle", timeout=15000)
+        except Exception:
+            pass
+        self.page.wait_for_selector(self.QUICK_ADD_BUTTON, state="visible", timeout=15000)
+        for attempt in range(4):
+            self.page.locator(self.QUICK_ADD_BUTTON).click()
+            try:
+                self.page.wait_for_selector(self.QUICK_ADD_MODAL, state="visible", timeout=5000)
+                return
+            except Exception:
+                if attempt == 3:
+                    raise
+                self.page.wait_for_timeout(1500)
 
     @allure.step("Проверяю отображение модального окна быстрого добавления")
     def is_quick_add_modal_visible(self):
