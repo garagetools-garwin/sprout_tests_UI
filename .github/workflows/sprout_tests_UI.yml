@@ -24,7 +24,7 @@ jobs:
 
     # запуск на виртуальной машине
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && (github.event.schedule == '0 5 * * *' || github.event.schedule == '0 6 * * *'))
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       ADMIN_BUYER_EMAIL: ${{ secrets.ADMIN_BUYER_EMAIL }}
       ADMIN_BUYER_PASSWORD: ${{ secrets.ADMIN_BUYER_PASSWORD }}
@@ -178,7 +178,7 @@ jobs:
     if: |
       failure() ||
       (needs.tests && needs.tests.result != 'success' && needs.tests.result != 'skipped')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # needs: tests
     needs: [tests]
     steps:
