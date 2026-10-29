@@ -49,7 +49,7 @@ def test_user_invitation(base_url, page_fixture, delete_user_fixture):
     # === Новый пользователь: активирует аккаунт ===
     user_page = page_fixture()
     user_autorization = AutorizationPage(user_page)
-    user_autorization.activate_account_directly()
+    user_autorization.activate_account_directly(base_url)
 
     with allure.step("Проверяю, что пользователь перешел на страницу настроек профиля"):
         expect(user_page).to_have_url(f"{base_url}/profile")
