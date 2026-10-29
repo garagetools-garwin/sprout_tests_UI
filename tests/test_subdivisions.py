@@ -241,7 +241,7 @@ def test_edit_subdivision_settings(base_url, page_fixture):
     autorization_page.open(base_url)
     autorization_page.admin_buyer_authorize()
     subdivisions.open(base_url)
-    page.goto("https://sprout-store.ru/settings/subdivision/153/general")
+    page.goto(f"{base_url}/settings/subdivision/153/general")
 
     with allure.step("Выбираю юридическое лицо"):
         subdivisions.select_legal_entity()
@@ -570,7 +570,7 @@ def test_assign_roles_to_user(base_url, page_fixture):
     autorization_page.open(base_url)
     autorization_page.admin_buyer_authorize()
     subdivisions.open(base_url)
-    page.goto("https://sprout-store.ru/settings/subdivision/138/user-list")
+    page.goto(f"{base_url}/settings/subdivision/138/user-list")
     users_page.open_user_card(0)
 
     with allure.step("Проверяю что у пользователя нет прав администратора, если есть отключаю"):
@@ -581,9 +581,9 @@ def test_assign_roles_to_user(base_url, page_fixture):
     with allure.step("Вхожу как обычный пользователь"):
         autorization_user.open(base_url)
         autorization_user.test_buyer_for_admin_role_authorize()
-        page_user.goto("https://sprout-store.ru/settings/account/user-list")
+        page_user.goto(f"{base_url}/settings/account/user-list")
         time.sleep(2)
-        assert not page_user.url == "https://sprout-store.ru/settings/account/user-list"
+        assert not page_user.url == f"{base_url}/settings/account/user-list"
 
     with allure.step("Открыть карточку нужного пользователя по email и задаю роль администратора"):
         modal_admin.set_admin_role()
@@ -591,9 +591,9 @@ def test_assign_roles_to_user(base_url, page_fixture):
     with allure.step("Вхожу как обычный пользователь"):
         autorization_user_2.open(base_url)
         autorization_user_2.test_buyer_for_admin_role_authorize()
-        page_user_2.goto("https://sprout-store.ru/settings/account/user-list")
+        page_user_2.goto(f"{base_url}/settings/account/user-list")
         time.sleep(2)
-        assert page_user_2.url == "https://sprout-store.ru/settings/account/user-list"
+        assert page_user_2.url == f"{base_url}/settings/account/user-list"
 
 
 @allure.title("Открытие окна редактирования пользователя из подразделения")
@@ -610,7 +610,7 @@ def test_open_edit_user_from_subdivision(base_url, page_fixture):
     subdivisions.open(base_url)
     subdivisions.click_subdivision_list_button()
     subdivisions.open_subdivision(0)
-    page.goto("https://sprout-store.ru/settings/subdivision/138/user-list")
+    page.goto(f"{base_url}/settings/subdivision/138/user-list")
     users_page.open_user_card(0)
 
     with allure.step("Нажимаю Редактировать"):
