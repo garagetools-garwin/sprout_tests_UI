@@ -93,6 +93,23 @@ jobs:
       - name: Ensure browsers are installed
         run: python -m playwright install --with-deps
 
+      # Preflight: проверка доступа к стенду до запуска тестов — падает сразу, если не проходит Basic Auth превью
+      - name: Preflight stage access
+        env:
+          TARGET_URL: ${{ inputs.url || 'https://sprout-store.ru' }}
+        run: |
+          echo "PREVIEW_USER set: $([ -n "$PREVIEW_USER" ] && echo yes || echo NO), PREVIEW_PASS set: $([ -n "$PREVIEW_PASS" ] && echo yes || echo NO)"
+          code_noauth=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$TARGET_URL/login" || true)
+          echo "Без авторизации: $code_noauth"
+          if [ "$code_noauth" != "401" ]; then echo "Basic Auth не требуется"; exit 0; fi
+          code_direct=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 -u "$PREVIEW_USER:$PREVIEW_PASS" "$TARGET_URL/login" || true)
+          echo "С PREVIEW_* напрямую: $code_direct"
+          if [ -n "$PROXY_HOST" ]; then
+            code_proxy=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 -x "http://$PROXY_HOST:$PROXY_PORT" --proxy-user "$PROXY_USER:$PROXY_PASS" -u "$PREVIEW_USER:$PREVIEW_PASS" "$TARGET_URL/login" || true)
+            echo "С PREVIEW_* через прокси: $code_proxy"
+          fi
+          if [ "$code_direct" = "401" ]; then echo "::error::PREVIEW_USER/PREVIEW_PASS не подходят к $TARGET_URL"; exit 1; fi
+
       # Запуск тестов
       - name: Run tests
         env:
