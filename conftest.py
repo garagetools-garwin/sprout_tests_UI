@@ -74,6 +74,13 @@ def browser_type_launch_args(browser_type_launch_args, request):
         print("[PROXY] отключён ключом --no-proxy, идём напрямую")
         return browser_type_launch_args
 
+    # Стейдж под HTTP Basic Auth превью: если браузер запущен через прокси с логином/паролем,
+    # Chromium в Playwright не отправляет http_credentials сайта -> 401 (проверено в CI, Playwright 1.52).
+    # Стейджу прокси не нужен, поэтому для него прокси отключаем.
+    if PREVIEW_USER and get_env_from_url(request.config.getoption("--url")) == "stage":
+        print("[PROXY] Стейдж с Basic Auth превью — прокси отключен")
+        return browser_type_launch_args
+
     if not PROXY_HOST:
         print("[PROXY] PROXY_HOST не задан в .env, идём напрямую")
         return browser_type_launch_args
