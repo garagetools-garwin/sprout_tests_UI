@@ -3,6 +3,11 @@ name: sprout_tests_UI
 # Определение события, запускающего workflow
 on: 
   workflow_dispatch:
+    inputs:
+      url:
+        description: 'Стенд: https://sprout-store.ru (прод) или https://new.sprout-store.ru (стейдж)'
+        required: false
+        default: 'https://sprout-store.ru'
   # push:
   #   branches: [ main, master ]
   # pull_request:
@@ -49,6 +54,9 @@ jobs:
       PROXY_PORT: ${{ secrets.PROXY_PORT}}
       PROXY_USER: ${{ secrets.PROXY_USER}}
       PROXY_PASS: ${{ secrets.PROXY_PASS}}
+      # HTTP Basic Auth превью-стенда (используется только если сервер её запрашивает)
+      PREVIEW_USER: ${{ secrets.PREVIEW_USER }}
+      PREVIEW_PASS: ${{ secrets.PREVIEW_PASS }}
 
     steps:
 
@@ -79,9 +87,12 @@ jobs:
 
       # Запуск тестов
       - name: Run tests
+        env:
+          # По расписанию inputs пустые -> прод
+          TARGET_URL: ${{ inputs.url || 'https://sprout-store.ru' }}
         run: |
           # pytest --reruns 2 --reruns-delay 3 --alluredir=allure-results --tb=short -v
-          pytest --reruns 1 --reruns-delay 3 --alluredir=allure-results --tb=short -v
+          pytest --reruns 1 --reruns-delay 3 --alluredir=allure-results --tb=short -v --url "$TARGET_URL"
 
       - name: Показать содержимое auth_states после тестов
         if: always()
