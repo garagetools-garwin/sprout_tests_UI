@@ -8,6 +8,14 @@ on:
         description: 'Стенд: https://sprout-store.ru (прод) или https://new.sprout-store.ru (стейдж)'
         required: false
         default: 'https://sprout-store.ru'
+      pytest_args:
+        description: 'Доп. аргументы pytest, напр. tests/test_autorization.py или -k test_name'
+        required: false
+        default: ''
+      publish_report:
+        description: 'Публиковать Allure-отчет на GitHub Pages (выключать для отладочных прогонов на стейдже: трейс содержит заголовки авторизации)'
+        type: boolean
+        default: true
   # push:
   #   branches: [ main, master ]
   # pull_request:
@@ -90,9 +98,10 @@ jobs:
         env:
           # По расписанию inputs пустые -> прод
           TARGET_URL: ${{ inputs.url || 'https://sprout-store.ru' }}
+          PYTEST_ARGS: ${{ inputs.pytest_args }}
         run: |
           # pytest --reruns 2 --reruns-delay 3 --alluredir=allure-results --tb=short -v
-          pytest --reruns 1 --reruns-delay 3 --alluredir=allure-results --tb=short -v --url "$TARGET_URL"
+          pytest --reruns 1 --reruns-delay 3 --alluredir=allure-results --tb=short -v --url "$TARGET_URL" $PYTEST_ARGS
 
       - name: Показать содержимое auth_states после тестов
         if: always()
@@ -224,7 +233,7 @@ jobs:
       # Публикация отчета Allure  
       - name: Publish Allure report
         uses: peaceiris/actions-gh-pages@v4
-        if: always() && steps.check_allure.outputs.allure_results_exist == 'true'
+        if: always() && steps.check_allure.outputs.allure_results_exist == 'true' && (github.event_name != 'workflow_dispatch' || inputs.publish_report)
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
