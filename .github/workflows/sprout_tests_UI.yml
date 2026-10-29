@@ -110,6 +110,32 @@ jobs:
           fi
           if [ "$code_direct" = "401" ]; then echo "::error::PREVIEW_USER/PREVIEW_PASS не подходят к $TARGET_URL"; exit 1; fi
 
+      # TEMP DEBUG: проверка http_credentials в Playwright (удалить после отладки)
+      - name: Debug Playwright preview auth
+        if: contains(inputs.pytest_args, 'test_autorization')
+        env:
+          TARGET_URL: ${{ inputs.url || 'https://sprout-store.ru' }}
+        run: |
+          python - <<'PY'
+          import os
+          from importlib.metadata import version
+          from playwright.sync_api import sync_playwright
+          u = os.environ['TARGET_URL'].rstrip('/')
+          c = {'username': os.environ['PREVIEW_USER'], 'password': os.environ['PREVIEW_PASS']}
+          px = {'server': 'http://%s:%s' % (os.environ['PROXY_HOST'], os.environ['PROXY_PORT']), 'username': os.environ['PROXY_USER'], 'password': os.environ['PROXY_PASS']}
+          print('playwright', version('playwright'))
+          cases = [('no proxy', {}, c), ('no proxy + origin', {}, dict(c, origin=u)), ('proxy', {'proxy': px}, c), ('proxy + origin', {'proxy': px}, dict(c, origin=u))]
+          with sync_playwright() as p:
+              for name, launch, cred in cases:
+                  try:
+                      b = p.chromium.launch(**launch)
+                      r = b.new_context(http_credentials=cred).new_page().goto(u + '/login')
+                      print(name, '->', r.status if r else None)
+                      b.close()
+                  except Exception as e:
+                      print(name, '-> ERR', str(e)[:300])
+          PY
+
       # Запуск тестов
       - name: Run tests
         env:
