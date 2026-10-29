@@ -1,5 +1,6 @@
 import os
 import time
+from urllib.parse import urlparse
 
 import allure
 import requests
@@ -154,8 +155,13 @@ class AutorizationPage:
             self.click_submit_button()
 
     @allure.step("Активирую аккаунт вручную через письмо")
-    def activate_account_directly(self):
+    def activate_account_directly(self, base_url: str = None):
         activation_url = self.get_activation_link_testmail_app()
+        # Бэкенд превью-стенда (new.sprout-store.ru) шлет ссылку с продовым доменом —
+        # подменяем домен на тестируемый стенд, чтобы активация шла туда же, где создан пользователь.
+        if base_url:
+            link, target = urlparse(activation_url), urlparse(base_url)
+            activation_url = link._replace(scheme=target.scheme, netloc=target.netloc).geturl()
         self.page.goto(activation_url)
 
         with allure.step("Кликаю на кнопку Активировать"):
