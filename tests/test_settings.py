@@ -662,7 +662,7 @@ def test_roles_selection_in_user_card(base_url, page_fixture):
     with allure.step("Проверяю, что ссылка /request-list/manager НЕ отображается (Доступна только закупщику)"):
         assert not modal.is_manager_link_visible()
 
-    modal.go_to_url("https://sprout-store.ru/settings/subdivision/136/general")
+    modal.go_to_url(f"{base_url}/settings/subdivision/136/general")
     modal.open_head_role_selector()
     full_name = "Тестовый Покупатель (администратор) (ФИО пользователя)"  # подставьте нужное ФИО
 
@@ -683,7 +683,7 @@ def test_roles_selection_in_user_card(base_url, page_fixture):
     with allure.step("Проверяю, что ссылка /request-list/manager отображается (Доступна только закупщику)"):
         assert modal.is_manager_link_visible()
 
-    modal.go_to_url("https://sprout-store.ru/settings/subdivision/136/general")
+    modal.go_to_url(f"{base_url}/settings/subdivision/136/general")
     modal.open_head_role_selector()
     with allure.step("Проверяю, что теперь ФИО присутствует хотя бы 1 раз"):
         expect(page.locator(f"text={full_name}")).to_be_visible(timeout=5000)
@@ -775,7 +775,7 @@ from page_opjects.autorization_page import AutorizationPage
 from page_opjects.settings_page.users_settings_page import UsersSettingsPage, UserModal
 
 ROLE_NAME = "Менеджер контракта"
-ACTIVE_BASKET_URL = "https://sprout-store.ru/active-basket-list"
+ACTIVE_BASKET_URL = f"{base_url}/active-basket-list"
 WITHOUT_ROLE_MANAGER_EMAIL = os.getenv("WITHOUT_ROLE_MANAGER_EMAIL")
 WITHOUT_ROLE_MANAGER_PASSWORD = os.getenv("WITHOUT_ROLE_MANAGER_PASSWORD")
 
