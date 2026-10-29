@@ -77,7 +77,7 @@ def browser_type_launch_args(browser_type_launch_args, request):
     # Стейдж под HTTP Basic Auth превью: если браузер запущен через прокси с логином/паролем,
     # Chromium в Playwright не отправляет http_credentials сайта -> 401 (проверено в CI, Playwright 1.52).
     # Стейджу прокси не нужен, поэтому для него прокси отключаем.
-    if PREVIEW_USER and get_env_from_url(request.config.getoption("--url")) == "stage":
+    if PREVIEW_USER and is_preview_host(request.config.getoption("--url")):
         print("[PROXY] Стейдж с Basic Auth превью — прокси отключен")
         return browser_type_launch_args
 
@@ -259,7 +259,7 @@ def ensure_auth_states_dir_exists() -> str:
 
 # Получаем инфу об окружении исходя из указаного URL
 def get_env_from_url(base_url: str) -> str:
-    if any(x in base_url for x in ["stage", "stg", "review-site", "new.sprout-store"]):
+    if any(x in base_url for x in ["stage", "stg", "review-site"]):
         return "stage"
     return "prod"
 
@@ -269,6 +269,13 @@ def get_env_from_url(base_url: str) -> str:
 # а авторизация работает и для XHR/fetch-запросов страницы. origin ограничивает отправку только этим хостом.
 PREVIEW_USER = os.getenv("PREVIEW_USER")
 PREVIEW_PASS = os.getenv("PREVIEW_PASS")
+# Стенды за Basic Auth превью. new.sprout-store.ru — копия прода после переезда, поэтому по данным
+# (ID категорий, аккаунты) он "prod" — см. get_env_from_url; здесь только признак превью-доступа.
+PREVIEW_HOSTS = ("new.sprout-store",)
+
+
+def is_preview_host(url: str) -> bool:
+    return any(h in url for h in PREVIEW_HOSTS)
 
 
 def preview_context_kwargs(base_url: str) -> dict:
