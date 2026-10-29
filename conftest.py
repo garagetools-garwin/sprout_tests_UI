@@ -3,6 +3,7 @@ import allure
 import pytest
 from dotenv import load_dotenv
 import os
+from urllib.parse import urlparse
 import re
 import json
 import pyperclip
@@ -94,7 +95,7 @@ CATEGORY_KEYS = {
     "in_stock(Screwdrivers)":      {"prod": "/catalog/9/3059", "stage": "/catalog/4/3074"},
     "on_request(Air-powered syringes(пневмошприцы))":    {"prod": "/catalog/9/2980", "stage": "/catalog/4/2118"},
     "Адаптеры для биметаллических коронок RUNTEC":    {"prod": "/catalog/9/3707", "stage": "/catalog/4/2343"},
-    "bits": {"prod": "/catalog/9/3052", "stage": "/catalog//4/3070"}
+    "bits": {"prod": "/catalog/9/3052", "stage": "/catalog/4/3070"}
 }
 
 # Обратный словарь: prod-путь → ключ
@@ -251,9 +252,27 @@ def ensure_auth_states_dir_exists() -> str:
 
 # Получаем инфу об окружении исходя из указаного URL
 def get_env_from_url(base_url: str) -> str:
-    if any(x in base_url for x in ["stage", "stg", "review-site"]):
+    if any(x in base_url for x in ["stage", "stg", "review-site", "new.sprout-store"]):
         return "stage"
     return "prod"
+
+
+# HTTP Basic Auth превью-стенда (new.sprout-store.ru): логин/пароль из env PREVIEW_USER / PREVIEW_PASS.
+# Передаём через http_credentials, а не в URL — так пароль не попадает в Allure-отчёт и логи,
+# а авторизация работает и для XHR/fetch-запросов страницы. origin ограничивает отправку только этим хостом.
+PREVIEW_USER = os.getenv("PREVIEW_USER")
+PREVIEW_PASS = os.getenv("PREVIEW_PASS")
+
+
+def preview_context_kwargs(base_url: str) -> dict:
+    if not (PREVIEW_USER and PREVIEW_PASS):
+        return {}
+    u = urlparse(base_url)
+    return {"http_credentials": {
+        "username": PREVIEW_USER,
+        "password": PREVIEW_PASS,
+        "origin": f"{u.scheme}://{u.netloc}",
+    }}
 
 # Создает путь к файлу авторизации (storage_state) основываясь на роли и окружении
 def build_auth_state_path(role: str, env: str) -> str:
@@ -281,9 +300,9 @@ def page_factory(
         size = os.path.getsize(storage_state_path)
         assert size > 500, f"Storage state too small ({size} bytes): {storage_state_path}"
     
-        context = browser.new_context(storage_state=storage_state_path)
+        context = browser.new_context(storage_state=storage_state_path, **preview_context_kwargs(base_url))
     else:
-        context = browser.new_context()
+        context = browser.new_context(**preview_context_kwargs(base_url))
 
     # Блокируем на уровне КОНТЕКСТА, а не страницы
     context.route("**/*jivo*", lambda route: route.abort())
@@ -403,7 +422,7 @@ def autorization_fixture(browser: Browser, base_url):
 
     for role, auth_method in role_to_auth_method.items():
         storage_path = build_auth_state_path(role, env)
-        context = browser.new_context()
+        context = browser.new_context(**preview_context_kwargs(base_url))
         page = context.new_page()
         auth_page = AutorizationPage(page)
 
