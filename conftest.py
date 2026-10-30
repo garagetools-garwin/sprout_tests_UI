@@ -546,11 +546,14 @@ def delete_user_fixture(base_url, page_fixture):
                 settings_account_page = UsersSettingsPage(admin_page)
                 home_page = HomePage(admin_page)
 
-                settings_account_page.open(base_url)
+                # Логин, затем сразу список пользователей. Раньше вызывался несуществующий
+                # UsersSettingsPage.click_users_button() -> AttributeError гасился except’ом и пользователь не удалялся.
+                # Удаляем по email, а не первую строку таблицы, чтобы не задеть чужого пользователя.
+                authorization_page.open(base_url)
                 authorization_page.admin_buyer_authorize()
-                home_page.click_settings_button()
-                settings_account_page.click_users_button()
-                settings_account_page.delete_last_created_user()
+                settings_account_page.open(base_url)
+                deleted = settings_account_page.delete_user_by_email(os.getenv("TESTMAIL_ADRESS_"))
+                print(f"=== TEARDOWN delete_user_by_email: {deleted} ===")
 
                 print("=== USER DELETED IN TEARDOWN ===")
                 allure.attach("Пользователь удалён в teardown", name="DEBUG",
