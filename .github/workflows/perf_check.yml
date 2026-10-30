@@ -1,0 +1,35 @@
+name: perf_check
+
+# Ручной замер скорости sprout-store.ru и new.sprout-store.ru напрямую (раннер вне РФ) и через RU-прокси
+on:
+  workflow_dispatch:
+    inputs:
+      runs:
+        description: 'Повторов на страницу в браузере (curl — вдвое больше)'
+        required: false
+        default: '5'
+
+jobs:
+  perf:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      PROXY_HOST: ${{ secrets.PROXY_HOST }}
+      PROXY_PORT: ${{ secrets.PROXY_PORT }}
+      PROXY_USER: ${{ secrets.PROXY_USER }}
+      PROXY_PASS: ${{ secrets.PROXY_PASS }}
+      PREVIEW_USER: ${{ secrets.PREVIEW_USER }}
+      PREVIEW_PASS: ${{ secrets.PREVIEW_PASS }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Playwright
+        run: |
+          pip install playwright==1.52.0
+          python -m playwright install --with-deps chromium
+      - name: Measure
+        env:
+          PERF_RUNS: ${{ inputs.runs }}
+        run: python tools/perf_check.py
