@@ -113,6 +113,21 @@ class UsersSettingsPage:
         self.click_user_delete_button()
         self.confirm_user_deletion()
 
+    @allure.step("Удаляю пользователя {email} (поиск по email)")
+    def delete_user_by_email(self, email: str) -> bool:
+        """Безопасное удаление: ищет пользователя по email и удаляет только его.
+        Возвращает False, если пользователь не найден."""
+        self.page.fill(self.SEARCH_INPUT, email)
+        self.page.keyboard.press("Enter")
+        self.page.wait_for_timeout(1500)
+        rows = self.page.locator(f"{self.USER_TABLE_ROW}:has-text('{email}')")
+        if rows.count() == 0:
+            return False
+        rows.first.click()
+        self.click_user_delete_button()
+        self.confirm_user_deletion()
+        return True
+
     @allure.step("Проверяю, есть ли пользователь по email")
     def is_user_present(self):
         self.page.fill(self.SEARCH_INPUT, TESTMAIL_ADRESS_)
