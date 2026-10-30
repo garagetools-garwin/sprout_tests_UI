@@ -318,6 +318,16 @@ def page_factory(
     else:
         context = browser.new_context(**preview_context_kwargs(base_url))
 
+    # Логируем ответы 5xx (метод, URL без query, начало тела) — для диагностики ошибок бэкенда в логах CI
+    def _log_5xx(response):
+        if response.status >= 500:
+            try:
+                body = response.text()[:300].replace("\n", " ")
+            except Exception:
+                body = "<no body>"
+            print(f"[HTTP {response.status}] {response.request.method} {response.url.split('?')[0]} :: {body}")
+    context.on("response", _log_5xx)
+
     # Блокируем на уровне КОНТЕКСТА, а не страницы
     context.route("**/*jivo*", lambda route: route.abort())
     context.route("**/jivosite.com/**", lambda route: route.abort())
