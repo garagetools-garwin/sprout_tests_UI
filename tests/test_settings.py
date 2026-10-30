@@ -775,7 +775,7 @@ from page_opjects.autorization_page import AutorizationPage
 from page_opjects.settings_page.users_settings_page import UsersSettingsPage, UserModal
 
 ROLE_NAME = "Менеджер контракта"
-ACTIVE_BASKET_URL = f"{base_url}/active-basket-list"
+ACTIVE_BASKET_PATH = "/active-basket-list"  # URL собирается из base_url внутри теста
 WITHOUT_ROLE_MANAGER_EMAIL = os.getenv("WITHOUT_ROLE_MANAGER_EMAIL")
 WITHOUT_ROLE_MANAGER_PASSWORD = os.getenv("WITHOUT_ROLE_MANAGER_PASSWORD")
 
@@ -830,7 +830,7 @@ def test_assign_contract_manager_role_and_verify_access(base_url, page_fixture):
 
         page_user.on("response", capture_403)
 
-        page_user.goto(ACTIVE_BASKET_URL)
+        page_user.goto(f"{base_url}{ACTIVE_BASKET_PATH}")
         page_user.wait_for_load_state("networkidle")
         page_user.wait_for_timeout(2000)
 
@@ -873,7 +873,7 @@ def test_assign_contract_manager_role_and_verify_access(base_url, page_fixture):
 
         page_user.on("response", capture_403_after)
 
-        page_user.goto(ACTIVE_BASKET_URL)
+        page_user.goto(f"{base_url}{ACTIVE_BASKET_PATH}")
         page_user.wait_for_load_state("networkidle")
         page_user.wait_for_timeout(2000)
 
