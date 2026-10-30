@@ -84,6 +84,35 @@ def curl_runs(base: str, proxy):
     }
 
 
+def curl_get(url: str, base: str, head_only=False):
+    cmd = ["curl", "-s", "--max-time", "60", "-H", "Accept-Encoding: zstd, br, gzip",
+           "-o", os.devnull if head_only else "-", "-D", "-" if head_only else os.devnull,
+           "-w", "%{http_code} %{size_download}" if head_only else ""]
+    if needs_auth(base):
+        cmd += ["-u", f"{PREVIEW_USER}:{PREVIEW_PASS}"]
+    cmd.append(url)
+    return subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="ignore").stdout
+
+
+def asset_report(base: str):
+    """Файлы сборки со страницы /login: размер по сети, сжатие; ключи window.env (без значений)."""
+    import re
+    html = curl_get(base + "/login", base)
+    env_block = re.search(r"window\.env\s*=\s*\{(.*?)\}", html, re.S)
+    env_keys = []
+    if env_block:
+        for k, val in re.findall(r"(\w+)\s*:\s*'([^']*)'", env_block.group(1)):
+            env_keys.append(f"{k}={'set' if val else 'EMPTY'}")
+    rows = []
+    for src in re.findall(r'(?:src|href)="(/assets/[^"]+)"', html):
+        out = curl_get(base + src, base, head_only=True)
+        enc = re.search(r"(?im)^content-encoding:\s*(\S+)", out)
+        tail = out.strip().splitlines()[-1].split() if out.strip() else []
+        code, size = (tail[-2], tail[-1]) if len(tail) >= 2 else ("?", "0")
+        rows.append(f"| {src} | {code} | {enc.group(1) if enc else 'нет'} | {round(int(size) / 1024)} |")
+    return env_keys, rows
+
+
 LCP_JS = """() => new Promise(resolve => {
   let v = null;
   try {
@@ -182,10 +211,17 @@ def main():
                     )
                     print(br_table[-1], flush=True)
 
+    assets = []
+    for site, base in SITES.items():
+        keys, rows = asset_report(base)
+        assets += ["", f"#### {site}", f"window.env: {', '.join(keys) or 'не найден'}", "",
+                   "| Файл | HTTP | Сжатие | КБ по сети |", "|---|---|---|---|", *rows]
+
     report = "\n".join([
         f"## Скорость сайтов (медианы, мс; повторов: curl {RUNS * 2}, браузер {RUNS}, холодный кэш)",
         "", "### curl — HTML главной", *curl_table,
         "", "### Браузер (Playwright Chromium)", *br_table,
+        "", "### Файлы сборки /login (curl, Accept-Encoding: zstd, br, gzip)", *assets,
         "", "_Раннер GitHub Actions находится вне РФ: «direct» — зарубежный клиент, «proxy (RU)» — через прокси в РФ._",
     ])
     print(report)
