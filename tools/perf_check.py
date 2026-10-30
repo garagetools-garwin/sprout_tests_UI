@@ -98,6 +98,10 @@ def asset_report(base: str):
     """Файлы сборки со страницы /login: размер по сети, сжатие; ключи window.env (без значений)."""
     import re
     html = curl_get(base + "/login", base)
+    print(f"--- {base}/login: {len(html)} bytes; script/link/env lines:")
+    for line in html.splitlines():
+        if re.search(r"<script|<link|env", line):
+            print("   ", line.strip()[:200])
     env_block = re.search(r"window\.env\s*=\s*\{(.*?)\}", html, re.S)
     env_keys = []
     if env_block:
