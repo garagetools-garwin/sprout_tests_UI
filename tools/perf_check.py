@@ -88,6 +88,8 @@ def curl_get(url: str, base: str, head_only=False):
     cmd = ["curl", "-s", "--max-time", "60", "-H", "Accept-Encoding: zstd, br, gzip",
            "-o", os.devnull if head_only else "-", "-D", "-" if head_only else os.devnull,
            "-w", "%{http_code} %{size_download}" if head_only else ""]
+    if not head_only:
+        cmd.append("--compressed")  # HTML нужен распакованным
     if needs_auth(base):
         cmd += ["-u", f"{PREVIEW_USER}:{PREVIEW_PASS}"]
     cmd.append(url)
