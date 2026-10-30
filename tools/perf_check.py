@@ -20,6 +20,12 @@ from urllib.parse import urlparse
 
 from playwright.sync_api import sync_playwright
 
+try:  # локальный запуск: подхватываем PREVIEW_*/PROXY_* из .env проекта
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 SITES = {
     "prod sprout-store.ru": "https://sprout-store.ru",
     "new.sprout-store.ru": "https://new.sprout-store.ru",
@@ -33,8 +39,9 @@ PREVIEW_PASS = os.getenv("PREVIEW_PASS")
 PROXY_HOST, PROXY_PORT = os.getenv("PROXY_HOST"), os.getenv("PROXY_PORT")
 PROXY_USER, PROXY_PASS = os.getenv("PROXY_USER"), os.getenv("PROXY_PASS")
 
+# PERF_NO_PROXY=1 — только прямой режим (например, при локальном запуске из РФ)
 MODES = {"direct": None}
-if PROXY_HOST:
+if PROXY_HOST and not os.getenv("PERF_NO_PROXY"):
     MODES["proxy (RU)"] = {
         "server": f"http://{PROXY_HOST}:{PROXY_PORT}",
         "username": PROXY_USER,
@@ -53,7 +60,7 @@ def med(values):
 
 def curl_runs(base: str, proxy):
     cmd = [
-        "curl", "-s", "-o", "/dev/null", "--max-time", "60",
+        "curl", "-s", "-o", os.devnull, "--max-time", "60",
         "-w", "%{time_namelookup} %{time_connect} %{time_appconnect} "
               "%{time_starttransfer} %{time_total} %{http_code}",
     ]
