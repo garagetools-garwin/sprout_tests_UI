@@ -73,9 +73,9 @@ jobs:
 
       # Установка Python
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.12.1'
+          python-version: '3.12'  # без патч-версии: старые патчи не собираются под новые образы ubuntu-latest
 
       # Установка зависимостей
       - name: Install dependencies
