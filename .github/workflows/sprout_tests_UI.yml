@@ -141,21 +141,13 @@ jobs:
           fi
           echo "::endgroup::"
 
-      - name: Показать первые строки каждого storage_state
+      # Трейсы Playwright содержат введенные логины и пароли. Репозиторий публичный: артефакты прогона
+      # и Allure на Pages доступны посторонним, поэтому трейсы удаляем до загрузки и публикации.
+      - name: Remove Playwright traces from results
         if: always()
         run: |
-          echo "::group::Первые строки storage_state файлов"
-          if [ -d auth_states ]; then
-            for f in auth_states/*.json; do
-              echo "==== $f ===="
-              head -20 "$f"
-              echo ""
-            done
-          else
-            echo "Папки auth_states нет"
-          fi
-          echo "::endgroup::"
-          
+          find allure-results -name '*.zip' -print -delete 2>/dev/null || true
+
       # Проверка наличия json-файлов в allure-results (чтобы не запушить сломаный отчет)
       - name: Check if Allure results exist
         if: always()
@@ -216,36 +208,44 @@ jobs:
           RUN_ID: ${{ github.run_id }}
           SERVER_URL: ${{ github.server_url }}
           OWNER: ${{ github.repository_owner }}
+          TARGET_URL: ${{ inputs.url || 'https://sprout-store.ru' }}
         run: |
           PAGES_URL="https://${OWNER}.github.io/${GITHUB_REPOSITORY#*/}"
+          # Прод -> корень Pages; любой другой стенд -> подпапка stage/ (своя история и тренды)
+          case "${TARGET_URL%/}" in
+            https://sprout-store.ru) SUB="" ;;
+            *) SUB="stage" ;;
+          esac
+          SRC="gh-pages${SUB:+/$SUB}"
+          DST="allure-history${SUB:+/$SUB}"
+          URL="${PAGES_URL}${SUB:+/$SUB}"
+          echo "Публикация в: ${URL}/${RUN_NUM}"
+
           mkdir -p gh-pages allure-history
           cp -r gh-pages/. allure-history/
+          mkdir -p "$DST"
 
-          # Оставляем последние KEEP_REPORTS отчетов
-          COUNT=$(ls allure-history | wc -l)
-          KEEP=$((KEEP_REPORTS + 1))
-          if (( COUNT > KEEP )); then
-            (cd allure-history && rm -rf index.html last-history && ls | sort -n | grep -v CNAME | head -n -$((KEEP - 2)) | xargs -r rm -rf)
-          fi
+          # Оставляем последние KEEP_REPORTS отчетов этого стенда (только числовые папки, stage/ не трогаем)
+          ls "$DST" | grep -E '^[0-9]+$' | sort -n | head -n -$((KEEP_REPORTS - 1)) | xargs -r -I{} rm -rf "$DST/{}"
 
-          # Редирект на свежий отчет
-          printf '<!DOCTYPE html><meta charset="utf-8"><meta http-equiv="refresh" content="0; URL=%s/%s/index.html">\n<meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">\n' "$PAGES_URL" "$RUN_NUM" > allure-history/index.html
+          # Редирект на свежий отчет стенда
+          printf '<!DOCTYPE html><meta charset="utf-8"><meta http-equiv="refresh" content="0; URL=%s/%s/index.html">\n<meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">\n' "$URL" "$RUN_NUM" > "$DST/index.html"
 
           # Executor-виджет
           printf '{"name":"GitHub Actions","type":"github","reportName":"Allure Report with history","url":"%s","reportUrl":"%s/%s","buildUrl":"%s/%s/actions/runs/%s","buildName":"GitHub Actions Run #%s","buildOrder":"%s"}\n' \
-            "$PAGES_URL" "$PAGES_URL" "$RUN_NUM" "$SERVER_URL" "$GITHUB_REPOSITORY" "$RUN_ID" "$RUN_ID" "$RUN_NUM" > allure-results/executor.json
+            "$URL" "$URL" "$RUN_NUM" "$SERVER_URL" "$GITHUB_REPOSITORY" "$RUN_ID" "$RUN_ID" "$RUN_NUM" > allure-results/executor.json
 
-          # История трендов
-          if [ -d gh-pages/last-history ]; then
+          # История трендов своего стенда
+          if [ -d "$SRC/last-history" ]; then
             mkdir -p allure-results/history
-            cp -r gh-pages/last-history/. allure-results/history/
+            cp -r "$SRC/last-history/." allure-results/history/
           fi
 
           allure generate --clean allure-results -o allure-report
 
-          mkdir -p "allure-history/${RUN_NUM}" allure-history/last-history
-          cp -r allure-report/. "allure-history/${RUN_NUM}/"
-          cp -r allure-report/history/. allure-history/last-history/
+          mkdir -p "$DST/${RUN_NUM}" "$DST/last-history"
+          cp -r allure-report/. "$DST/${RUN_NUM}/"
+          cp -r allure-report/history/. "$DST/last-history/"
 
       # Публикация отчета Allure  
       - name: Publish Allure report
