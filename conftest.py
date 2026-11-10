@@ -258,7 +258,14 @@ def ensure_auth_states_dir_exists() -> str:
     return auth_states_dir
 
 # Получаем инфу об окружении исходя из указаного URL
+# Стенды на своих серверах (new.*, stage.*) — копии прода: ID категорий и аккаунты продовые.
+# Старые ID "stage" относятся только к стендам подрядчика.
+PROD_DATA_HOSTS = ("new.sprout-store.ru", "stage.sprout-store.ru")
+
+
 def get_env_from_url(base_url: str) -> str:
+    if any(h in base_url for h in PROD_DATA_HOSTS):
+        return "prod"
     if any(x in base_url for x in ["stage", "stg", "review-site"]):
         return "stage"
     return "prod"
