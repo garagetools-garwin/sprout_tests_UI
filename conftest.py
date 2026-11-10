@@ -335,6 +335,16 @@ def page_factory(
             print(f"[HTTP {response.status}] {response.request.method} {response.url.split('?')[0]} :: {body}")
     context.on("response", _log_5xx)
 
+    # 4xx от API и запросы, которые не выполнились вовсе (ERR_FAILED, CORS, обрыв) — тоже в лог CI
+    def _log_api_4xx(response):
+        if 400 <= response.status < 500 and "/api/" in response.url:
+            print(f"[HTTP {response.status}] {response.request.method} {response.url.split('?')[0]}")
+    context.on("response", _log_api_4xx)
+
+    def _log_failed(request):
+        print(f"[REQUEST FAILED] {request.method} {request.url.split('?')[0]} :: {request.failure}")
+    context.on("requestfailed", _log_failed)
+
     # Блокируем на уровне КОНТЕКСТА, а не страницы
     context.route("**/*jivo*", lambda route: route.abort())
     context.route("**/jivosite.com/**", lambda route: route.abort())
