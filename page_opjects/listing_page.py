@@ -34,7 +34,7 @@ class ListingPage:
     STOCK_FILTER_SELECT = "span.ant-select-selection-item"
     STOCK_FILTER_OPTION = ".ant-select-item.ant-select-item-option"
     ALL_PRODUCTS_TEXT = "Все товары"
-    IN_STOCK_TEXT = "Товары в наличии"
+    IN_STOCK_TEXT = "На доступных складах"
 
     # Карточка товара
     ADD_TO_CART_BUTTON = ".ant-btn.css-2nkxv5.ant-btn-default.button-lg.primary.w-full"
@@ -104,7 +104,7 @@ class ListingPage:
         """
         Ищет span.ant-select-selection-item с текстом фильтра.
         Если 'Все товары' — ничего не делает.
-        Если 'Товары в наличии' — кликает и выбирает 'Все товары'.
+        Если 'На доступных складах' — кликает и выбирает 'Все товары'.
         """
         filter_span = self.page.locator(self.STOCK_FILTER_SELECT).filter(
             has_text=self.ALL_PRODUCTS_TEXT
