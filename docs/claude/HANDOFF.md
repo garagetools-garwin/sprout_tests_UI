@@ -240,3 +240,23 @@ else echo "ЭТО НЕ СТЕЙДЖ — ничего не сделано"; fi
 - Разница v1.10.0 → v1.11.0 = 44 строки = 7 миграций выпуска, лишнего нет.
 - Найдено: 23 миграции в БД прода без файлов в коде (наследие 1.9 + разовые заливки ФСА) → схему нельзя собрать из кода; задача back-end — baseline-миграция.
 - `/tmp/schema` на проде удалить после коммита.
+
+## 15. ПАУЗА 27.11 ночь — исправление D1–D4 (по просьбе Артёма)
+
+Сделано:
+- sprout-infra: MR !11 (снимки схемы) создан. sprout_tests_UI: коммит `7342fbc0` в ветке `claude/acceptance-v1.11` (не запушен).
+- back-end: ветка `fix/limit-quantity-price-rounding-supply-view` от dev `99d33ef8`, **не закоммичено**:
+  - D4 `basket.service.ts`: лимит = Σ price × count для всех аккаунтов; тест в `basket.service.spec.ts` (падает без исправления).
+  - D2 `good.service.ts` (2 места): при priceRounding округлять и originalPrice (+ originalPriceWithTaxes); 3 теста в `good.service.spec.ts` (2 падают без исправления).
+  - D1 — **причина уточнена: права, не статус заявки.** `supply.service.ts list()`: покупатель с ролью Manager видит только поставки подразделений, где он руководитель → без подразделений 404 даже по своей заявке в любом статусе (проверено на стейдже: testgarwin_yur 6816 processing → 404, +2 → 200). Исправление: новый `getByIdForViewOrFail` (свои + подразделения) только для `GET /api/supply/:id`; `checkExistence`/смена статуса без изменений (иначе автор-менеджер мог бы согласовать сам себе). Фильтр `ownUserId` в репозитории. 6 тестов `supply.view-access.spec.ts`.
+  - Прогоны: basket/good/supply до новых тестов 127/127.
+- front-end: D1 правки не требует. D3 не начат. `yarn install` во front-end — 401 от Nexus (нужен токен; CA взят со стейджа в scratchpad `nexus-ca.crt`).
+
+Дальше: полный `yarn test` + `yarn build` + eslint back-end → коммит → push с MR в dev + описание MR по шаблону; D3 во front-end (нужен доступ к Nexus); MR front в dev.
+
+## 16. Исправления D1–D4 отправлены (27.11)
+- back-end MR **!19** `fix/limit-quantity-price-rounding-supply-view` → dev: D4, D2, D1 (D1 — права просмотра поставки менеджером, смена статуса не расширена). 11 новых тестов; jest 417 passed / 3 failed (те же 3 падают на чистом dev); build OK; ESLint — новых нет (3 import/order — на dev). Описание: `docs/claude/mr-backend-d1-d2-d4.md`.
+- front-end MR **!18** `fix/personal-limit-zero` → dev: D3 (окно, calculateUserBalance, список, профиль, карточка). node-тесты 78/78 (5 новых, 2 падают на старом коде); ESLint чисто. `yarn build`/типы НЕ проверены — нет доступа к Nexus (401). Описание: `docs/claude/mr-frontend-d3.md`.
+- sprout-infra MR **!11** — снимки схемы.
+- Описания MR вставить в GitLab вручную (push-опции не передают многострочный текст; для !11 описание взято из коммита).
+- После выкладки на стейдж: xfail-тесты D1, D3, D4 должны стать XPASS → снять xfail.
