@@ -306,19 +306,21 @@ class ContractDiscountsTab:
 
     @allure.step("Выбираю бренд «{brand}» в drawer")
     def select_brand_in_drawer(self, brand: str):
-        self.page.locator(self.BRAND_SELECT).click()
-        self.page.wait_for_timeout(300)
-        search = self.page.locator(self.BRAND_SEARCH_INPUT).last
-        search.fill(brand)
-        self.page.wait_for_timeout(500)
-        self.page.locator(f"{self.BRAND_OPTION}:has-text('{brand}')").click()
-        self.page.wait_for_timeout(300)
+        # select-with-search: список открывается сам при открытии drawer, поле поиска —
+        # input.ant-input внутри выпадающего списка (input самого select — readonly).
+        # Вариант выбираем по точному title, чтобы «Fit» не совпал с «Fitness» и т. п.
+        dropdown = self.page.locator(".ant-select-dropdown:not(.ant-select-dropdown-hidden)")
+        if not dropdown.first.is_visible():
+            self.page.locator(self.DRAWER).last.locator(".ant-select").first.click()
+        dropdown.first.wait_for(state="visible", timeout=5000)
+        dropdown.first.locator("input.ant-input").fill(brand)
+        option = dropdown.first.locator(f"{self.BRAND_OPTION}[title='{brand}']")
+        option.first.wait_for(state="visible", timeout=10000)
+        option.first.click()
 
     @allure.step("Устанавливаю скидку {value}% в drawer")
     def set_discount_in_drawer(self, value: str):
-        inputs = self.page.locator(self.DISCOUNT_VALUE_INPUT)
-        # Берём последний input (скидка), первый — это бренд
-        discount_input = inputs.last
+        discount_input = self.page.locator(self.DRAWER).last.locator("#discountValue")
         discount_input.fill("")
         discount_input.fill(value)
 
@@ -394,3 +396,48 @@ class ContractDeliveryTab:
             if not self.page.locator(f"{self.DELIVERY_OPTION}:has-text('{opt}')").is_visible():
                 return False
         return True
+
+
+class ContractPriceDisplayMode:
+    """Селектор «Отображение цен для клиента» на вкладке «Управление контрактом» (продавец)."""
+
+    def __init__(self, page: Page):
+        self.page = page
+
+    # Режимы, как они подписаны в выпадающем списке
+    WITH_VAT = "С НДС"
+    BOTH = "Без НДС и с НДС"
+    WITHOUT_VAT = "Только без НДС"
+    ALL_MODES = (WITH_VAT, BOTH, WITHOUT_VAT)
+
+    SELECT_INPUT = "#contract-price-display-mode"
+    SELECT = ".ant-select:has(#contract-price-display-mode)"
+    SELECTED_VALUE = ".ant-select:has(#contract-price-display-mode) .ant-select-selection-item"
+    OPTION = ".ant-select-dropdown:not(.ant-select-dropdown-hidden) .ant-select-item-option[title='{title}']"
+    SAVED_TOAST = "text=Режим отображения цен сохранён"
+
+    @allure.step("Получаю текущий режим отображения цен")
+    def get_mode(self) -> str:
+        locator = self.page.locator(self.SELECTED_VALUE)
+        locator.wait_for(state="visible", timeout=15000)
+        return locator.inner_text().strip()
+
+    @allure.step("Выбираю режим отображения цен: {mode}")
+    def select_mode(self, mode: str):
+        self.page.locator(self.SELECT).click()
+        self.page.locator(self.OPTION.format(title=mode)).click()
+
+    @allure.step("Проверяю toast «Режим отображения цен сохранён»")
+    def is_saved_toast_visible(self, timeout: int = 5000) -> bool:
+        try:
+            self.page.locator(self.SAVED_TOAST).first.wait_for(state="visible", timeout=timeout)
+            return True
+        except Exception:
+            return False
+
+    @allure.step("Устанавливаю режим «{mode}» и жду подтверждения сохранения")
+    def set_mode(self, mode: str) -> bool:
+        if self.get_mode() == mode:
+            return True
+        self.select_mode(mode)
+        return self.is_saved_toast_visible()

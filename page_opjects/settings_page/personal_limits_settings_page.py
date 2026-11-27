@@ -216,7 +216,8 @@ class SelectEmployeeModal:
 
     @allure.step("Выбираю сотрудника по email: {email}")
     def select_employee_by_email(self, email: str):
-        self.page.locator(f"{self.USER_ITEM}:has-text('{email}')").click()
+        # filter() применяется ко всему списку селекторов USER_ITEM, а не только к последнему после запятой
+        self.page.locator(self.USER_ITEM).filter(has_text=email).first.click()
         self.page.wait_for_timeout(300)
 
     @allure.step("Нажимаю 'Выбрать'")
